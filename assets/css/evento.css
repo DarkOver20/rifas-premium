@@ -1,0 +1,257 @@
+/* Estilos para el detalle del evento */
+.evento-detalle {
+    padding: 2rem 0;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.evento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.evento-header h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.evento-estado {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.evento-estado.activo {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.evento-estado.finalizado {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+.evento-estado.proximamente {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.evento-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.evento-imagen {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.evento-imagen img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.evento-imagen:hover img {
+    transform: scale(1.03);
+}
+
+.evento-info h2 {
+    color: #6a11cb;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.evento-info p {
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 1.5rem;
+}
+
+.evento-precio,
+.evento-boletos,
+.evento-fechas div {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.evento-precio span,
+.evento-boletos span,
+.evento-fechas span {
+    color: #666;
+}
+
+.evento-precio strong {
+    color: #6a11cb;
+    font-size: 1.2rem;
+}
+
+.evento-boletos strong {
+    color: #2c3e50;
+}
+
+.evento-fechas strong {
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .evento-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .evento-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .evento-header h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Estilos para los saltos de línea en el texto */
+br {
+    content: "";
+    display: block;
+    margin-bottom: 0.5em;
+}
+
+/* Estilos para la selección de boletos */
+.seleccion-boletos {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.seleccion-opciones {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: center;
+}
+
+.seleccion-opciones input {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 80px;
+    text-align: center;
+}
+
+.boletos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.boleto {
+    padding: 1rem;
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.boleto:hover {
+    border-color: #6a11cb;
+    transform: translateY(-2px);
+}
+
+.boleto.seleccionado {
+    background: #6a11cb;
+    color: white;
+    border-color: #6a11cb;
+}
+
+.boleto.reservado {
+    background: #ffc107;
+    color: #212529;
+    border-color: #ffc107;
+    cursor: not-allowed;
+}
+
+.resumen-compra {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+#boletos-seleccionados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    min-height: 50px;
+}
+
+.boletos-seleccionados-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.boleto-seleccionado {
+    background: #6a11cb;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.2rem;
+    margin: 1.5rem 0;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.total strong {
+    color: #6a11cb;
+    font-size: 1.4rem;
+}
+
+#proceder-pago {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+
+#proceder-pago:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
