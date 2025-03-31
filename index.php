@@ -5,6 +5,8 @@ require_once __DIR__ . '/includes/functions.php';
 // Obtener eventos directamente desde PHP
 $eventos_activos = obtenerEventos('activo');
 $eventos_finalizados = obtenerEventos('finalizado');
+$metodos_de_pago = obtener_metodos_pago();
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -14,9 +16,9 @@ $eventos_finalizados = obtenerEventos('finalizado');
     <title>Rifas Premium - Sorteos Exclusivos</title>
     <style>
         :root {
-            --primary-color: #1a5f9e;
-            --primary-dark: #0d3b66;
-            --primary-light: #2b8be5;
+            --primary-color:rgb(3, 14, 167);
+            --primary-dark: rgb(3, 14, 167);
+            --primary-light: rgb(3, 14, 167);
             --accent-color: #FFD700;
             --light-color: #f8f9fa;
             --dark-color: #212529;
@@ -356,7 +358,79 @@ $eventos_finalizados = obtenerEventos('finalizado');
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(26, 95, 158, 0.2);
         }
+        /* Sección de Pagos */
+        .payment-section {
+            padding: 5rem 0;
+            background: linear-gradient(135deg, #f9fafb, #f0f4f8);
+            position: relative;
+        }
         
+        .payment-section::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: var(--light-color);
+            transform: skewY(3deg);
+            z-index: 1;
+        }
+        
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .payment-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border-top: 4px solid var(--accent-color);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .payment-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .payment-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+        
+        .payment-title {
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        .payment-detail {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        
+        .payment-label {
+            font-weight: 600;
+            color: var(--primary-dark);
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+        
+        .payment-value {
+            color: #555;
+            word-break: break-all;
+        }
         /* Sección de FAQ */
         .faq-section {
             padding: 5rem 0;
@@ -540,7 +614,8 @@ $eventos_finalizados = obtenerEventos('finalizado');
             }
             
             .evento-img {
-                height: 180px;
+                background-size: cover !important;
+                background-repeat:no-repeat !important;
             }
             
             .evento-content {
@@ -554,10 +629,12 @@ $eventos_finalizados = obtenerEventos('finalizado');
 <body>
     <header class="main-header">
         <div class="header-container">
-            <a href="#inicio" class="logo">
-                <i class="fas fa-trophy logo-icon"></i>
-                RIFAS PREMIUM
-            </a>
+        <a href="#inicio" class="logo" style="display: flex; align-items: center; text-decoration: none;">
+    <i class="logo-icon" style="margin-right: 8px;">
+        <img src="./uploads/logocolor.webp" alt="Logo de RIFAS PREMIUM" style="height: 40px; width: auto;">
+    </i>
+    <span style="font-size: 24px; color: #333;">RIFAS PREMIUM</span>
+</a>
             <nav>
                 <ul class="nav-menu">
                     <li class="nav-item"><a href="#inicio" class="nav-link">Inicio</a></li>
@@ -592,8 +669,8 @@ $eventos_finalizados = obtenerEventos('finalizado');
                                     <?= strtoupper($evento['estado']) ?>
                                 </div>
                                 <p class="evento-descripcion"><?= htmlspecialchars(substr($evento['descripcion'], 0, 100)) ?>...</p>
-                                <p class="evento-precio">$<?= number_format($evento['precio_boleto'], 2) ?> por boleto</p>
-                                <p>Boletos: <?= $evento['boletos_disponibles'] ?>/<?= $evento['total_boletos'] ?></p>
+                                <!-- <p class="evento-precio">$<?= number_format($evento['precio_boleto'], 2) ?> por boleto</p>
+                                <p>Boletos: <?= $evento['boletos_disponibles'] ?>/<?= $evento['total_boletos'] ?></p> -->
                                 <a href="evento.php?id=<?= $evento['id'] ?>" class="btn">VER DETALLES</a>
                             </div>
                         </div>
@@ -616,8 +693,6 @@ $eventos_finalizados = obtenerEventos('finalizado');
                                     <?= strtoupper($evento['estado']) ?>
                                 </div>
                                 <p class="evento-descripcion"><?= htmlspecialchars(substr($evento['descripcion'], 0, 100)) ?>...</p>
-                                <p class="evento-precio">$<?= number_format($evento['precio_boleto'], 2) ?> por boleto</p>
-                                <a href="evento.php?id=<?= $evento['id'] ?>" class="btn">VER DETALLES</a>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -627,6 +702,29 @@ $eventos_finalizados = obtenerEventos('finalizado');
             </div>
         </div>
     </section>
+
+    <<section class="payment-section" id="pagos">
+    <div class="container">
+        <h2 class="section-title">MÉTODOS DE PAGO</h2>
+        <p class="section-subtitle">Realiza tus pagos de forma segura a través de nuestras plataformas autorizadas</p>
+
+        <div class="payment-methods">
+            <?php if (!empty($metodos_de_pago)): ?>
+                <?php foreach ($metodos_de_pago as $metodo): ?>
+                    <div class="payment-card hover-scale">
+                        <?php if (!empty($metodo['icono'])): ?>
+                            <img src="<?php echo htmlspecialchars($metodo['icono']); ?>" alt="<?php echo htmlspecialchars($metodo['nombre']); ?>" class="payment-icon" width="50">
+                        <?php else: ?>
+                            <i class="fas fa-credit-card payment-icon"></i> <?php endif; ?>
+                        <h3 class="payment-title"><?php echo htmlspecialchars($metodo['nombre']); ?></h3>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No hay métodos de pago disponibles.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
 
     <section class="faq-section" id="faq">
         <div class="container">

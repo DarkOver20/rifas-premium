@@ -242,3 +242,13 @@ function obtenerEventos($estado = null) {
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+function obtener_metodos_pago($activo = true) {
+    global $pdo;
+    $sql = "SELECT * FROM metodos_pago";
+    if ($activo) {
+        $sql .= " WHERE activo = 1";
+    }
+    $stmt = $pdo->query($sql);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}

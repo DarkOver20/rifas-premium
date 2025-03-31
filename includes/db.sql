@@ -223,19 +223,11 @@ INSERT INTO notificaciones (usuario_id, titulo, mensaje, leida) VALUES
 UPDATE eventos SET boletos_disponibles = (
     SELECT COUNT(*) FROM boletos WHERE evento_id = eventos.id AND estado = 'disponible'
 );
-
-CREATE TABLE metodos_pago (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL,
-    descripcion TEXT,
-    icono VARCHAR(255),
-    instrucciones TEXT,
-    activo BOOLEAN DEFAULT TRUE,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE `metodos_pago` (
+  `id` INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(255) NOT NULL,
+  `detalles` TEXT, -- Aquí almacenaremos los detalles variables en formato JSON
+  `icono` VARCHAR(255), -- Ruta o nombre del archivo del icono
+  `activo` TINYINT(1) DEFAULT 1, -- Para habilitar o deshabilitar métodos de pago
+  `fecha_creacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- Insertar métodos de pago de ejemplo
-INSERT INTO metodos_pago (nombre, descripcion, icono, instrucciones) VALUES
-('Transferencia Bancaria', 'Transferencia a nuestra cuenta corriente', 'transferencia.png', 'Banco: XXX\nCuenta: XXXX-XXXX-XXXX\nA nombre de: Rifas Premium'),
-('Pago Móvil', 'Pago a través de tu banca móvil', 'pago-movil.png', 'Teléfono: 0412-1234567\nCédula: V-12345678'),
-('Efectivo', 'Pago en efectivo en nuestras oficinas', 'efectivo.png', 'Dirección: Av. Principal, Edif. XYZ, Oficina 123');
