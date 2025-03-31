@@ -18,6 +18,7 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($evento['titulo']) ?> - Rifas Premium</title>
     <link rel="stylesheet" href="./assets/css/evento.css">
+    <link rel="stylesheet" href="./assets/css/main.css">
 </head>
 <body>
     
@@ -112,7 +113,7 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
                     <input type="file" id="comprobante" name="comprobante" accept="image/*,.pdf">
                 </div>
                 
-                <button type="submit" id="confirmar-pago" class="btn" disabled>Confirmar Pago</button>
+                <button type="submit" id="procederPagoBtn" class="btn" disabled>Confirmar Pago</button>
             </form>
         <?php else: ?>
             <div class="alert">
