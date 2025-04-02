@@ -230,7 +230,6 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2.5rem;
-    margin-bottom: 3rem;
 }
 
 .evento-card {
@@ -354,7 +353,6 @@ body {
 }
 /* Sección de Pagos */
 .payment-section {
-    padding: 5rem 0;
     background: linear-gradient(135deg, #f9fafb, #f0f4f8);
     position: relative;
 }
@@ -374,8 +372,7 @@ body {
 .payment-methods {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-top: 3rem;
+    gap: 1.5rem;
 }
 
 .payment-card {
