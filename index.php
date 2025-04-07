@@ -17,8 +17,11 @@ $metodos_de_pago = obtener_metodos_pago();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./assets/css/inicio.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+<style>
+    
+</style>
 <body>
     <header class="main-header">
         <div class="header-container">
@@ -120,36 +123,48 @@ $metodos_de_pago = obtener_metodos_pago();
     </div>
 </section>
 
-    <section class="faq-section" id="faq">
-        <div class="container">
-            <h2 class="section-title">PREGUNTAS FRECUENTES</h2>
+
+<section class="how-to-participate" id="como-participar">
+    <div class="container">
+        <h2 class="section-title">CÓMO PARTICIPAR</h2>
+        <p class="section-subtitle">Sigue estos sencillos pasos para participar en nuestros exclusivos sorteos</p>
+        
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Elige tu evento</h3>
+                <p class="step-description">Selecciona el sorteo en el que deseas participar de nuestra lista de eventos disponibles.</p>
+            </div>
             
-            <div class="faq-container">
-                <div class="faq-item">
-                    <div class="faq-question">¿Cuántos boletos mínimos necesito para participar?</div>
-                    <div class="faq-answer">Puedes participar con solo 1 boleto. No hay mínimo requerido.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">¿Cómo selecciono mis boletos?</div>
-                    <div class="faq-answer">Puedes elegirlos manualmente o usar nuestro sistema de selección aleatoria.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">¿Qué métodos de pago aceptan?</div>
-                    <div class="faq-answer">Aceptamos transferencias bancarias, pago móvil y efectivo en algunos casos.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">¿Cómo sé que el sorteo es legítimo?</div>
-                    <div class="faq-answer">Todos nuestros sorteos son grabados y transmitidos en vivo, con testigos de fe pública para garantizar transparencia.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">¿Cuándo se entregan los premios?</div>
-                    <div class="faq-answer">Los premios se entregan dentro de los 15 días hábiles posteriores al sorteo.</div>
-                </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3 class="step-title">Selecciona tus boletos</h3>
+                <p class="step-description">Elige la cantidad de boletos que deseas comprar. Puedes seleccionar números específicos o dejarlo al azar.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Llena el formulario con tus datos</h3>
+                <p class="step-description">Completa el formulario con tu información personal para que podamos contactarte en caso de ganar.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <h3 class="step-title">Realiza el pago </h3>
+                <p class="step-description">Paga tus boletos a través de cualquiera de nuestros métodos de pago seguros y autorizados.</p>
             </div>
         </div>
-    </section>
-
-    
+    </div>
+</section><!-- Botón flotante de WhatsApp -->
+<!-- Botón flotante de WhatsApp VIP -->
+<a href="https://wa.me/34910000000" class="whatsapp-float" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    
+                    <!-- Botón para ir arriba -->
+                    <button class="back-to-top">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
     <footer id="contacto">
         <div class="container">
             <div class="footer-grid">
@@ -200,15 +215,7 @@ $metodos_de_pago = obtener_metodos_pago();
         </div>
     </footer>
 
-    <!-- Botón flotante de WhatsApp -->
-    <a href="#" class="whatsapp-float">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-
-    <!-- Botón para ir arriba -->
-    <button class="back-to-top">
-        <i class="fas fa-arrow-up"></i>
-    </button>
+   
     
     <script>
         // FAQ toggle functionality
@@ -328,6 +335,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-    </script>
+const backToTopButton = document.querySelector('.back-to-top');
+                        
+                        window.addEventListener('scroll', () => {
+                            if (window.pageYOffset > 300) {
+                                backToTopButton.classList.add('visible');
+                            } else {
+                                backToTopButton.classList.remove('visible');
+                            }
+                        });
+                        
+                        backToTopButton.addEventListener('click', () => {
+                            window.scrollTo({
+                                top: 0,
+                                behavior: 'smooth'
+                            });
+                        });
+    </script><script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </body>
 </html>

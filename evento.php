@@ -92,35 +92,87 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
             <strong id="total-pagar">$0.00</strong>
         </div>
         
-        <?php if (is_logged_in()): ?>
-            <form id="form-pago" class="form-pago" enctype="multipart/form-data">
-                <input type="hidden" name="evento_id" value="<?= $evento['id'] ?>">
-                
-                <div class="form-group">
-                    <label>Método de pago:</label>
-                    <div class="metodos-pago" id="metodos-pago">
-                        <!-- Métodos se cargarán por AJAX -->
-                    </div>
+        <div class="formulario-compra-boletos">
+    <h3>Información de Contacto y Pago</h3>
+    <form id="formulario-pago" action="procesar_compra.php" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="evento_id" value="<?php echo $evento_id; ?>"> <div class="form-group">
+            <label for="nombre">Nombre Completo:</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        <div class="form-group">
+            <label for="telefono">Teléfono:</label>
+            <input type="tel" id="telefono" name="telefono" required>
+        </div>
+        <div class="form-group">
+            <label for="cedula">Cédula:</label>
+            <input type="text" id="cedula" name="cedula" required>
+        </div>
+        <div class="form-group">
+            <label for="estado">Estado:</label>
+            <input type="text" id="estado" name="estado" required>
+        </div>
+        <div class="form-group">
+            <label for="referencia_pago">Referencia de Pago (Opcional):</label>
+            <input type="text" id="referencia_pago" name="referencia_pago">
+        </div>
+        <div class="form-group">
+            <label for="metodo_pago">Método de Pago:</label>
+            <select id="metodo_pago" name="metodo_pago" required>
+                <option value="">Selecciona un método de pago</option>
+                <?php
+                // Aquí deberás cargar los métodos de pago desde la base de datos
+                $metodos_de_pago = obtener_metodos_pago(); // Usamos la función que ya creamos
+                foreach ($metodos_de_pago as $metodo): ?>
+                    <option value="<?php echo $metodo['id']; ?>" data-detalles='<?php echo htmlspecialchars($metodo['detalles']); ?>'>
+                        <?php echo htmlspecialchars($metodo['nombre']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <div id="detalles-metodo-pago-seleccionado" style="margin-top: 10px;">
                 </div>
-                
-                <div class="form-group">
-                    <label for="referencia">Número de referencia:</label>
-                    <input type="text" id="referencia" name="referencia" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="comprobante">Comprobante de pago (opcional):</label>
-                    <input type="file" id="comprobante" name="comprobante" accept="image/*,.pdf">
-                </div>
-                
-                <button type="submit" id="procederPagoBtn" class="btn" disabled>Confirmar Pago</button>
-            </form>
-        <?php else: ?>
-            <div class="alert">
-                <p>Debes <a href="./login.php">iniciar sesión</a> para participar en esta rifa.</p>
-            </div>
-        <?php endif; ?>
-    </div>
+        </div>
+        <div class="form-group">
+            <label for="referencia_transaccion">Referencia del Pago (Proporcionada por el Banco):</label>
+            <input type="text" id="referencia_transaccion" name="referencia_transaccion" required>
+        </div>
+        <div class="form-group">
+            <label for="comprobante_pago">Comprobante de Pago (Imagen):</label>
+            <input type="file" id="comprobante_pago" name="comprobante_pago" accept="image/*" required>
+            <small>Formatos permitidos: JPG, JPEG, PNG.</small>
+        </div>
+        <button type="submit" class="button">Confirmar Pago</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const metodoPagoSelect = document.getElementById('metodo_pago');
+        const detallesMetodoPagoDiv = document.getElementById('detalles-metodo-pago-seleccionado');
+
+        metodoPagoSelect.addEventListener('change', function() {
+            detallesMetodoPagoDiv.innerHTML = ''; // Limpiar detalles anteriores
+            const selectedOption = this.options[this.selectedIndex];
+            const detallesJson = selectedOption.getAttribute('data-detalles');
+
+            if (detallesJson) {
+                try {
+                    const detalles = JSON.parse(detallesJson);
+                    let detallesHTML = '<ul>';
+                    for (const key in detalles) {
+                        if (detalles.hasOwnProperty(key)) {
+                            detallesHTML += `<li><strong>${key}:</strong> ${detalles[key]}</li>`;
+                        }
+                    }
+                    detallesHTML += '</ul>';
+                    detallesMetodoPagoDiv.innerHTML = detallesHTML;
+                } catch (error) {
+                    console.error('Error al parsear JSON de detalles:', error);
+                    detallesMetodoPagoDiv.innerHTML = '<p>Error al mostrar los detalles del método de pago.</p>';
+                }
+            }
+        });
+    });
+</script>
 </div>
 
 <script src="./assets/js/evento.js"></script>
