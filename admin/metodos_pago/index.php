@@ -2,7 +2,6 @@
 require_once '../../includes/config.php';
 require_once '../../includes/functions.php';
 require_login();
-require_admin();
 
 $metodos_pago = obtener_metodos_pago(); // Necesitarás crear esta función en functions.php
 

@@ -51,10 +51,3 @@ function require_login() {
     }
 }
 
-function require_admin() {
-    require_login();
-    if ($_SESSION['usuario_rol'] !== 'admin') {
-        $_SESSION['error'] = 'Acceso denegado. Se requieren privilegios de administrador.';
-        redirect('/');
-    }
-}

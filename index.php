@@ -99,7 +99,7 @@ $metodos_de_pago = obtener_metodos_pago();
         </div>
     </section>
 
-    <section class="payment-section" id="pagos">
+    <<section class="payment-section" id="pagos">
     <div class="container">
         <h2 class="section-title">MÉTODOS DE PAGO</h2>
         <p class="section-subtitle">Realiza tus pagos de forma segura a través de nuestras plataformas autorizadas</p>
@@ -113,7 +113,16 @@ $metodos_de_pago = obtener_metodos_pago();
                         <?php else: ?>
                             <i class="fas fa-credit-card payment-icon"></i> <?php endif; ?>
                         <h3 class="payment-title"><?php echo htmlspecialchars($metodo['nombre']); ?></h3>
-                        <span><?php echo htmlspecialchars($metodo['detalles']); ?> </span>
+                        <?php
+                        $detalles = json_decode($metodo['detalles'], true);
+                        if (!empty($detalles)): ?>
+                            <?php foreach ($detalles as $nombre_detalle => $valor_detalle): ?>
+                                <div class="payment-detail">
+                                    <span class="payment-label"><?php echo htmlspecialchars($nombre_detalle); ?></span>
+                                    <span class="payment-value"><?php echo htmlspecialchars($valor_detalle); ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
