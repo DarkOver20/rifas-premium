@@ -64,7 +64,7 @@ $metodos_de_pago = obtener_metodos_pago();
                                 <div class="evento-estado <?= $evento['estado'] ?>">
                                     <?= strtoupper($evento['estado']) ?>
                                 </div>
-                                <p class="evento-descripcion"><?= htmlspecialchars(substr($evento['descripcion'], 0, 100)) ?>...</p>
+                                <p class="evento-descripcion"><?= htmlspecialchars(substr($evento['slogan'], 0, 100)) ?>...</p>
                                 <!-- <p class="evento-precio">$<?= number_format($evento['precio_boleto'], 2) ?> por boleto</p>
                                 <p>Boletos: <?= $evento['boletos_disponibles'] ?>/<?= $evento['total_boletos'] ?></p> -->
                                 <a href="evento.php?id=<?= $evento['id'] ?>" class="btn">VER DETALLES</a>
@@ -88,7 +88,7 @@ $metodos_de_pago = obtener_metodos_pago();
                                 <div class="evento-estado <?= $evento['estado'] ?>">
                                     <?= strtoupper($evento['estado']) ?>
                                 </div>
-                                <p class="evento-descripcion"><?= htmlspecialchars(substr($evento['descripcion'], 0, 100)) ?>...</p>
+                                <p class="evento-descripcion"><?= htmlspecialchars(substr($evento['descripcion'], 0, 150)) ?>...</p>
                             </div>
                         </div>
                     <?php endforeach; ?>
