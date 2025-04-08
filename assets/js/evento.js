@@ -1,128 +1,276 @@
+/**
+ * EVENTO.JS - Módulo para manejo de selección de boletos
+ * 
+ * Este script maneja la selección de boletos (manual y aleatoria),
+ * validación del formulario y envío de datos al servidor.
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Elementos del DOM
-    const seleccionAleatoriaBtn = document.getElementById('seleccion-aleatoria');
-    const seleccionManualBtn = document.getElementById('seleccion-manual');
-    const cantidadBoletosInput = document.getElementById('cantidad-boletos');
-    const boletosContainer = document.querySelector('.boletos-container');
-    const boletosSeleccionadosDiv = document.getElementById('boletos-seleccionados');
-    const totalPagarSpan = document.getElementById('total-pagar');
-    const procederPagoBtn = document.getElementById('confirmar-pago');
-    const formPago = document.getElementById('formulario-pago');
-    const metodosPagoContainer = document.getElementById('metodos-pago');
-    const referenciaInput = document.getElementById('referencia');
+    /**********************************************
+     * CONSTANTES Y VARIABLES
+     **********************************************/
+    const DOM = {
+        seleccionAleatoriaBtn: document.getElementById('seleccion-aleatoria'),
+        seleccionManualBtn: document.getElementById('seleccion-manual'),
+        cantidadBoletosInput: document.getElementById('cantidad-boletos'),
+        boletosContainer: document.querySelector('.boletos-container'),
+        boletosSeleccionadosDiv: document.getElementById('boletos-seleccionados'),
+        totalPagarSpan: document.getElementById('total-pagar'),
+        formPago: document.getElementById('formulario-pago'),
+        metodoPagoSelect: document.getElementById('metodo_pago'),
+        detallesMetodoPagoDiv: document.getElementById('detalles-metodo-pago-seleccionado'),
+        telefonoInput: document.getElementById('telefono'),
+        cedulaInput: document.getElementById('cedula'),
+        metodosPagoContainer: document.getElementById('detalles-metodo-pago-seleccionado')
+    };
 
-    // Variables
-    const precioBoleto = parseFloat(document.querySelector('.evento-precio strong').textContent.replace(/[^0-9.]/g, ''));
+    const precioBoleto = parseFloat(
+        document.querySelector('.evento-precio strong').textContent.replace(/[^0-9.]/g, '')
+    );
+    
     let boletosSeleccionados = [];
-    let metodoPagoSeleccionado = null;
 
-    // Inicialización
-    cargarMetodosPago();
-    seleccionManualBtn.classList.add('active');
+    /**********************************************
+     * FUNCIONES DE INICIALIZACIÓN
+     **********************************************/
+    function init() {
+        setupEventListeners();
+        cargarMetodosPago();
+        DOM.seleccionManualBtn.classList.add('active');
+        setupValidacionCampos();
+    }
 
-    // Función para cargar métodos de pago
-    async function cargarMetodosPago() {
-        try {
-            const response = await fetch('api/metodos_pago.php'); // Cambio importante: fetch por defecto usa GET
-            const data = await response.json();
+    /**********************************************
+     * FUNCIONES DE MANEJO DE EVENTOS
+     **********************************************/
+    function setupEventListeners() {
+        DOM.seleccionAleatoriaBtn.addEventListener('click', handleSeleccionAleatoria);
+        DOM.seleccionManualBtn.addEventListener('click', handleSeleccionManual);
+        DOM.boletosContainer.addEventListener('click', handleClickBoleto);
+        DOM.formPago.addEventListener('submit', handleSubmitForm);
+        DOM.metodoPagoSelect.addEventListener('change', mostrarDetallesMetodoPago);
+    }
 
-            if (data.success) {
-                metodosPagoContainer.innerHTML = data.data.map(metodo => `
-                    <div class="metodo-pago" data-id="${metodo.id}">
-                        <input type="radio" name="metodo_pago" id="metodo-${metodo.id}" value="${metodo.id}" required>
-                        <label for="metodo-${metodo.id}">
-                            <img src="uploads/${metodo.icono}" alt="${metodo.nombre}">
-                            <span>${metodo.nombre}</span>
-                            <p>${metodo.descripcion}</p>
-                        </label>
-                    </div>
-                `).join('');
-
-                // Evento para selección de método de pago
-                document.querySelectorAll('.metodo-pago').forEach(metodo => {
-                    metodo.addEventListener('click', function() {
-                        metodoPagoSeleccionado = this.getAttribute('data-id');
-                        verificarEstadoBotonPago();
-                    });
-                });
-            } else {
-                console.error('Error al cargar métodos de pago:', data.message);
-                metodosPagoContainer.innerHTML = '<p>Error al cargar los métodos de pago.</p>';
-            }
-        } catch (error) {
-            console.error('Error al cargar métodos de pago:', error);
-            metodosPagoContainer.innerHTML = '<p>Error al cargar los métodos de pago.</p>';
+    function setupValidacionCampos() {
+        if (DOM.telefonoInput) {
+            DOM.telefonoInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9+\- ]/g, '');
+            });
+        }
+        
+        if (DOM.cedulaInput) {
+            DOM.cedulaInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
         }
     }
 
-     // Función para selección aleatoria
-     function seleccionAleatoria() {
-        const cantidad = parseInt(cantidadBoletosInput.value) || 1;
-        const boletosDisponibles = Array.from(document.querySelectorAll('.boleto:not(.seleccionado):not(.reservado)'));
+    /**********************************************
+     * FUNCIONES DE SELECCIÓN DE BOLETOS
+     **********************************************/
+    function handleSeleccionAleatoria() {
+        const cantidad = parseInt(DOM.cantidadBoletosInput.value) || 1;
+        const boletosDisponibles = getBoletosDisponibles();
         
-        if (cantidad < 1 || cantidad > 20) {
-            alert('La cantidad debe estar entre 1 y 20');
-            return;
-        }
-        
-        if (boletosDisponibles.length < cantidad) {
-            alert(`Solo hay ${boletosDisponibles.length} boletos disponibles`);
+        if (!validarCantidadBoletos(cantidad, boletosDisponibles.length)) {
             return;
         }
         
         limpiarSeleccion();
-
-    // Seleccionar aleatoriamente
-    const shuffled = [...boletosDisponibles].sort(() => 0.5 - Math.random());
-    const boletosAleatorios = shuffled.slice(0, cantidad);
-    
-    boletosAleatorios.forEach(boleto => {
-        const numeroBoleto = boleto.getAttribute('data-numero');
-        boleto.classList.add('seleccionado');
-        boletosSeleccionados.push(numeroBoleto);
-    });
-    
-    actualizarResumen();
-}
-
-    // Función para activar selección manual
-    function activarSeleccionManual() {
-        limpiarSeleccion();
-        cantidadBoletosInput.value = 1;
+        seleccionarBoletosAleatorios(boletosDisponibles, cantidad);
         actualizarResumen();
     }
 
-    // Función para manejar clic en boleto
-    function manejarClickBoleto(e) {
-        if (e.target.classList.contains('boleto') && !e.target.classList.contains('reservado')) {
-            if (seleccionManualBtn.classList.contains('active')) {
-                if (e.target.classList.contains('seleccionado')) {
-                    deseleccionarBoleto(e.target);
-                } else {
-                    // Verificar límite de selección (20 boletos)
-                    if (boletosSeleccionados.length >= 20) {
-                        alert('Máximo 20 boletos por transacción');
-                        return;
-                    }
-                    seleccionarBoleto(e.target);
-                }
-                actualizarResumen();
-            }
+    function handleSeleccionManual() {
+        DOM.seleccionManualBtn.classList.add('active');
+        DOM.seleccionAleatoriaBtn.classList.remove('active');
+        DOM.cantidadBoletosInput.value = 1;
+        limpiarSeleccion();
+    }
+
+    function handleClickBoleto(e) {
+        if (!e.target.classList.contains('boleto') || e.target.classList.contains('reservado')) {
+            return;
+        }
+        
+        if (DOM.seleccionManualBtn.classList.contains('active')) {
+            toggleSeleccionBoleto(e.target);
+            actualizarResumen();
         }
     }
 
-
-    // Función para verificar estado del botón de pago
-    function verificarEstadoBotonPago() {
-        const referenciaValida = referenciaInput.value.trim().length > 0;
-        const metodoSeleccionado = document.querySelector('input[name="metodo_pago"]:checked');
-        const boletosSeleccionadosValidos = boletosSeleccionados.length > 0;
-
-        procederPagoBtn.disabled = !(referenciaValida && metodoSeleccionado && boletosSeleccionadosValidos);
+    /**********************************************
+     * FUNCIONES DE MANEJO DE BOLETOS
+     **********************************************/
+    function getBoletosDisponibles() {
+        return Array.from(document.querySelectorAll('.boleto:not(.seleccionado):not(.reservado)'));
     }
 
-    // Función para procesar el pago
-    async function procesarPago(e) {
+    function validarCantidadBoletos(cantidad, disponibles) {
+        if (cantidad < 1 || cantidad > 20) {
+            alert('La cantidad debe estar entre 1 y 20');
+            return false;
+        }
+        
+        if (disponibles < cantidad) {
+            alert(`Solo hay ${disponibles} boletos disponibles`);
+            return false;
+        }
+        
+        return true;
+    }
+
+    function seleccionarBoletosAleatorios(boletosDisponibles, cantidad) {
+        const shuffled = [...boletosDisponibles].sort(() => 0.5 - Math.random());
+        const boletosAleatorios = shuffled.slice(0, cantidad);
+        
+        boletosAleatorios.forEach(boleto => {
+            const numeroBoleto = boleto.getAttribute('data-numero');
+            boleto.classList.add('seleccionado');
+            
+            if (!boletosSeleccionados.includes(numeroBoleto)) {
+                boletosSeleccionados.push(numeroBoleto);
+            }
+        });
+    }
+
+    function toggleSeleccionBoleto(boleto) {
+        if (boleto.classList.contains('seleccionado')) {
+            deseleccionarBoleto(boleto);
+        } else {
+            if (boletosSeleccionados.length >= 20) {
+                alert('Máximo 20 boletos por transacción');
+                return;
+            }
+            seleccionarBoleto(boleto);
+        }
+    }
+
+    function seleccionarBoleto(boleto) {
+        boleto.classList.add('seleccionado');
+        const numeroBoleto = boleto.getAttribute('data-numero');
+        
+        if (!boletosSeleccionados.includes(numeroBoleto)) {
+            boletosSeleccionados.push(numeroBoleto);
+        }
+    }
+
+    function deseleccionarBoleto(boleto) {
+        boleto.classList.remove('seleccionado');
+        const numeroBoleto = boleto.getAttribute('data-numero');
+        boletosSeleccionados = boletosSeleccionados.filter(num => num !== numeroBoleto);
+    }
+
+    function limpiarSeleccion() {
+        document.querySelectorAll('.boleto.seleccionado').forEach(boleto => {
+            boleto.classList.remove('seleccionado');
+        });
+        boletosSeleccionados = [];
+    }
+
+    /**********************************************
+     * FUNCIONES DE ACTUALIZACIÓN DE UI
+     **********************************************/
+    function actualizarResumen() {
+        actualizarListaBoletosSeleccionados();
+        actualizarTotalPagar();
+        verificarEstadoBotonPago();
+    }
+
+    function actualizarListaBoletosSeleccionados() {
+        if (boletosSeleccionados.length > 0) {
+            DOM.boletosSeleccionadosDiv.innerHTML = `
+                <div class="boletos-seleccionados-list">
+                    ${boletosSeleccionados.map(num => `
+                        <span class="boleto-seleccionado">${num}</span>
+                    `).join('')}
+                </div>
+                <p>${boletosSeleccionados.length} boleto(s) seleccionado(s)</p>
+            `;
+        } else {
+            DOM.boletosSeleccionadosDiv.innerHTML = '<p>No hay boletos seleccionados</p>';
+        }
+    }
+
+    function actualizarTotalPagar() {
+        const total = boletosSeleccionados.length * precioBoleto;
+        DOM.totalPagarSpan.textContent = `$${total.toFixed(2)}`;
+    }
+
+    function verificarEstadoBotonPago() {
+        const formValido = DOM.formPago.checkValidity();
+        const boletosSeleccionadosValidos = boletosSeleccionados.length > 0;
+        const submitBtn = DOM.formPago.querySelector('button[type="submit"]');
+        
+        if (submitBtn) {
+            submitBtn.disabled = !(formValido && boletosSeleccionadosValidos);
+        }
+    }
+
+    /**********************************************
+     * FUNCIONES DE MÉTODOS DE PAGO
+     **********************************************/
+    async function cargarMetodosPago() {
+        try {
+            const response = await fetch('api/metodos_pago.php');
+            
+            if (!response.ok) {
+                throw new Error('Error al cargar métodos de pago');
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                renderizarMetodosPago(data.data);
+            } else {
+                throw new Error(data.message || 'Error en los datos recibidos');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            DOM.metodosPagoContainer.innerHTML = '<p class="error">Error al cargar los métodos de pago</p>';
+        }
+    }
+
+    function renderizarMetodosPago(metodos) {
+        DOM.metodosPagoContainer.innerHTML = metodos.map(metodo => `
+            <div class="metodo-pago" data-id="${metodo.id}">
+                <input type="radio" name="metodo_pago" id="metodo-${metodo.id}" value="${metodo.id}" required>
+                <label for="metodo-${metodo.id}">
+                    <img src="uploads/${metodo.icono}" alt="${metodo.nombre}" onerror="this.src='assets/img/pago-default.png'">
+                    <span>${metodo.nombre}</span>
+                    ${metodo.descripcion ? `<p>${metodo.descripcion}</p>` : ''}
+                </label>
+            </div>
+        `).join('');
+    }
+
+    function mostrarDetallesMetodoPago() {
+        DOM.detallesMetodoPagoDiv.innerHTML = '';
+        const selectedOption = DOM.metodoPagoSelect.options[DOM.metodoPagoSelect.selectedIndex];
+        const detallesJson = selectedOption.getAttribute('data-detalles');
+
+        if (!detallesJson) return;
+
+        try {
+            const detalles = JSON.parse(detallesJson);
+            let detallesHTML = '<ul class="detalles-pago">';
+            
+            for (const [key, value] of Object.entries(detalles)) {
+                detallesHTML += `<li><strong>${key}:</strong> ${value}</li>`;
+            }
+            
+            detallesHTML += '</ul>';
+            DOM.detallesMetodoPagoDiv.innerHTML = detallesHTML;
+        } catch (error) {
+            console.error('Error al parsear JSON:', error);
+            DOM.detallesMetodoPagoDiv.innerHTML = '<p class="error">Error al mostrar detalles</p>';
+        }
+    }
+
+    /**********************************************
+     * MANEJO DEL FORMULARIO
+     **********************************************/
+    async function handleSubmitForm(e) {
         e.preventDefault();
         
         if (boletosSeleccionados.length === 0) {
@@ -130,12 +278,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Validar formulario
-        const formData = new FormData(formPago);
+        const formData = new FormData(DOM.formPago);
         formData.append('boletos_seleccionados', JSON.stringify(boletosSeleccionados));
         
         try {
-            const submitBtn = formPago.querySelector('button[type="submit"]');
+            const submitBtn = DOM.formPago.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Procesando...';
             
@@ -147,116 +294,67 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (data.success) {
-                alert('Compra procesada correctamente. Los boletos han sido reservados pendientes de aprobación.');
-                // Redirigir o limpiar el formulario
-                formPago.reset();
+                // Marcar los boletos como reservados en el frontend
+                data.boletos_reservados.forEach(numero => {
+                    const boleto = document.querySelector(`.boleto[data-numero="${numero}"]`);
+                    if (boleto) {
+                        boleto.classList.add('reservado');
+                        boleto.classList.remove('seleccionado');
+                    }
+                });
+                
+                mostrarMensajeExito(data.message);
+                DOM.formPago.reset();
                 limpiarSeleccion();
             } else {
-                alert(data.message || 'Error al procesar el pago');
+                throw new Error(data.message || 'Error al procesar el pago');
             }
-            
         } catch (error) {
             console.error('Error:', error);
-            alert('Ocurrió un error al procesar tu pago');
+            alert(error.message || 'Ocurrió un error al procesar tu pago');
         } finally {
-            const submitBtn = formPago.querySelector('button[type="submit"]');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Confirmar Pago';
+            const submitBtn = DOM.formPago.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Confirmar Pago';
+            }
         }
     }
 
-    // Función para seleccionar un boleto
-    function seleccionarBoleto(boleto) {
-        boleto.classList.add('seleccionado');
-        const numeroBoleto = boleto.getAttribute('data-numero');
-
-        if (!boletosSeleccionados.includes(numeroBoleto)) {
-            boletosSeleccionados.push(numeroBoleto);
-        }
-    }
-
-    // Función para deseleccionar un boleto
-    function deseleccionarBoleto(boleto) {
-        boleto.classList.remove('seleccionado');
-        const numeroBoleto = boleto.getAttribute('data-numero');
-        boletosSeleccionados = boletosSeleccionados.filter(num => num !== numeroBoleto);
-    }
-
-    // Función para limpiar la selección
-    function limpiarSeleccion() {
-        document.querySelectorAll('.boleto.seleccionado').forEach(boleto => {
-            boleto.classList.remove('seleccionado');
-        });
-        boletosSeleccionados = [];
+    function mostrarMensajeExito(mensaje) {
+        // Crear un modal de éxito
+        const modal = document.createElement('div');
+        modal.className = 'modal-exito';
+        modal.innerHTML = `
+            <div class="modal-contenido">
+                <h3>¡Compra exitosa!</h3>
+                <p>${mensaje || 'Tu compra ha sido procesada correctamente.'}</p>
+                <button onclick="cerrarModal()">Aceptar</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Limpiar selección de boletos
+        limpiarSeleccion();
+        
+        // Limpiar formulario
+        DOM.formPago.reset();
+        
+        // Actualizar UI
         actualizarResumen();
     }
-
-    // Función para actualizar el resumen de compra
-    function actualizarResumen() {
-        // Actualizar lista de boletos seleccionados
-        if (boletosSeleccionados.length > 0) {
-            boletosSeleccionadosDiv.innerHTML = `
-                <div class="boletos-seleccionados-list">
-                    ${boletosSeleccionados.map(num => `
-                        <span class="boleto-seleccionado">${num}</span>
-                    `).join('')}
-                </div>
-                <p>${boletosSeleccionados.length} boleto(s) seleccionado(s)</p>
-            `;
-        } else {
-            boletosSeleccionadosDiv.innerHTML = '<p>No hay boletos seleccionados</p>';
-        }
-
-        // Actualizar total
-        const total = boletosSeleccionados.length * precioBoleto;
-        totalPagarSpan.textContent = `$${total.toFixed(2)}`;
-
-        // Verificar estado del botón de pago
-        verificarEstadoBotonPago();
-    }
-
-    // Event Listeners
-    seleccionAleatoriaBtn.addEventListener('click', seleccionAleatoria);
-    seleccionManualBtn.addEventListener('click', () => {
-        seleccionManualBtn.classList.add('active');
-        seleccionAleatoriaBtn.classList.remove('active');
-        limpiarSeleccion();
-    });
     
-    boletosContainer.addEventListener('click', manejarClickBoleto);
-    formPago.addEventListener('submit', procesarPago);
-
-    // Validación de campos en tiempo real
-    const telefonoInput = document.getElementById('telefono');
-    if (telefonoInput) {
-        telefonoInput.addEventListener('input', function() {
-            this.value = this.value.replace(/[^0-9+\- ]/g, '');
-        });
-    }
-    
-    const cedulaInput = document.getElementById('cedula');
-    if (cedulaInput) {
-        cedulaInput.addEventListener('input', function() {
-            this.value = this.value.replace(/[^0-9]/g, '');
-        });
-    }
-
-
-    // Evento para cambio de método de pago
-    document.addEventListener('change', function(e) {
-        if (e.target.name === 'metodo_pago') {
-            verificarEstadoBotonPago();
+    window.cerrarModal = function cerrarModal() {
+        const modal = document.querySelector('.modal-exito');
+        if (modal) {
+            modal.remove();
         }
-    });
-
-    // Toggle entre selección manual/aleatoria
-    seleccionManualBtn.addEventListener('click', function() {
-        this.classList.add('active');
-        seleccionAleatoriaBtn.classList.remove('active');
-    });
-
-    seleccionAleatoriaBtn.addEventListener('click', function() {
-        this.classList.add('active');
-        seleccionManualBtn.classList.remove('active');
-    });
+        // Opcional: Desplazar al usuario al inicio de la página después de cerrar el modal
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    
+    /**********************************************
+     * INICIALIZACIÓN
+     **********************************************/
+    init();
 });

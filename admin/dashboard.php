@@ -74,40 +74,48 @@ $total_ventas = calcularVentasTotales();
             </div>
             
             <section class="dashboard-section">
-                <h2>Solicitudes Recientes</h2>
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Usuario</th>
-                                <th>Evento</th>
-                                <th>Boletos</th>
-                                <th>Monto</th>
-                                <th>Fecha</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($solicitudes_pendientes as $solicitud): ?>
-                            <tr>
-                                <td><?= $solicitud['id'] ?></td>
-                                <td><?= htmlspecialchars($solicitud['usuario_nombre']) ?></td>
-                                <td><?= htmlspecialchars($solicitud['evento_titulo']) ?></td>
-                                <td><?= $solicitud['cantidad_boletos'] ?></td>
-                                <td>$<?= number_format($solicitud['monto'], 2) ?></td>
-                                <td><?= date('d/m/Y H:i', strtotime($solicitud['fecha_transaccion'])) ?></td>
-                                <td>
-                                    <a href="solicitudes/detalle.php?id=<?= $solicitud['id'] ?>" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-eye"></i> Revisar
-                                    </a>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+    <h2>Solicitudes Recientes</h2>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Comprador</th> <!-- Cambiado de "Usuario" a "Comprador" -->
+                    <th>Evento</th>
+                    <th>Boletos</th>
+                    <th>Monto</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($solicitudes_pendientes)): ?>
+                    <tr>
+                        <td colspan="7" class="text-center">No hay solicitudes pendientes</td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($solicitudes_pendientes as $solicitud): ?>
+                    <tr>
+                        <td><?= $solicitud['id'] ?></td>
+                        <td>
+    <div><?= htmlspecialchars($solicitud['comprador_nombre'] ?? 'N/A') ?></div>
+    <small class="text-muted">C.I. <?= htmlspecialchars($solicitud['comprador_cedula'] ?? 'N/A') ?></small>
+</td>                        <td><?= htmlspecialchars($solicitud['evento_titulo'] ?? 'N/A') ?></td>
+                        <td><?= $solicitud['cantidad_boletos'] ?? 0 ?></td>
+                        <td>$<?= isset($solicitud['monto']) ? number_format($solicitud['monto'], 2) : '0.00' ?></td>
+                        <td><?= isset($solicitud['fecha_transaccion']) ? date('d/m/Y H:i', strtotime($solicitud['fecha_transaccion'])) : 'N/A' ?></td>
+                        <td>
+                            <a href="./solicitudes/detalle.php?id=<?= $solicitud['id'] ?>" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> Revisar
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</section>
             
             <section class="dashboard-section">
                 <h2>Eventos Activos</h2>

@@ -1,11 +1,17 @@
 <?php
+while (ob_get_level()) ob_end_clean();
+
 require_once './includes/config.php';
 require_once './includes/functions.php';
 
 header('Content-Type: application/json');
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+if (error_get_last()) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Error interno del servidor'
+    ]);
     exit;
 }
 
@@ -102,7 +108,8 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Compra procesada correctamente. Los boletos han sido reservados pendientes de aprobación.',
-        'transaccion_id' => $transaccion_id
+        'transaccion_id' => $transaccion_id,
+        'boletos_reservados' => $boletos_seleccionados // Envía los números de boletos reservados
     ]);
     
 } catch (Exception $e) {
@@ -112,3 +119,4 @@ try {
         'message' => 'Error al procesar la compra: ' . $e->getMessage()
     ]);
 }
+?>

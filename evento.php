@@ -40,8 +40,8 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
                     <h2>Premio Principal</h2>
                     <p><?= nl2br(htmlspecialchars($evento['premio_principal'])) ?></p>
                     
-                    <h2>Premios Secundarios</h2>
-                    <p><?= nl2br(htmlspecialchars($evento['premios_secundarios'])) ?></p>
+                    <h2>Descripcion</h2>
+                    <p><?= nl2br(htmlspecialchars($evento['descripcion'])) ?></p>
                     
                     <div class="evento-precio">
                         <span>Precio por boleto:</span>

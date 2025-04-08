@@ -192,23 +192,19 @@ function obtenerBoletosEvento($evento_id, $estado = null) {
  * FUNCIONES DE TRANSACCIONES
  **********************************************/
 
-function obtenerSolicitudPorId($id) {
+ function obtenerSolicitudPorId($id) {
     $pdo = getDBConnection();
     
-    $stmt = $pdo->prepare("SELECT t.*, 
-                          u.nombre AS usuario_nombre, u.email AS usuario_email, u.telefono AS usuario_telefono,
-                          e.titulo AS evento_titulo, e.precio_boleto AS evento_precio,
-                          a.nombre AS admin_nombre,
+    $stmt = $pdo->prepare("SELECT t.*,
+                          e.titulo AS evento_titulo, 
+                          e.precio_boleto AS evento_precio,
                           (SELECT COUNT(*) FROM boletos WHERE transaccion_id = t.id) AS cantidad_boletos
                           FROM transacciones t
-                          JOIN usuarios u ON t.usuario_id = u.id
                           JOIN eventos e ON t.evento_id = e.id
-                          LEFT JOIN usuarios a ON t.admin_id = a.id
                           WHERE t.id = ?");
     $stmt->execute([$id]);
     return $stmt->fetch();
 }
-
 function obtenerBoletosPorTransaccion($transaccion_id) {
     $pdo = getDBConnection();
     $stmt = $pdo->prepare("SELECT * FROM boletos WHERE transaccion_id = ?");
@@ -219,45 +215,47 @@ function obtenerBoletosPorTransaccion($transaccion_id) {
 function obtenerSolicitudesPendientes() {
     $pdo = getDBConnection();
     
-    $stmt = $pdo->prepare("SELECT t.*, 
-                          u.nombre AS usuario_nombre, 
-                          e.titulo AS evento_titulo,
-                          (SELECT COUNT(*) FROM boletos WHERE transaccion_id = t.id) AS cantidad_boletos
-                          FROM transacciones t
-                          JOIN usuarios u ON t.usuario_id = u.id
-                          JOIN eventos e ON t.evento_id = e.id
-                          WHERE t.estado_compra = 'pendiente'
-                          ORDER BY t.fecha_compra DESC
-                          LIMIT 10");
-    $stmt->execute();
-    return $stmt->fetchAll();
+    $sql = "SELECT t.id, 
+    t.nombre AS comprador_nombre,
+    t.cedula AS comprador_cedula,
+    e.titulo AS evento_titulo,
+    t.monto_total AS monto,
+    t.fecha_compra AS fecha_transaccion,
+    (SELECT COUNT(*) FROM boletos WHERE transaccion_id = t.id) AS cantidad_boletos
+FROM transacciones t
+JOIN eventos e ON t.evento_id = e.id
+WHERE t.estado_compra = 'pendiente'
+ORDER BY t.fecha_compra DESC
+LIMIT 10";
+    
+    return $pdo->query($sql)->fetchAll();
 }
 
-function procesarTransaccion($transaccion_id, $accion, $admin_id, $notas = '') {
+function procesarTransaccion($transaccion_id, $accion, $usuario_id, $notas = '') {
     $pdo = getDBConnection();
     $nuevo_estado = $accion === 'aprobar' ? 'aprobada' : 'rechazada';
     $estado_boleto = $accion === 'aprobar' ? 'pagado' : 'disponible';
-    
+
     try {
         $pdo->beginTransaction();
-        
+
         // Actualizar transacción
-        $stmt = $pdo->prepare("UPDATE transacciones 
-                              SET estado_compra = ?, admin_id = ?, notas = ?, fecha_revision = NOW()
+        $stmt = $pdo->prepare("UPDATE transacciones
+                              SET estado_compra = ?, usuario_id = ?, notas = ?, fecha_revision = NOW()
                               WHERE id = ?");
-        $stmt->execute([$nuevo_estado, $admin_id, $notas, $transaccion_id]);
-        
+        $stmt->execute([$nuevo_estado, $usuario_id, $notas, $transaccion_id]);
+
         // Actualizar boletos
-        $stmt = $pdo->prepare("UPDATE boletos 
+        $stmt = $pdo->prepare("UPDATE boletos
                               SET estado = ?,
                                   fecha_pago = IF(? = 'aprobada', NOW(), NULL),
                                   transaccion_id = IF(? = 'aprobada', transaccion_id, NULL)
                               WHERE transaccion_id = ?");
         $stmt->execute([$estado_boleto, $nuevo_estado, $nuevo_estado, $transaccion_id]);
-        
+
         $pdo->commit();
         return true;
-        
+
     } catch (Exception $e) {
         $pdo->rollBack();
         error_log("Error al procesar transacción: " . $e->getMessage());

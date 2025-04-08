@@ -1,18 +1,16 @@
 <?php
 require_once '../../includes/config.php';
 require_once '../../includes/functions.php';
-
 require_login();
-require_admin();
 
 $transaccion_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $transaccion = obtenerSolicitudPorId($transaccion_id);
 
-if (!$transaccion) {
+if (!$transaccion || !isset($transaccion['id'])) {
+    $_SESSION['error'] = 'Transacción no encontrada';
     header('Location: ../solicitudes/');
     exit;
 }
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'];
     $notas = trim($_POST['notas']);
@@ -112,7 +110,7 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
                     <?php else: ?>
                         <div class="revision-info">
                             <h3>Detalles de la Revisión</h3>
-                            <p><strong>Revisado por:</strong> <?= htmlspecialchars($transaccion['admin_nombre']) ?></p>
+                            <p><strong>Revisado por:</strong> <?= htmlspecialchars($transaccion['usuario_nombre']) ?></p>
                             <p><strong>Fecha revisión:</strong> <?= date('d/m/Y H:i', strtotime($transaccion['fecha_revision'])) ?></p>
                             <p><strong>Notas:</strong> <?= $transaccion['notas'] ? nl2br(htmlspecialchars($transaccion['notas'])) : 'Ninguna' ?></p>
                         </div>
