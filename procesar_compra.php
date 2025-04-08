@@ -97,12 +97,6 @@ try {
         throw new Exception("Algunos boletos no pudieron ser reservados");
     }
     
-    // 3. Actualizar contador de boletos disponibles en el evento
-    $stmt = $pdo->prepare("UPDATE eventos 
-                          SET boletos_disponibles = boletos_disponibles - ? 
-                          WHERE id = ?");
-    $stmt->execute([count($boletos_seleccionados), $evento_id]);
-    
     $pdo->commit();
     
     echo json_encode([
