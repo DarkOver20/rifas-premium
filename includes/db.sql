@@ -124,21 +124,6 @@ BEGIN
 END//
 DELIMITER ;
 
--- Trigger para actualizar boletos_disponibles cuando se inserta un nuevo boleto
-DELIMITER //
-CREATE TRIGGER after_boleto_insert
-AFTER INSERT ON boletos
-FOR EACH ROW
-BEGIN
-    UPDATE eventos 
-    SET boletos_disponibles = (
-        SELECT COUNT(*) FROM boletos 
-        WHERE evento_id = NEW.evento_id AND estado = 'disponible'
-    )
-    WHERE id = NEW.evento_id;
-END//
-DELIMITER ;
-
 -- Trigger para actualizar el boleto ganador
 DELIMITER //
 CREATE TRIGGER after_boleto_ganador_update

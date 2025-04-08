@@ -174,7 +174,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function actualizarResumen() {
         actualizarListaBoletosSeleccionados();
         actualizarTotalPagar();
-        verificarEstadoBotonPago();
     }
 
     function actualizarListaBoletosSeleccionados() {
@@ -197,15 +196,6 @@ document.addEventListener('DOMContentLoaded', function() {
         DOM.totalPagarSpan.textContent = `$${total.toFixed(2)}`;
     }
 
-    function verificarEstadoBotonPago() {
-        const formValido = DOM.formPago.checkValidity();
-        const boletosSeleccionadosValidos = boletosSeleccionados.length > 0;
-        const submitBtn = DOM.formPago.querySelector('button[type="submit"]');
-        
-        if (submitBtn) {
-            submitBtn.disabled = !(formValido && boletosSeleccionadosValidos);
-        }
-    }
 
     /**********************************************
      * FUNCIONES DE MÉTODOS DE PAGO
@@ -274,7 +264,11 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         if (boletosSeleccionados.length === 0) {
-            alert('Por favor selecciona al menos un boleto');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-boleto';
+            errorDiv.textContent = 'Debes seleccionar al menos un boleto';
+            DOM.formPago.prepend(errorDiv);
+            setTimeout(() => errorDiv.remove(), 3000);
             return;
         }
         

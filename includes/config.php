@@ -8,7 +8,7 @@ define('DB_NAME', 'rifasam');
 // Configuración de la aplicación
 define('SITE_URL', 'http://localhost/rifas-premium');
 define('SITE_NAME', 'Rifas Premium');
-define('UPLOAD_DIR', __DIR__ . '/../uploads');
+define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024); // 5 MB
 // Iniciar sesión
 session_start();
