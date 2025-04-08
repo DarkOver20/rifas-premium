@@ -3,14 +3,13 @@
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
 define('DB_PASS', '');
-define('DB_NAME', 'rifas_premium');
+define('DB_NAME', 'rifasam');
 
 // Configuración de la aplicación
 define('SITE_URL', 'http://localhost/rifas-premium');
 define('SITE_NAME', 'Rifas Premium');
 define('UPLOAD_DIR', __DIR__ . '/../uploads');
-define('MAX_BOLETOS_POR_USUARIO', 20);
-
+define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024); // 5 MB
 // Iniciar sesión
 session_start();
 
@@ -26,10 +25,7 @@ try {
 } catch (PDOException $e) {
     die("Error de conexión a la base de datos: " . $e->getMessage());
 }
-// ... después de la conexión a la base de datos ...
 
-// Incluir funciones
-require_once __DIR__ . '/functions.php';
 // Funciones de ayuda
 function sanitize($data) {
     return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
@@ -51,3 +47,13 @@ function require_login() {
     }
 }
 
+function require_admin() {
+    require_login();
+    if ($_SESSION['usuario_rol'] !== 'admin') {
+        $_SESSION['error'] = 'Acceso denegado. Se requieren privilegios de administrador.';
+        redirect('/');
+    }
+}
+
+// Incluir funciones principales
+require_once __DIR__ . '/functions.php';

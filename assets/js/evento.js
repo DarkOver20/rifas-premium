@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const boletosSeleccionadosDiv = document.getElementById('boletos-seleccionados');
     const totalPagarSpan = document.getElementById('total-pagar');
     const procederPagoBtn = document.getElementById('confirmar-pago');
-    const formPago = document.getElementById('form-pago');
+    const formPago = document.getElementById('formulario-pago');
     const metodosPagoContainer = document.getElementById('metodos-pago');
     const referenciaInput = document.getElementById('referencia');
 
@@ -55,35 +55,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Función para selección aleatoria
-    function seleccionAleatoria() {
+     // Función para selección aleatoria
+     function seleccionAleatoria() {
         const cantidad = parseInt(cantidadBoletosInput.value) || 1;
         const boletosDisponibles = Array.from(document.querySelectorAll('.boleto:not(.seleccionado):not(.reservado)'));
-
+        
         if (cantidad < 1 || cantidad > 20) {
             alert('La cantidad debe estar entre 1 y 20');
             return;
         }
-
+        
         if (boletosDisponibles.length < cantidad) {
             alert(`Solo hay ${boletosDisponibles.length} boletos disponibles`);
             return;
         }
-
+        
         limpiarSeleccion();
 
-        // Seleccionar aleatoriamente
-        const shuffled = [...boletosDisponibles].sort(() => 0.5 - Math.random());
-        const boletosAleatorios = shuffled.slice(0, cantidad);
-
-        boletosAleatorios.forEach(boleto => {
-            const numeroBoleto = boleto.getAttribute('data-numero');
-            boleto.classList.add('seleccionado');
-            boletosSeleccionados.push(numeroBoleto);
-        });
-
-        actualizarResumen();
-    }
+    // Seleccionar aleatoriamente
+    const shuffled = [...boletosDisponibles].sort(() => 0.5 - Math.random());
+    const boletosAleatorios = shuffled.slice(0, cantidad);
+    
+    boletosAleatorios.forEach(boleto => {
+        const numeroBoleto = boleto.getAttribute('data-numero');
+        boleto.classList.add('seleccionado');
+        boletosSeleccionados.push(numeroBoleto);
+    });
+    
+    actualizarResumen();
+}
 
     // Función para activar selección manual
     function activarSeleccionManual() {
@@ -99,12 +99,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (e.target.classList.contains('seleccionado')) {
                     deseleccionarBoleto(e.target);
                 } else {
+                    // Verificar límite de selección (20 boletos)
+                    if (boletosSeleccionados.length >= 20) {
+                        alert('Máximo 20 boletos por transacción');
+                        return;
+                    }
                     seleccionarBoleto(e.target);
                 }
                 actualizarResumen();
             }
         }
     }
+
 
     // Función para verificar estado del botón de pago
     function verificarEstadoBotonPago() {
@@ -118,52 +124,44 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para procesar el pago
     async function procesarPago(e) {
         e.preventDefault();
-
+        
         if (boletosSeleccionados.length === 0) {
             alert('Por favor selecciona al menos un boleto');
             return;
         }
-
-        const metodoPago = document.querySelector('input[name="metodo_pago"]:checked');
-        if (!metodoPago) {
-            alert('Por favor selecciona un método de pago');
-            return;
-        }
-
-        const referencia = referenciaInput.value.trim();
-        if (!referencia) {
-            alert('Por favor ingresa el número de referencia');
-            return;
-        }
-
+        
+        // Validar formulario
+        const formData = new FormData(formPago);
+        formData.append('boletos_seleccionados', JSON.stringify(boletosSeleccionados));
+        
         try {
-            procederPagoBtn.disabled = true;
-            procederPagoBtn.textContent = 'Procesando...';
-
-            const formData = new FormData(formPago);
-            boletosSeleccionados.forEach((boleto, index) => {
-                formData.append(`boletos[${index}]`, boleto);
-            });
-
-            const response = await fetch('proceso_pago.php', {
+            const submitBtn = formPago.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Procesando...';
+            
+            const response = await fetch('procesar_compra.php', {
                 method: 'POST',
                 body: formData
             });
-
+            
             const data = await response.json();
-
+            
             if (data.success) {
-                window.location.href = 'user/mis-rifas.php?exito=' + encodeURIComponent(data.message);
+                alert('Compra procesada correctamente. Los boletos han sido reservados pendientes de aprobación.');
+                // Redirigir o limpiar el formulario
+                formPago.reset();
+                limpiarSeleccion();
             } else {
                 alert(data.message || 'Error al procesar el pago');
-                procederPagoBtn.disabled = false;
-                procederPagoBtn.textContent = 'Confirmar Pago';
             }
+            
         } catch (error) {
             console.error('Error:', error);
             alert('Ocurrió un error al procesar tu pago');
-            procederPagoBtn.disabled = false;
-            procederPagoBtn.textContent = 'Confirmar Pago';
+        } finally {
+            const submitBtn = formPago.querySelector('button[type="submit"]');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Confirmar Pago';
         }
     }
 
@@ -219,10 +217,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Event Listeners
     seleccionAleatoriaBtn.addEventListener('click', seleccionAleatoria);
-    seleccionManualBtn.addEventListener('click', activarSeleccionManual);
+    seleccionManualBtn.addEventListener('click', () => {
+        seleccionManualBtn.classList.add('active');
+        seleccionAleatoriaBtn.classList.remove('active');
+        limpiarSeleccion();
+    });
+    
     boletosContainer.addEventListener('click', manejarClickBoleto);
     formPago.addEventListener('submit', procesarPago);
-    referenciaInput.addEventListener('input', verificarEstadoBotonPago);
+
+    // Validación de campos en tiempo real
+    const telefonoInput = document.getElementById('telefono');
+    if (telefonoInput) {
+        telefonoInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9+\- ]/g, '');
+        });
+    }
+    
+    const cedulaInput = document.getElementById('cedula');
+    if (cedulaInput) {
+        cedulaInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+
 
     // Evento para cambio de método de pago
     document.addEventListener('change', function(e) {

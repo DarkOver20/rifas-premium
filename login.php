@@ -1,11 +1,12 @@
 <?php
-require_once 'includes/config.php';
+require_once './includes/config.php';
+require_once './includes/functions.php'; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = sanitize($_POST['email']);
     $password = $_POST['password'];
     
-    if (login($email, $password)) {
+    if (login_admin($email, $password)) {
         $redirect_url = $_SESSION['redirect_url'] ?? 'index.php';
         unset($_SESSION['redirect_url']);
         redirect($redirect_url);
@@ -19,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Iniciar Sesión - Rifas Premium</title>
-    <link rel="stylesheet" href="assets/css/auth.css">
+    <link rel="stylesheet" href="./assets/css/auth.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>

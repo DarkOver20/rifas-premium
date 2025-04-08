@@ -7,7 +7,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     $telefono = sanitize($_POST['telefono'] ?? '');
-    $direccion = sanitize($_POST['direccion'] ?? '');
     
     // Validaciones
     if (empty($nombre) || empty($email) || empty($password)) {
@@ -18,11 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['error'] = 'La contraseña debe tener al menos 8 caracteres';
     } else {
         // Registrar usuario
-        $usuario_id = registrarUsuario($nombre, $email, $password, $telefono, $direccion);
+        $usuario_id = registrarUsuario($nombre, $email, $password, $telefono);
         
         if ($usuario_id) {
             // Autologin
-            login($email, $password);
+            login_admin($email, $password);
             $_SESSION['exito'] = '¡Registro exitoso! Bienvenido a Rifas Premium';
             redirect('index.php');
         } else {
@@ -89,14 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="input-with-icon">
                         <i class="fas fa-phone"></i>
                         <input type="tel" id="telefono" name="telefono">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="direccion">Dirección (Opcional)</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-home"></i>
-                        <input type="text" id="direccion" name="direccion">
                     </div>
                 </div>
                 
