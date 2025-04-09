@@ -410,3 +410,13 @@ function optimizarImagen($ruta, $max_width = 1200, $max_height = 800) {
     
     return $result;
 }
+
+function obtenerBoletosDisponiblesPaginados($evento_id, $por_pagina, $offset) {
+    $pdo = getDBConnection();
+    $stmt = $pdo->prepare("SELECT * FROM boletos 
+                          WHERE evento_id = ? AND estado = 'disponible' 
+                          ORDER BY numero_boleto 
+                          LIMIT ? OFFSET ?");
+    $stmt->execute([$evento_id, $por_pagina, $offset]);
+    return $stmt->fetchAll();
+}
