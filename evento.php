@@ -145,13 +145,6 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
     <!-- Contenido principal -->
     <main class="pt-32 pb-12 bg-background">
         <div class="container mx-auto px-4">
-            <!-- Botón volver -->
-            <div class="mb-6">
-                <a href="index.php" class="inline-flex items-center text-primary font-bold hover:text-accent transition-all">
-                    <i class="fas fa-arrow-left mr-2"></i> Volver a Rifas
-                </a>
-            </div>
-
             <!-- Grid principal -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <!-- Columna izquierda (Información del evento) -->
@@ -203,6 +196,29 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
                                     <div class="bg-primary h-2.5 rounded-full" style="width: <?= ((($evento['total_boletos'] - $evento['boletos_disponibles']) / $evento['total_boletos']) * 100) ?>%"></div>
                                 </div>
                                 <div class="text-right text-xs text-gray-400 mt-1"><?= round((($evento['total_boletos'] - $evento['boletos_disponibles']) / $evento['total_boletos']) * 100) ?>% vendido</div>
+                            </div>
+
+                            <!--contador de tiempo-->
+                            <div class="bg-gray-800/50 rounded-lg p-4">
+                                <h3 class="text-lg font-bold text-white mb-3">Tiempo restante:</h3>
+                                <div class="grid grid-cols-4 gap-2 text-center">
+                                    <div class="bg-background rounded p-2">
+                                        <div class="text-2xl font-bold text-primary" id="countdown-days">00</div>
+                                        <div class="text-xs text-gray-300">Días</div>
+                                    </div>
+                                    <div class="bg-background rounded p-2">
+                                        <div class="text-2xl font-bold text-primary" id="countdown-hours">00</div>
+                                        <div class="text-xs text-gray-300">Horas</div>
+                                    </div>
+                                    <div class="bg-background rounded p-2">
+                                        <div class="text-2xl font-bold text-primary" id="countdown-minutes">00</div>
+                                        <div class="text-xs text-gray-300">Minutos</div>
+                                    </div>
+                                    <div class="bg-background rounded p-2">
+                                        <div class="text-2xl font-bold text-primary" id="countdown-seconds">00</div>
+                                        <div class="text-xs text-gray-300">Segundos</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -751,7 +767,31 @@ document.addEventListener('DOMContentLoaded', function() {
             detallesDiv.innerHTML = '<p class="text-danger">Error al mostrar detalles</p>';
         }
     });
-
+    function iniciarContador(fechaFin) {
+        const tiempoObjetivo = new Date(fechaFin).getTime();
+        const intervalo = setInterval(function() {
+            const ahora = new Date().getTime();
+            const diferencia = tiempoObjetivo - ahora;
+            if (diferencia < 0) {
+                clearInterval(intervalo);
+                document.getElementById("countdown-days").innerText = "00";
+                document.getElementById("countdown-hours").innerText = "00";
+                document.getElementById("countdown-minutes").innerText = "00";
+                document.getElementById("countdown-seconds").innerText = "00";
+                return;
+            }
+            const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+            const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+            const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+            document.getElementById("countdown-days").innerText = dias.toString().padStart(2, '0');
+            document.getElementById("countdown-hours").innerText = horas.toString().padStart(2, '0');
+            document.getElementById("countdown-minutes").innerText = minutos.toString().padStart(2, '0');
+            document.getElementById("countdown-seconds").innerText = segundos.toString().padStart(2, '0');
+        }, 1);
+    }
+    // Iniciar el contador con la fecha de fin del evento
+    iniciarContador("<?= date('Y-m-d H:i:s', strtotime($evento['fecha_fin'])) ?>");
     // Inicializar
     loadTickets(1);
     updateSelectedTickets();
