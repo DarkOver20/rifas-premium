@@ -455,12 +455,13 @@ $metodos_de_pago = obtener_metodos_pago();
             <div class="relative bg-white/5 backdrop-blur-sm border border-gray-800 rounded-3xl overflow-hidden shadow-2xl">
               <div class="p-1 from-primary to-accent">
                 <div class="bg-secondary p-4 rounded-2xl">
+                <?php if (!empty($eventos_activos)): ?>
                   <div class="flex justify-between items-center mb-4">
                     <span class="bg-primary/10 text-primary text-sm px-3 py-1 rounded-full">Rifa Activa</span>
                     <span class="text-accent text-sm font-bold"><i class="fas fa-bolt mr-1"></i> Oportunidad Única</span>
                   </div>
                   
-                  <?php if (!empty($eventos_activos)): ?>
+                  
                   <?php $evento_destacado = $eventos_activos[0]; ?>
                   <img src="uploads/<?= htmlspecialchars($evento_destacado['imagen']) ?>"
                        alt="<?= htmlspecialchars($evento_destacado['titulo']) ?>" 
@@ -494,7 +495,13 @@ $metodos_de_pago = obtener_metodos_pago();
                       Participar <i class="fas fa-arrow-right ml-1"></i>
                     </a>
                   </div>
+                  <?php else: ?>
+            <!-- Puedes mantener algunos métodos por defecto si no hay en la base de datos -->
+                  <div class="flex flex-col items-center opacity-80 hover:opacity-100 transition-all">
+                <p>no hay rifas.</p>
+                 </div>
                   <?php endif; ?>
+
                 </div>
               </div>
             </div>
