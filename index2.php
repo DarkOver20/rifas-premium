@@ -646,58 +646,45 @@ $metodos_de_pago = obtener_metodos_pago();
     </div>
   </section>
 
-  <!-- Sección de Métodos de Pago -->
-  <section class="py-12 bg-gradient-to-b from-secondary to-background" id="pagos">
+  <section class="py-12 bg-gradient-to-b from-secondary to-background" id="Bancos">
     <div class="container mx-auto px-4">
-      <div class="text-center mb-16 fade-in">
-        <span class="inline-block bg-primary/10 text-primary px-4 py-1 rounded-full text-sm font-semibold mb-3">
-          <i class="fas fa-credit-card mr-1"></i> Métodos de Pago
-        </span>
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">
-          <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Pagos seguros</span>
-        </h2>
-        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-          Realiza tus pagos de forma segura a través de nuestras plataformas autorizadas.
-        </p>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="flex flex-wrap justify-center gap-8 md:gap-12 lg:gap-16">
         <?php if (!empty($metodos_de_pago)): ?>
-          <?php foreach ($metodos_de_pago as $metodo): ?>
-            <div class="bg-secondary/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6 text-center fade-in hover:shadow-lg transition-all duration-300">
-              <?php if (!empty($metodo['icono'])): ?>
-                <img src="<?= htmlspecialchars($metodo['icono']) ?>" 
-                     alt="<?= htmlspecialchars($metodo['nombre']) ?>" 
-                     class="h-16 mx-auto mb-4 grayscale hover:grayscale-0 transition-all">
-              <?php else: ?>
-                <div class="h-16 flex items-center justify-center text-4xl text-primary mb-4">
-                  <i class="fas fa-credit-card"></i>
+            <?php foreach ($metodos_de_pago as $metodo): ?>
+                <div class="flex flex-col items-center opacity-80 hover:opacity-100 transition-all">
+                    <?php if (!empty($metodo['icono'])): ?>
+                        <img src="<?php echo htmlspecialchars($metodo['icono']); ?>" 
+                             alt="<?php echo htmlspecialchars($metodo['nombre']); ?>" 
+                             class="h-12 grayscale hover:grayscale-0 transition-all" 
+                             loading="lazy">
+                    <?php else: ?>
+                        <div class="h-12 flex items-center justify-center">
+                            <i class="fas fa-credit-card text-3xl text-gray-400"></i>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php
+                    $descripcion = $metodo['nombre']; // Texto principal bajo el icono
+                    ?>
+                    <span class="text-gray-400 text-sm mt-2"><?php echo htmlspecialchars($descripcion); ?></span>
                 </div>
-              <?php endif; ?>
-              
-              <h3 class="text-xl font-bold text-white mb-3"><?= htmlspecialchars($metodo['nombre']) ?></h3>
-              
-              <?php if (!empty($metodo['detalles'])): ?>
-                <?php $detalles = json_decode($metodo['detalles'], true); ?>
-                <div class="text-left text-sm text-gray-300 space-y-2">
-                  <?php foreach ($detalles as $key => $value): ?>
-                    <div class="flex justify-between">
-                      <span class="font-medium"><?= htmlspecialchars($key) ?>:</span>
-                      <span><?= htmlspecialchars($value) ?></span>
-                    </div>
-                  <?php endforeach; ?>
-                </div>
-              <?php endif; ?>
-            </div>
-          <?php endforeach; ?>
+            <?php endforeach; ?>
         <?php else: ?>
-          <div class="col-span-4 text-center py-12">
-            <p class="text-xl text-gray-400">No hay métodos de pago disponibles actualmente.</p>
-          </div>
+            <!-- Puedes mantener algunos métodos por defecto si no hay en la base de datos -->
+            <div class="flex flex-col items-center opacity-80 hover:opacity-100 transition-all">
+            <p>No hay métodos de pago disponibles.</p>
+            </div>
         <?php endif; ?>
       </div>
     </div>
-  </section>
+    <br>
+    <br>
+    <div class="text-center fade-in">        
+      <span class="inline-block bg-accent/10 text-three/20 px-4 py-1 rounded-full text-sm font-semibold mb-6">
+        <i class="fa fa-certificate mr-1"></i> Toda la informacion necesaria la podra encontrar dentro de las rifas a la hora de participar
+      </span>
+    </div>
+</section>
 
   <!-- Sección de Cómo Participar -->
   <section class="py-20 bg-gradient-to-b from-background to-secondary" id="como-participar">
