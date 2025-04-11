@@ -6,9 +6,6 @@ require_admin();
 
 $eventos_activos = obtenerEventos('activo');
 $eventos_finalizados = obtenerEventos('finalizado');
-$solicitudes_pendientes = obtenerSolicitudesPendientes();
-$total_usuarios = contarUsuarios();
-$total_ventas = calcularVentasTotales();
 ?>
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
@@ -308,7 +305,7 @@ $total_ventas = calcularVentasTotales();
     <button id="sidebar-toggle" class="text-white mr-4 lg:flex lg:items-center lg:gap-2">
     <i class="fas fa-bars text-xl"></i>
     <span class="hidden lg:inline">Menú</span>
-</button>
+    </button>
     <aside class="sidebar fixed top-0 left-0 h-full bg-secondary shadow-xl overflow-y-auto pt-16">
         <div class="p-4">
             <div class="mb-8 px-4 py-3 bg-primary/10 rounded-lg border border-primary/20">
@@ -336,14 +333,6 @@ $total_ventas = calcularVentasTotales();
                     <span>Eventos</span>
                 </a>
                 
-                <a href="./solicitudes/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
-                    <i class="fas fa-ticket-alt w-5 text-center text-gray-400"></i>
-                    <span>Solicitudes</span>
-                    <?php if(count($solicitudes_pendientes) > 0): ?>
-                        <span class="ml-auto bg-danger text-white text-xs px-2 py-1 rounded-full"><?= count($solicitudes_pendientes) ?></span>
-                    <?php endif; ?>
-                </a>
-                
                 <a href="./usuarios/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-users w-5 text-center text-gray-400"></i>
                     <span>Usuarios</span>
@@ -351,13 +340,9 @@ $total_ventas = calcularVentasTotales();
                 
                 <a href="./pagos/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-dollar-sign w-5 text-center text-gray-400"></i>
-                    <span>Pagos</span>
+                    <span>Metodos Pagos</span>
                 </a>
                 
-                <a href="./configuracion/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
-                    <i class="fas fa-cog w-5 text-center text-gray-400"></i>
-                    <span>Configuración</span>
-                </a>
             </nav>
         </div>
     </aside>
@@ -370,117 +355,62 @@ $total_ventas = calcularVentasTotales();
                 <h1 class="text-3xl font-bold mb-2">
                     <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Panel de Control</span>
                 </h1>
-                <p class="text-gray-400">Bienvenido al centro de administración de Bólidos Rifas</p>
-            </div>
-            
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-secondary rounded-xl p-6 shadow-lg stat-card fade-in" style="transition-delay: 0.1s">
-                    <div class="flex items-center gap-4">
-                        <div class="stat-icon bg-primary/10 text-primary w-14 h-14 rounded-full flex items-center justify-center">
-                            <i class="fas fa-ticket-alt text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-gray-400 text-sm font-medium">Eventos Activos</h3>
-                            <p class="text-2xl font-bold"><?= count($eventos_activos) ?></p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-secondary rounded-xl p-6 shadow-lg stat-card fade-in" style="transition-delay: 0.2s">
-                    <div class="flex items-center gap-4">
-                        <div class="stat-icon bg-success/10 text-success w-14 h-14 rounded-full flex items-center justify-center">
-                            <i class="fas fa-users text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-gray-400 text-sm font-medium">Total Usuarios</h3>
-                            <p class="text-2xl font-bold"><?= $total_usuarios ?></p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-secondary rounded-xl p-6 shadow-lg stat-card fade-in" style="transition-delay: 0.3s">
-                    <div class="flex items-center gap-4">
-                        <div class="stat-icon bg-warning/10 text-warning w-14 h-14 rounded-full flex items-center justify-center">
-                            <i class="fas fa-clock text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-gray-400 text-sm font-medium">Solicitudes Pendientes</h3>
-                            <p class="text-2xl font-bold"><?= count($solicitudes_pendientes) ?></p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-secondary rounded-xl p-6 shadow-lg stat-card fade-in" style="transition-delay: 0.4s">
-                    <div class="flex items-center gap-4">
-                        <div class="stat-icon bg-danger/10 text-danger w-14 h-14 rounded-full flex items-center justify-center">
-                            <i class="fas fa-dollar-sign text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-gray-400 text-sm font-medium">Ventas Totales</h3>
-                            <p class="text-2xl font-bold">$<?= number_format($total_ventas, 2) ?></p>
-                        </div>
-                    </div>
-                </div>
+                <p class="text-gray-400">Bienvenido al centro de administración de A&M Recreaciones</p>
             </div>
             
             <!-- Solicitudes Recientes -->
-            <section class="mb-8 fade-in" style="transition-delay: 0.2s">
+
+            <!-- Eventos Activos -->
+            <section class="mb-8 fade-in" style="transition-delay: 0.3s">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <h2 class="text-xl font-bold">
-                        <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Solicitudes Recientes</span>
+                        <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Eventos Activos</span>
                     </h2>
-                    <a href="./solicitudes/" class="text-sm text-primary hover:text-accent transition-all flex items-center gap-1">
-                        Ver todas <i class="fas fa-arrow-right text-xs"></i>
+                    <a href="./eventos/nuevo.php" class="btn-glow bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Nuevo Evento
                     </a>
                 </div>
                 
-                <div class="bg-secondary rounded-xl shadow-lg overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full data-table">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Comprador</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Evento</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Boletos</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Monto</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Fecha</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-800">
-                                <?php if (empty($solicitudes_pendientes)): ?>
-                                    <tr>
-                                        <td colspan="7" class="px-6 py-4 text-center text-gray-400">No hay solicitudes pendientes</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($solicitudes_pendientes as $solicitud): ?>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200"><?= $solicitud['id'] ?></td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-white"><?= htmlspecialchars($solicitud['comprador_nombre'] ?? 'N/A') ?></div>
-                                            <div class="text-xs text-gray-400">C.I. <?= htmlspecialchars($solicitud['comprador_cedula'] ?? 'N/A') ?></div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400"><?= htmlspecialchars($solicitud['evento_titulo'] ?? 'N/A') ?></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400"><?= $solicitud['cantidad_boletos'] ?? 0 ?></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">$<?= isset($solicitud['monto']) ? number_format($solicitud['monto'], 2) : '0.00' ?></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400"><?= isset($solicitud['fecha_transaccion']) ? date('d/m/Y H:i', strtotime($solicitud['fecha_transaccion'])) : 'N/A' ?></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="./solicitudes/detalle.php?id=<?= $solicitud['id'] ?>" class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                                                <i class="fas fa-eye text-xs"></i> Revisar
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <?php foreach ($eventos_activos as $evento): ?>
+                    <div class="bg-secondary rounded-xl overflow-hidden shadow-lg evento-card">
+                        <div class="relative">
+                            <div class="h-48 bg-gray-800 flex items-center justify-center">
+                                <i class="fas fa-car text-4xl text-gray-700"></i>
+                            </div>
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                                <h3 class="text-lg font-bold text-white"><?= htmlspecialchars($evento['titulo']) ?></h3>
+                                <div class="flex justify-between text-xs text-gray-300">
+                                    <span>Precio: $<?= number_format($evento['precio_boleto'], 2) ?></span>
+                                    <span><?= $evento['boletos_disponibles'] ?> disponibles</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <div>
+                                    <div class="text-xs text-gray-400">Fecha fin</div>
+                                    <div class="text-sm font-medium"><?= date('d/m/Y', strtotime($evento['fecha_fin'])) ?></div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xs text-gray-400">Estado</div>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
+                                        Activo
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between gap-2">
+                                <a href="eventos/editar.php?id=<?= $evento['id'] ?>" class="flex-1 btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-md text-sm text-center transition-all">
+                                    <i class="fas fa-edit mr-1"></i> Editar
+                                </a>
+                            </div>
+                        </div>
                     </div>
+                    <?php endforeach; ?>
                 </div>
             </section>
-            
-            
         </div>
     </main>
 
