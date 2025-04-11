@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
     
     if (login_admin($email, $password)) {
-        $redirect_url = $_SESSION['redirect_url'] ?? 'index.php';
+        $redirect_url = $_SESSION['redirect_url'] ?? 'admin/dashboard2.php';
         unset($_SESSION['redirect_url']);
         redirect($redirect_url);
     } else {

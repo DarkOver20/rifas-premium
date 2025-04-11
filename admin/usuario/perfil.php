@@ -4,8 +4,6 @@ require_once '../includes/functions.php';
 require_login();
 
 $usuario = obtenerUsuario($_SESSION['usuario_id']);
-$rifas_participando = obtenerRifasUsuario($_SESSION['usuario_id']);
-$notificaciones = obtenerNotificaciones($_SESSION['usuario_id']);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -15,7 +13,6 @@ $notificaciones = obtenerNotificaciones($_SESSION['usuario_id']);
     <link rel="stylesheet" href="../../assets/css/user.css">
 </head>
 <body>
-    <?php include '../../includes/user/header.php'; ?>
     
     <main class="user-container">
         <div class="user-sidebar">
@@ -27,7 +24,6 @@ $notificaciones = obtenerNotificaciones($_SESSION['usuario_id']);
             <nav class="user-menu">
                 <a href="perfil.php" class="active"><i class="fas fa-user"></i> Mi Perfil</a>
                 <a href="mis-rifas.php"><i class="fas fa-ticket-alt"></i> Mis Rifas</a>
-                <a href="notificaciones.php"><i class="fas fa-bell"></i> Notificaciones <span class="badge"><?= count(array_filter($notificaciones, fn($n) => !$n['leida'])) ?></span></a>
                 <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </nav>
         </div>
@@ -46,18 +42,6 @@ $notificaciones = obtenerNotificaciones($_SESSION['usuario_id']);
                         <div class="form-group">
                             <label for="email">Email</label>
                             <input type="email" id="email" name="email" value="<?= htmlspecialchars($usuario['email']) ?>" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="telefono">Teléfono</label>
-                            <input type="tel" id="telefono" name="telefono" value="<?= htmlspecialchars($usuario['telefono']) ?>">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="direccion">Dirección</label>
-                            <input type="text" id="direccion" name="direccion" value="<?= htmlspecialchars($usuario['direccion']) ?>">
                         </div>
                     </div>
                     
@@ -81,32 +65,8 @@ $notificaciones = obtenerNotificaciones($_SESSION['usuario_id']);
                     </div>
                 </form>
                 
-                <div class="user-stats">
-                    <h2>Mis Estadísticas</h2>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <i class="fas fa-ticket-alt"></i>
-                            <h3>Rifas Participando</h3>
-                            <p><?= count($rifas_participando) ?></p>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <i class="fas fa-trophy"></i>
-                            <h3>Rifas Ganadas</h3>
-                            <p><?= count(array_filter($rifas_participando, fn($r) => $r['estado_boleto'] === 'ganador')) ?></p>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <i class="fas fa-bell"></i>
-                            <h3>Notificaciones</h3>
-                            <p><?= count($notificaciones) ?></p>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </main>
-    
-    <script src="../../assets/js/user.js"></script>
-</body>
+    </body>
 </html>
