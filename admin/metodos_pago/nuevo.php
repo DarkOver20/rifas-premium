@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])) {
             if (move_uploaded_file($_FILES['icono']['tmp_name'], $ruta_destino)) {
-                $icono = 'uploads/' . $nombre_base;
+                $icono = 'admin/uploads/' . $nombre_base;
             } else {
                 $errores['icono'] = 'Error al subir el icono.';
             }
