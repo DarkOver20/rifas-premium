@@ -1,8 +1,8 @@
 <?php
 while (ob_get_level()) ob_end_clean();
 
-require_once './includes/config.php';
-require_once './includes/functions.php';
+require_once './config.php';
+require_once './functions.php';
 
 header('Content-Type: application/json');
 ini_set('display_errors', 0);
@@ -25,7 +25,6 @@ $referencia_pago = trim(filter_input(INPUT_POST, 'referencia_pago', FILTER_SANIT
 $metodo_pago_id = filter_input(INPUT_POST, 'metodo_pago', FILTER_VALIDATE_INT);
 $referencia_transaccion = trim(filter_input(INPUT_POST, 'referencia_transaccion', FILTER_SANITIZE_STRING));
 $boletos_seleccionados = json_decode($_POST['boletos_seleccionados'], true);
-
 // Validaciones básicas
 if (!$evento_id || !$nombre || !$telefono || !$cedula || !$estado || !$metodo_pago_id || !$referencia_transaccion || empty($boletos_seleccionados)) {
     echo json_encode(['success' => false, 'message' => 'Datos incompletos o inválidos']);
@@ -45,8 +44,12 @@ $monto_total = count($boletos_seleccionados) * $evento['precio_boleto'];
 // Procesar comprobante de pago
 $comprobante_pago = '';
 if (isset($_FILES['comprobante_pago']) && $_FILES['comprobante_pago']['error'] === UPLOAD_ERR_OK) {
+    // Limpiar nombre y cédula para el nombre del archivo
+    $nombre_limpio = preg_replace('/[^a-z0-9]/', '-', strtolower($nombre));
+    $cedula_limpia = preg_replace('/[^0-9]/', '', $cedula);
+    
     $extension = pathinfo($_FILES['comprobante_pago']['name'], PATHINFO_EXTENSION);
-    $nombre_archivo = uniqid('comprobante_') . '.' . $extension;
+    $nombre_archivo = 'comprobante_' . $nombre_limpio . '-' . $cedula_limpia . '.' . $extension;
     $ruta_destino = UPLOAD_DIR . $nombre_archivo;
     
     if (move_uploaded_file($_FILES['comprobante_pago']['tmp_name'], $ruta_destino)) {

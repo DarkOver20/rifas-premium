@@ -1,8 +1,8 @@
 <?php
-require_once '../../includes/config.php';
-require_once '../../includes/functions.php';
+require_once dirname(__DIR__) . '/includes/config.php';
+require_once dirname(__DIR__) . '/includes/functions.php';
 require_login();
-
+require_admin();
 $errores = [];
 $mensaje_exito = '';
 
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <h1>Añadir Nuevo Método de Pago</h1>
 
-        <a href="index.php" class="button">Volver a la lista de métodos de pago</a>
+        <a href="/rifas-premium/metodos" class="button">Volver a la lista de métodos de pago</a>
 
         <?php if (!empty($errores)): ?>
             <div class="error">

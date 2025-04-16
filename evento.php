@@ -1,6 +1,6 @@
 <?php
-require_once './includes/config.php';
-require_once './includes/functions.php';
+require_once './admin/includes/config.php';
+require_once './admin/includes/functions.php';
 
 $evento_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $evento = obtenerEvento($evento_id);
@@ -111,24 +111,17 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
     <header class="fixed w-full top-0 left-0 z-50 transition-all duration-300" id="navbar">
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center bg-secondary/90 backdrop-blur-md rounded-full px-6 py-3 shadow-lg border border-gray-800">
-                <a href="index.php" class="flex items-center gap-2 group" aria-label="Rifas Premium">
-                    <img src="./assets/img/logo.png" alt="Logo Rifas Premium" class="h-10 w-10 transition-all duration-300 group-hover:rotate-12" loading="eager">
+                <a href="/rifas-premium/" class="flex items-center gap-2 group" aria-label="RifasA&M">
+                    <img src="./assets/img/logo.png" alt="Logo RifasA&M" class="h-10 w-10 transition-all duration-300 group-hover:rotate-12" loading="eager">
                     <span class="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                        Rifas Premium
+                        RifasA&M
                     </span>
                 </a>
                 <nav class="hidden lg:flex items-center gap-8">
-                    <a href="index.php" class="nav-link text-white hover:text-accent transition-all relative group">
+                    <a href="/rifas-premium/" class="nav-link text-white hover:text-accent transition-all relative group">
                         <span class="flex items-center gap-1">
                             <i class="fas fa-home text-sm opacity-70"></i>
                             Inicio
-                        </span>
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover:w-full"></span>
-                    </a>
-                    <a href="#rifas" class="nav-link text-white hover:text-accent transition-all relative group">
-                        <span class="flex items-center gap-1">
-                            <i class="fas fa-trophy text-sm opacity-70"></i>
-                            Rifas
                         </span>
                         <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover:w-full"></span>
                     </a>
@@ -151,7 +144,7 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
                 <div class="lg:col-span-4">
                     <div class="bg-secondary rounded-xl shadow-lg overflow-hidden border border-gray-800 sticky top-32">
                         <div class="relative h-64 overflow-hidden">
-                            <img src="./uploads/<?= htmlspecialchars($evento['imagen']) ?>"
+                            <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>"
                                 alt="<?= htmlspecialchars($evento['titulo']) ?>"
                                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
                             <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-xs font-bold">
@@ -322,7 +315,7 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
                         <div class="p-6">
                             <h2 class="text-2xl font-bold text-white mb-6">Tus datos personales</h2>
                             
-                            <form id="formulario-pago" class="space-y-4" action="procesar_compra.php" method="POST" enctype="multipart/form-data">
+                            <form id="formulario-pago" class="space-y-4" action="/rifas-premium/admin/includes/procesar_compra.php" method="POST" enctype="multipart/form-data">
                                 <input type="hidden" name="evento_id" value="<?= $evento_id ?>">
                                 <input type="hidden" name="boletos_seleccionados" id="boletos-seleccionados" value="">
                                 

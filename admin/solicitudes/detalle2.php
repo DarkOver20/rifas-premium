@@ -1,8 +1,8 @@
 <?php
-require_once '../../includes/config.php';
-require_once '../../includes/functions.php';
+require_once dirname(__DIR__) . '/includes/config.php';
+require_once dirname(__DIR__) . '/includes/functions.php';
 require_login();
-
+require_admin();
 $transaccion_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $transaccion = obtenerSolicitudPorId($transaccion_id);
 
@@ -12,6 +12,15 @@ if (!$transaccion || !isset($transaccion['id'])) {
     exit;
 }
 
+if (!function_exists('obtenerNombreMetodoPago')) {
+    function obtenerNombreMetodoPago($metodo_pago_id) {
+        global $pdo;
+        $stmt = $pdo->prepare("SELECT nombre FROM metodos_pago WHERE id = ?");
+        $stmt->execute([$metodo_pago_id]);
+        return $stmt->fetchColumn();
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'];
     $notas = trim($_POST['notas']);
@@ -19,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (in_array($accion, ['aprobar', 'rechazar'])) {
         if (procesarTransaccion($transaccion_id, $accion, $_SESSION['usuario_id'], $notas)) {
             $_SESSION['mensaje_exito'] = "Transacción {$accion}ada correctamente";
-            header('Location: ../solicitudes/');
+            header('Location: /rifas-premium/dashboard');
             exit;
         } else {
             $error = "Error al procesar la transacción";
@@ -243,7 +252,7 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
                     <span class="text-sm text-gray-300">Bienvenido,</span>
                     <span class="font-medium"><?= htmlspecialchars($_SESSION['usuario_nombre']) ?></span>
                 </div>
-                <a href="../logout.php" class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 transition-all">
+                <a href="/logout" class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 transition-all">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
             </div>
@@ -312,7 +321,7 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
                         <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Revisar Transacción</span>
                         <span class="text-white">#<?= $transaccion['id'] ?></span>
                     </h1>
-                    <a href="../solicitudes/" class="btn-glow bg-secondary hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2">
+                    <a href="/rifas-premium/dashboard" class="btn-glow bg-secondary hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2">
                         <i class="fas fa-arrow-left"></i> Volver
                     </a>
                 </div>
@@ -353,11 +362,13 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
                         <span>Información de Pago</span>
                     </h3>
                     <div class="space-y-3">
-                        <p><strong class="text-gray-400">Método:</strong> <?= htmlspecialchars($transaccion['metodo_pago']) ?></p>
-                        <p><strong class="text-gray-400">Referencia:</strong> <?= htmlspecialchars($transaccion['referencia_transaccion']) ?></p>
-                        <p><strong class="text-gray-400">Monto:</strong> <span class="text-accent">$<?= number_format($transaccion['monto_total'], 2) ?></span></p>
-                        <p><strong class="text-gray-400">Fecha:</strong> <?= date('d/m/Y H:i', strtotime($transaccion['fecha_transaccion'])) ?></p>
-                    </div>
+                    <?php
+                    // Obtener el nombre del método de pago basado en el ID
+                    $metodo_pago_nombre = obtenerNombreMetodoPago($transaccion['metodo_pago_id']);
+                    ?>
+                    <p><strong class="text-gray-400">Método:</strong> <?= $metodo_pago_nombre ? htmlspecialchars($metodo_pago_nombre) : 'No especificado' ?></p>
+                    <p><strong class="text-gray-400">Referencia:</strong> <?= isset($transaccion['referencia_transaccion']) ? htmlspecialchars($transaccion['referencia_transaccion']) : 'N/A' ?></p>
+                    <p><strong class="text-gray-400">Fecha:</strong> <?= isset($transaccion['fecha_compra']) ? date('d/m/Y H:i', strtotime($transaccion['fecha_compra'])) : 'No registrada' ?></p>                    </div>
                 </div>
             </div>
             
@@ -383,28 +394,28 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
             </div>
             
             <!-- Comprobante de pago -->
-            <div class="info-card mb-8">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    <i class="fas fa-receipt text-primary"></i>
-                    <span>Comprobante de Pago</span>
-                </h3>
-                
-                <?php 
-                $comprobantePath = "../../uploads/" . htmlspecialchars($transaccion['comprobante_pago']);
-                if (file_exists($comprobantePath)): ?>
-                    <a href="<?= $comprobantePath ?>" target="_blank" class="inline-block">
-                        <img src="<?= $comprobantePath ?>" 
-                             alt="Comprobante de pago" 
-                             class="img-comprobante">
-                        <p class="text-sm text-gray-400 mt-2 text-center">Click para ampliar</p>
-                    </a>
-                <?php else: ?>
-                    <div class="bg-gray-800/50 rounded-lg p-6 text-center">
-                        <i class="fas fa-file-image text-4xl text-gray-600 mb-2"></i>
-                        <p class="text-gray-400">Comprobante no disponible</p>
-                    </div>
-                <?php endif; ?>
-            </div>
+<div class="info-card mb-8">
+    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+        <i class="fas fa-receipt text-primary"></i>
+        <span>Comprobante de Pago</span>
+    </h3>
+    
+    <?php 
+    // Construir la ruta correcta al comprobante
+    $comprobantePath = dirname(__DIR__) . "/uploads/" . htmlspecialchars($transaccion['comprobante_pago']);
+    $publicPath = "/rifas-premium/admin/uploads/" . htmlspecialchars($transaccion['comprobante_pago']);
+    
+    if (isset($transaccion['comprobante_pago']) && !empty($transaccion['comprobante_pago']) && file_exists($comprobantePath)): ?>
+            <img src="<?= $publicPath ?>" 
+                 alt="Comprobante de pago" 
+                 class="img-comprobante">
+    <?php else: ?>
+        <div class="bg-gray-800/50 rounded-lg p-6 text-center">
+            <i class="fas fa-file-image text-4xl text-gray-600 mb-2"></i>
+            <p class="text-gray-400">Comprobante no disponible</p>
+        </div>
+    <?php endif; ?>
+</div>
             
             <!-- Acciones o Detalles de Revisión -->
             <?php if ($transaccion['estado_compra'] === 'pendiente'): ?>
@@ -435,12 +446,7 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
                         <span>Detalles de la Revisión</span>
                     </h3>
                     
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-sm text-gray-400">Revisado por:</p>
-                            <p class="font-medium"><?= htmlspecialchars($transaccion['usuario_nombre']) ?></p>
-                        </div>
-                        
+                    <div class="space-y-4">              
                         <div>
                             <p class="text-sm text-gray-400">Fecha de revisión:</p>
                             <p class="font-medium"><?= date('d/m/Y H:i', strtotime($transaccion['fecha_revision'])) ?></p>

@@ -31,6 +31,42 @@ function getDBConnection() {
     return $pdo;
 }
 
+
+// Funciones de ayuda
+function sanitize($data) {
+    return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+}
+function is_logged_in() {
+    return isset($_SESSION['usuario_id']);
+}
+
+function require_login() {
+    if (!is_logged_in()) {
+        $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
+        redirect('/rifas-premium/sys-396/access');
+    }
+}
+
+function require_admin() {
+    require_login();
+    if ($_SESSION['usuario_rol'] !== 'admin') {
+        $_SESSION['error'] = 'Acceso denegado. Se requieren privilegios de administrador.';
+        redirect('/');
+    }
+}
+
+function redirect($url) {
+    header("Location: $url");
+    exit;
+}
+
+function generarSlug($texto) {
+    if (empty($texto)) {
+        return 'sin-titulo'; // Valor por defecto
+    }
+    $slug = preg_replace('/[^a-z0-9]+/', '-', strtolower($texto));
+    return trim($slug, '-');
+}
 /**********************************************
  * FUNCIONES DE AUTENTICACIÓN Y USUARIOS
  **********************************************/

@@ -1,8 +1,8 @@
 <?php
-require_once '../../includes/config.php';
-require_once '../../includes/functions.php';
+require_once dirname(__DIR__) . '/includes/config.php';
+require_once dirname(__DIR__) . '/includes/functions.php';
 require_login();
-
+require_admin();
 $metodos_pago = obtener_metodos_pago(); // Necesitarás crear esta función en functions.php
 
 if (isset($_GET['eliminar']) && is_numeric($_GET['eliminar'])) {
@@ -28,7 +28,7 @@ if (isset($_GET['eliminar']) && is_numeric($_GET['eliminar'])) {
     <div class="container">
         <h1>Métodos de Pago</h1>
 
-        <a href="nuevo.php" class="button">Añadir Nuevo Método de Pago</a>
+        <a href="/rifas-premium/metodos/crear" class="button">Añadir Nuevo Método de Pago</a>
 
         <?php if (!empty($metodos_pago)): ?>
             <table>

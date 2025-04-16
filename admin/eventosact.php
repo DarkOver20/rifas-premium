@@ -1,6 +1,6 @@
 <?php
-require_once '../includes/config.php';
-require_once '../includes/functions.php';
+require_once dirname(__DIR__) . '/admin/includes/config.php';
+require_once dirname(__DIR__) . '/admin/includes/functions.php';
 require_login();
 require_admin();
 
@@ -328,7 +328,7 @@ $eventos_finalizados = obtenerEventos('finalizado');
                     <span>Dashboard</span>
                 </a>
                 
-                <a href="./eventos/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
+                <a href="../" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-trophy w-5 text-center text-gray-400"></i>
                     <span>Eventos</span>
                 </a>
@@ -366,7 +366,7 @@ $eventos_finalizados = obtenerEventos('finalizado');
                     <h2 class="text-xl font-bold">
                         <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Eventos Activos</span>
                     </h2>
-                    <a href="./eventos/nuevo.php" class="btn-glow bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2">
+                    <a href="/rifas-premium/eventos/crear" class="btn-glow bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2">
                         <i class="fas fa-plus"></i> Nuevo Evento
                     </a>
                 </div>
@@ -376,7 +376,10 @@ $eventos_finalizados = obtenerEventos('finalizado');
                     <div class="bg-secondary rounded-xl overflow-hidden shadow-lg evento-card">
                         <div class="relative">
                             <div class="h-48 bg-gray-800 flex items-center justify-center">
-                                <i class="fas fa-car text-4xl text-gray-700"></i>
+                            <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
+                                    alt="<?= htmlspecialchars($evento['titulo']) ?>" 
+                                    class="w-full h-full object-cover object-center" 
+                                    loading="lazy"> 
                             </div>
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                                 <h3 class="text-lg font-bold text-white"><?= htmlspecialchars($evento['titulo']) ?></h3>
