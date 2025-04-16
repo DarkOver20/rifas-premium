@@ -344,10 +344,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </button>
                 </div>
                 
-                <div class="auth-links">
+                <!-- <div class="auth-links">
                     <a href="registro.php">¿No tienes cuenta? Regístrate</a>
                     <a href="recuperar-contrasena.php">¿Olvidaste tu contraseña?</a>
-                </div>
+                </div> -->
             </form>
         </div>
     </div>
