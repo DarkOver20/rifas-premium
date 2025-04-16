@@ -345,11 +345,6 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
                                     </div>
                                 </div>
                                 
-                                <div>
-                                    <label class="block text-gray-300 mb-2">Referencia de pago (Opcional)</label>
-                                    <input type="text" id="reference" name="referencia_pago"
-                                        class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none">
-                                </div>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
