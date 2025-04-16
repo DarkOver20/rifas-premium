@@ -348,7 +348,7 @@ $metodos_de_pago = obtener_metodos_pago();
         <a href="#inicio" class="flex items-center gap-2 group" aria-label="RIFAS PREMIUM">
           <img src="./uploads/logocolor.webp" alt="Logo de RIFAS PREMIUM" class="h-12 w-12 logo-animate transition-all duration-300 group-hover:rotate-12" loading="eager">
           <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-            RIFAS PREMIUM
+          A&M Recreaciones
           </span>
         </a>     
         <nav class="hidden lg:flex items-center gap-8">
@@ -485,7 +485,7 @@ $metodos_de_pago = obtener_metodos_pago();
                       <div class="progress-bar-fill" style="width: <?= (($evento_destacado['total_boletos'] - $evento_destacado['boletos_disponibles']) / $evento_destacado['total_boletos']) * 100 ?>%"></div>
                     </div>
                   </div>
-                  
+                  <section id="Bancos">
                   <div class="flex justify-between items-center mb-4">
                     <div>
                       <div class="text-xs text-gray-400">Tiempo restante:</div>
@@ -501,8 +501,8 @@ $metodos_de_pago = obtener_metodos_pago();
                 <p>no hay rifas.</p>
                  </div>
                   <?php endif; ?>
+                  </section></div>
 
-                </div>
               </div>
             </div>
           </div>
@@ -696,20 +696,20 @@ $metodos_de_pago = obtener_metodos_pago();
 
   <!-- Sección de Cómo Participar -->
   <section class="py-20 bg-gradient-to-b from-background to-secondary" id="como-participar">
-    <div class="container mx-auto px-4">
+  <div class="container mx-auto px-4">
       <div class="text-center mb-16 fade-in">
         <span class="inline-block bg-primary/10 text-primary px-4 py-1 rounded-full text-sm font-semibold mb-3">
           <i class="fas fa-question-circle mr-1"></i> ¿Cómo Participar?
         </span>
         <h2 class="text-3xl md:text-4xl font-bold mb-4">
-          Gana premios exclusivos en <span class="bg-gradient-to-r from-three to-primary bg-clip-text text-transparent">3 simples pasos</span>
+          Gana premios exclusivos en <span class="bg-gradient-to-r from-three to-primary bg-clip-text text-transparent">4 simples pasos</span>
         </h2>
         <p class="text-xl text-gray-300 max-w-3xl mx-auto">
           Nuestro proceso es 100% transparente y diseñado para brindarte la mejor experiencia.
         </p>
       </div>
       
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <!-- Paso 1 -->
         <div class="bg-secondary/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6 text-center fade-in" style="transition-delay: 0.1s">
           <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
@@ -720,7 +720,7 @@ $metodos_de_pago = obtener_metodos_pago();
             Selecciona entre nuestra colección de premios el que más te gustaría ganar.
           </p>
           <div class="text-primary text-4xl opacity-20">
-            <i class="fas fa-trophy"></i>
+            <i class="fas fa-car"></i>
           </div>
         </div>
         
@@ -743,15 +743,28 @@ $metodos_de_pago = obtener_metodos_pago();
           <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
             3
           </div>
-          <h3 class="text-xl font-bold text-white mb-3">Espera el sorteo</h3>
+          <h3 class="text-xl font-bold text-white mb-3">Completa el formulario</h3>
+          <p class="text-gray-300 mb-4">
+            Asegurate de llenar correctamente el formulario con todos tus datos para garantizarte tu premio 
+          </p>
+          <div class="text-primary text-4xl opacity-20">
+            <i class="fa fa-address-card"></i>
+          </div>
+        </div>
+        <div class="bg-secondary/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6 text-center fade-in" style="transition-delay: 0.3s">
+          <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+            4
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">¡Espera el sorteo!</h3>
           <p class="text-gray-300 mb-4">
             El ganador será anunciado en vivo a través de nuestras redes sociales y notificado personalmente.
           </p>
           <div class="text-primary text-4xl opacity-20">
-            <i class="fas fa-medal"></i>
+            <i class="fas fa-trophy"></i>
           </div>
         </div>
       </div>
+      
     </div>
   </section>
 
@@ -772,76 +785,65 @@ $metodos_de_pago = obtener_metodos_pago();
   <!-- Footer -->
   <footer class="bg-background border-t border-gray-800 pt-16 pb-8">
     <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
         <div>
           <a href="#" class="flex items-center gap-2 mb-6">
-            <img src="./uploads/logocolor.webp" alt="Rifas Premium" class="h-10 w-10 rounded-lg" loading="lazy">
+            <img src=/rifasym.jpg  
+                 alt="Bólidos Rifas" 
+                 class="h-10 w-10 rounded-lg"
+                 loading="lazy">
             <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-              RIFAS PREMIUM
+              A&M Recreaciones
             </span>
           </a>
           <p class="text-gray-400 mb-6">
             Participa en nuestros exclusivos sorteos y vive la emoción de ganar increíbles premios.
           </p>
-          <div class="flex space-x-4">
-            <a href="#" class="social-icon text-gray-400 hover:text-primary transition-all">
-              <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" class="social-icon text-gray-400 hover:text-blue-400 transition-all">
-              <i class="fab fa-twitter"></i>
-            </a>
-            <a href="#" class="social-icon text-gray-400 hover:text-pink-600 transition-all">
-              <i class="fab fa-instagram"></i>
-            </a>
-          </div>
+
         </div>
         
         <div>
           <h3 class="text-lg font-bold text-white mb-6">Enlaces Rápidos</h3>
           <ul class="space-y-3">
             <li><a href="#inicio" class="text-gray-400 hover:text-primary transition-all">Inicio</a></li>
-            <li><a href="#eventos" class="text-gray-400 hover:text-primary transition-all">Eventos</a></li>
-            <li><a href="#Pagos" class="text-gray-400 hover:text-primary transition-all">Métodos de Pago</a></li>
-            <li><a href="#como-participar" class="text-gray-400 hover:text-primary transition-all">¿Cómo participar?</a></li>
+            <li><a href="#eventos" class="text-gray-400 hover:text-primary transition-all">Rifas Activas</a></li>
+            <li><a href="#como-participar" class="text-gray-400 hover:text-primary transition-all">Como Participar</a></li>
           </ul>
         </div>
         
-        <div>
-          <h3 class="text-lg font-bold text-white mb-6">Legal</h3>
-          <ul class="space-y-3">
-            <li><a href="#" class="text-gray-400 hover:text-primary transition-all">Términos y condiciones</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-primary transition-all">Política de privacidad</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-primary transition-all">Aviso legal</a></li>
-          </ul>
-        </div>
         
         <div>
-          <h3 class="text-lg font-bold text-white mb-6">Contacto</h3>
-          <ul class="space-y-3">
-            <li class="flex items-center text-gray-400">
-              <i class="fas fa-map-marker-alt mr-3 text-primary"></i>
-              <span>Av. Principal 123, Ciudad</span>
-            </li>
-            <li class="flex items-center text-gray-400">
-              <i class="fas fa-phone-alt mr-3 text-primary"></i>
-              <span>+1 234 567 890</span>
-            </li>
-            <li class="flex items-center text-gray-400">
-              <i class="fas fa-envelope mr-3 text-primary"></i>
-              <span>info@rifaspremium.com</span>
-            </li>
-          </ul>
+          <h3 class="text-lg font-bold text-white mb-6">Boletín Informativo</h3>
+          <p class="text-gray-400 mb-4">
+            Siguenos para recibir información sobre nuevas rifas, promociones exclusivas y resultados de sorteos.
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-primary transition-all">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-blue-400 transition-all">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-pink-600 transition-all">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-red-600 transition-all">
+              <i class="fab fa-youtube"></i>
+            </a>
+          </div>
         </div>
       </div>
       
       <div class="border-t border-gray-800 pt-8">
         <div class="flex flex-col md:flex-row justify-between items-center">
           <p class="text-gray-400 text-sm mb-4 md:mb-0">
-            © <?= date('Y') ?> Rifas Premium. Todos los derechos reservados.
+            © 2024 A&M Recreaciones. Todos los derechos reservados.
           </p>
-          <div class="flex space-x-4">
-            <a href="#" class="text-gray-400 hover:text-primary transition-all text-sm">Términos</a>
-            <a href="#" class="text-gray-400 hover:text-primary transition-all text-sm">Privacidad</a>
+          
+          <div class="flex space-x-3">
+            <a href="#Bancos" class="text-gray-400 hover:text-primary transition-all text-sm">
+              <i class="fas fa-credit-card mr-1"></i> Métodos de Pago
+            </a>
           </div>
         </div>
       </div>
