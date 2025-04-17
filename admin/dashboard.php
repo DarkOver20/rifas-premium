@@ -274,7 +274,7 @@ $total_ventas = calcularVentasTotales();
                     <i class="fas fa-bars text-xl"></i>
                 </button>
                 <a href="" class="flex items-center gap-2 group" aria-label="Rifas A&M">
-                    <img src="https://storage.googleapis.com/a1aa/image/AeamUydK5EmKTfsd6-73yLVqiwQJTSps5dL04l_p_jc.jpg" 
+                    <img src="./uploads/logocolor.webp" 
                          alt="Logo Rifas A&M" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">

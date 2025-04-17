@@ -127,6 +127,7 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
             border-left: 4px solid var(--primary-color);
         }
         
+        /* Overlay para sidebar móvil */
         .sidebar-overlay {
             display: none;
             background-color: rgba(0, 0, 0, 0.5);
@@ -136,6 +137,34 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
         .sidebar-open .sidebar-overlay {
             display: block;
         }
+        /* Sidebar */
+.sidebar {
+    width: 280px;
+    transition: all 0.3s ease;
+    transform: translateX(-100%);
+    z-index: 30;
+}
+
+/* Mostrar sidebar por defecto en desktop */
+@media (min-width: 1024px) {
+    .sidebar {
+        transform: translateX(0);
+    }
+    
+    /* Ocultar overlay en desktop */
+    .sidebar-overlay {
+        display: none !important;
+    }
+    
+    /* Asegurar que el main content tenga margen */
+    main {
+        padding-left: 280px !important;
+    }
+}
+
+.sidebar-open .sidebar {
+    transform: translateX(0);
+}
         
         /* Card styles */
         .info-card {
@@ -237,7 +266,7 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
                     <i class="fas fa-bars text-xl"></i>
                 </button>
                 <a href="../" class="flex items-center gap-2 group" aria-label="Bólidos Rifas">
-                    <img src="https://storage.googleapis.com/a1aa/image/AeamUydK5EmKTfsd6-73yLVqiwQJTSps5dL04l_p_jc.jpg" 
+                    <img src="./uploads/logocolor.webp" 
                          alt="Logo Bólidos Rifas" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
@@ -261,6 +290,10 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
 
     <!-- Sidebar -->
     <div class="sidebar-overlay fixed inset-0"></div>
+    <button id="sidebar-toggle" class="text-white mr-4 lg:flex lg:items-center lg:gap-2">
+    <i class="fas fa-bars text-xl"></i>
+    <span class="hidden lg:inline">Menú</span>
+</button>
     <aside class="sidebar fixed top-0 left-0 h-full bg-secondary shadow-xl overflow-y-auto pt-16">
         <div class="p-4">
             <div class="mb-8 px-4 py-3 bg-primary/10 rounded-lg border border-primary/20">
@@ -278,39 +311,28 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
             </div>
             
             <nav class="space-y-1">
-                <a href="../" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
-                    <i class="fas fa-tachometer-alt w-5 text-center text-gray-400"></i>
+                <a href="/rifas-premium/dashboard/" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg">
+                    <i class="fas fa-tachometer-alt w-5 text-center text-primary"></i>
                     <span>Dashboard</span>
                 </a>
                 
-                <a href="../eventos/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
+                <a href="/rifas-premium/eventos/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-trophy w-5 text-center text-gray-400"></i>
                     <span>Eventos</span>
                 </a>
                 
-                <a href="../solicitudes/" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg">
-                    <i class="fas fa-ticket-alt w-5 text-center text-primary"></i>
-                    <span>Solicitudes</span>
-                </a>
-                
-                <a href="../usuarios/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
+                <a href="/rifas-premium/admin/perfil" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-users w-5 text-center text-gray-400"></i>
-                    <span>Usuarios</span>
+                    <span>Perfil</span>
                 </a>
                 
-                <a href="../pagos/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
+                <a href="/rifas-premium/metodos" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-dollar-sign w-5 text-center text-gray-400"></i>
-                    <span>Pagos</span>
-                </a>
-                
-                <a href="../configuracion/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
-                    <i class="fas fa-cog w-5 text-center text-gray-400"></i>
-                    <span>Configuración</span>
+                    <span>Metodos de Pagos</span>
                 </a>
             </nav>
         </div>
     </aside>
-
     <!-- Main Content -->
     <main class="relative min-h-screen pt-16 pl-0 lg:pl-[280px] transition-all duration-300">
         <div class="p-6">
@@ -464,6 +486,8 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
 
     <!-- Scripts -->
     <script>
+
+
         // Toggle Sidebar
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebar = document.querySelector('.sidebar');

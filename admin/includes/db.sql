@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS transacciones (
     telefono VARCHAR(20) NOT NULL,
     cedula VARCHAR(20) NOT NULL,
     estado VARCHAR(100) NOT NULL,
+    referencia_pago VARCHAR(255),
     metodo_pago_id INT UNSIGNED NOT NULL,
     referencia_transaccion VARCHAR(255) NOT NULL,
     comprobante_pago VARCHAR(255) NOT NULL,

@@ -788,7 +788,7 @@ $metodos_de_pago = obtener_metodos_pago();
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
         <div>
           <a href="#" class="flex items-center gap-2 mb-6">
-            <img src=/rifasym.jpg  
+            <img src=./uploads/logocolor.webp  
                  alt="Bólidos Rifas" 
                  class="h-10 w-10 rounded-lg"
                  loading="lazy">

@@ -77,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --secondary-color: #222222;
             --accent-color: #fcfcfc;
             --background-color: #121212;
+            --secundary-color:rgba(68, 67, 67, 0.78);
             --text-color: #f8f9fa;
             --highlight-color: hsl(0, 0%, 100%);
         }
@@ -196,7 +197,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .login-logo img {
-            height: 5rem;
+            margin-left: 30%;
+            height: 8rem;
             width: auto;
             margin-bottom: 1rem;
         }
@@ -304,9 +306,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="login-container">
-        <div class="login-card fade-in">
+        <div class="login-card fade-in bg-background">
             <div class="login-logo">
-                <img src="https://storage.googleapis.com/a1aa/image/AeamUydK5EmKTfsd6-73yLVqiwQJTSps5dL04l_p_jc.jpg" 
+                <img src="../uploads/logocolor.webp " 
                      alt="Logo Rifas A&M" 
                      class="rounded-lg"
                      loading="eager">
