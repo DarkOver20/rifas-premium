@@ -113,8 +113,8 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
             <div class="flex justify-between items-center bg-secondary/90 backdrop-blur-md rounded-full px-6 py-3 shadow-lg border border-gray-800">
                 <a href="/rifas-premium/" class="flex items-center gap-2 group" aria-label="RifasA&M">
                     <img src="./assets/img/logo.png" alt="Logo RifasA&M" class="h-10 w-10 transition-all duration-300 group-hover:rotate-12" loading="eager">
-                    <span class="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                        RifasA&M
+                    <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
+                        A&M Recreaciones
                     </span>
                 </a>
                 <nav class="hidden lg:flex items-center gap-8">
@@ -434,50 +434,66 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
 
     <!-- Footer -->
     <footer class="bg-background border-t border-gray-800 pt-16 pb-8">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
-                <div>
-                    <a href="index.php" class="flex items-center gap-2 mb-6">
-                        <img src="./assets/img/logo.png" alt="Rifas Premium" class="h-10 w-10 rounded-lg" loading="lazy">
-                        <span class="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                            Rifas Premium
-                        </span>
-                    </a>
-                    <p class="text-gray-400 mb-6">
-                        Participa en nuestros exclusivos sorteos y vive la emoción de ganar increíbles premios.
-                    </p>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-white mb-6">Enlaces Rápidos</h3>
-                    <ul class="space-y-3">
-                        <li><a href="index.php" class="text-gray-400 hover:text-primary transition-all">Inicio</a></li>
-                        <li><a href="#rifas" class="text-gray-400 hover:text-primary transition-all">Rifas Activas</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-white mb-6">Contacto</h3>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-primary transition-all">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-all">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-pink-600 transition-all">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="border-t border-gray-800 pt-8">
-                <div class="flex flex-col md:flex-row justify-between items-center">
-                    <p class="text-gray-400 text-sm mb-4 md:mb-0">
-                        © <?= date('Y') ?> Rifas Premium. Todos los derechos reservados.
-                    </p>
-                </div>
-            </div>
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
+        <div>
+          <a href="#" class="flex items-center gap-2 mb-6">
+            <img src=/rifasym.jpg  
+                 alt="Bólidos Rifas" 
+                 class="h-10 w-10 rounded-lg"
+                 loading="lazy">
+            <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
+              A&M Recreaciones
+            </span>
+          </a>
+          <p class="text-gray-400 mb-6">
+            Participa en nuestros exclusivos sorteos y vive la emoción de ganar increíbles premios.
+          </p>
+
         </div>
-    </footer>
+        
+        <div>
+          <h3 class="text-lg font-bold text-white mb-6">Enlaces Rápidos</h3>
+          <ul class="space-y-3">
+            <li><a href="#inicio" class="text-gray-400 hover:text-primary transition-all">Inicio</a></li>
+            <li><a href="#eventos" class="text-gray-400 hover:text-primary transition-all">Rifas Activas</a></li>
+            <li><a href="#como-participar" class="text-gray-400 hover:text-primary transition-all">Como Participar</a></li>
+          </ul>
+        </div>
+        
+        
+        <div>
+          <h3 class="text-lg font-bold text-white mb-6">Boletín Informativo</h3>
+          <p class="text-gray-400 mb-4">
+            Siguenos para recibir información sobre nuevas rifas, promociones exclusivas y resultados de sorteos.
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-primary transition-all">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-blue-400 transition-all">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-pink-600 transition-all">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-red-600 transition-all">
+              <i class="fab fa-youtube"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 pt-8">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <p class="text-gray-400 text-sm mb-4 md:mb-0">
+            © 2024 A&M Recreaciones. Todos los derechos reservados.
+          </p>
+          
+        </div>
+      </div>
+    </div>
+  </footer>
 
     <!-- Botón de WhatsApp -->
     <a href="https://wa.me/" target="_blank" class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-40 transition-all hover:scale-110">

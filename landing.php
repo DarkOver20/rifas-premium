@@ -572,7 +572,7 @@ $metodos_de_pago = obtener_metodos_pago();
           Elige entre nuestros increíbles eventos. Cada boleto aumenta tus posibilidades de ser el próximo afortunado ganador.
         </p>
       </div>
-      
+      <br><br>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <?php if (!empty($eventos_activos)): ?>
           <?php foreach ($eventos_activos as $evento): ?>

@@ -279,7 +279,7 @@ $total_ventas = calcularVentasTotales();
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
                     <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-                        Rifas A&M
+                        A&M Recreciones
                     </span>
                 </a>
             </div>
@@ -374,9 +374,6 @@ $total_ventas = calcularVentasTotales();
                     <h2 class="text-xl font-bold">
                         <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Solicitudes Recientes</span>
                     </h2>
-                    <a href="./solicitudes/" class="text-sm text-primary hover:text-accent transition-all flex items-center gap-1">
-                        Ver todas <i class="fas fa-arrow-right text-xs"></i>
-                    </a>
                 </div>
                 
                 <div class="bg-secondary rounded-xl shadow-lg overflow-hidden">

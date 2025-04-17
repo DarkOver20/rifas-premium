@@ -323,26 +323,25 @@ $eventos_finalizados = obtenerEventos('finalizado');
             </div>
             
             <nav class="space-y-1">
-                <a href="./" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg">
+                <a href="/rifas-premium/dashboard/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-tachometer-alt w-5 text-center text-primary"></i>
                     <span>Dashboard</span>
                 </a>
                 
-                <a href="../" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
+                <a href="./" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-trophy w-5 text-center text-gray-400"></i>
                     <span>Eventos</span>
                 </a>
                 
-                <a href="./usuarios/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
+                <a href="/rifas-premium/admin/perfil" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-users w-5 text-center text-gray-400"></i>
-                    <span>Usuarios</span>
+                    <span>Perfil</span>
                 </a>
                 
-                <a href="./pagos/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
+                <a href="/rifas-premium/metodos" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-dollar-sign w-5 text-center text-gray-400"></i>
-                    <span>Metodos Pagos</span>
+                    <span>Metodos de Pagos</span>
                 </a>
-                
             </nav>
         </div>
     </aside>
