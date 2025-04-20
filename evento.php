@@ -10,7 +10,11 @@ if (!$evento) {
     exit;
 }
 
-$boletos_disponibles = obtenerBoletosDisponibles($evento_id);
+// Paginación
+$pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
+$boletos = obtenerBoletosDisponiblesPaginados($evento_id, $pagina_actual);
+$total_boletos = contarBoletosDisponibles($evento_id);
+$total_paginas = ceil($total_boletos / 100);
 ?>
 
 <!DOCTYPE html>
@@ -104,8 +108,73 @@ $boletos_disponibles = obtenerBoletosDisponibles($evento_id);
             width: 2rem;
         }
     }
+       /* Estilos para modales y errores */
+       .ticket-error {
+        animation: errorBlink 0.5s 3;
+    }
+    @keyframes errorBlink {
+        0% { background-color: #374151; }
+        50% { background-color: #ef4444; }
+        100% { background-color: #374151; }
+    }
+    .modal-exito {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+    }
+    .modal-exito .modal-contenido {
+        background-color: #222;
+        border-radius: 1rem;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        border: 1px solid #0066cc;
+        box-shadow: 0 0 20px rgba(0, 102, 204, 0.5);
+    }
+    .modal-exito h3 {
+        color: #10b981;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: bold;
+    }
+    .modal-exito h3.error {
+        color: #ef4444 !important;
+    }
+    .modal-exito p {
+        color: #fff;
+        margin-bottom: 2rem;
+    }
+    .modal-exito button {
+        background-color: #0066cc;
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s;
+    }
+    .modal-exito button:hover {
+        background-color: #004999;
+    }
     </style>
 </head>
+<?php
+    // Display memory usage
+    echo "<div style='position: fixed; bottom: 0; left: 0; background-color: #f0f0f0; color: #333; padding: 10px; font-size: 12px;'>";
+    echo "Pico de uso de RAM: " . round(memory_get_peak_usage() / 1024 / 1024, 2) . " MB";
+    echo "</div>";
+    ?>
+
 <body class="antialiased bg-background text-white">
     <!-- Header -->
     <header class="fixed w-full top-0 left-0 z-50 transition-all duration-300" id="navbar">
@@ -507,12 +576,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedTickets = [];
     const ticketPrice = <?= $evento['precio_boleto'] ?>;
     const ticketsPerPage = 100;
-    let currentPage = 1;
-    const allTickets = <?= json_encode($boletos_disponibles) ?>;
-    const totalPages = Math.ceil(allTickets.length / ticketsPerPage);
-    const soldTickets = <?= json_encode(array_map(function($boleto) { 
-        return $boleto['estado'] !== 'disponible' ? $boleto['numero_boleto'] : null; 
-    }, $boletos_disponibles)) ?>;
+    let currentPage = <?= $pagina_actual ?>;
+    const totalPages = <?= $total_paginas ?>;
 
     // Función para mostrar/ocultar pasos
     window.showStep = function(stepNumber) {
@@ -546,38 +611,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para cargar boletos por página
     function loadTickets(page) {
-        const startIndex = (page - 1) * ticketsPerPage;
-        const endIndex = startIndex + ticketsPerPage;
-        const ticketsToShow = allTickets.slice(startIndex, endIndex);
-        
+        fetch(`/rifas-premium/api/boletos.php?evento_id=<?= $evento_id ?>&pagina=${page}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderTickets(data.boletos);
+                    updatePaginationControls(page, data.total_paginas);
+                } else {
+                    console.error('Error al cargar boletos:', data.message);
+                }
+            });
+    }
+
+    // Renderizar boletos en el grid
+    function renderTickets(boletos) {
         const ticketGrid = document.getElementById('ticket-grid');
         ticketGrid.innerHTML = '';
         
-        ticketsToShow.forEach(boleto => {
+        boletos.forEach(boleto => {
             const ticketElement = document.createElement('div');
             ticketElement.className = `text-center py-1 text-xs rounded transition-all h-6 w-6 flex items-center justify-center ${
                 boleto.estado !== 'disponible' ? 'ticket-sold' : 'ticket-available'
             }`;
             ticketElement.textContent = boleto.numero_boleto;
-            ticketElement.setAttribute('data-numero', boleto.numero_boleto);
-            
+            ticketElement.dataset.numero = boleto.numero_boleto;
+
             if (boleto.estado === 'disponible') {
-                ticketElement.addEventListener('click', function() {
-                    toggleTicketSelection(this, boleto.numero_boleto);
-                });
+                ticketElement.addEventListener('click', () => toggleTicketSelection(ticketElement, boleto.numero_boleto));
             }
-            
+
             // Resaltar si está seleccionado
             if (selectedTickets.includes(boleto.numero_boleto)) {
                 ticketElement.classList.remove('ticket-available');
                 ticketElement.classList.add('ticket-selected');
             }
-            
+
             ticketGrid.appendChild(ticketElement);
         });
-        
-        // Actualizar controles de paginación
-        updatePaginationControls(page);
     }
 
     // Función para alternar selección de boleto
@@ -601,12 +671,12 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelectedTickets();
     }
 
-    // Función para actualizar controles de paginación
-    function updatePaginationControls(page) {
+    // Actualizar controles de paginación
+    function updatePaginationControls(page, total) {
         document.getElementById('current-page').textContent = page;
-        document.getElementById('total-pages').textContent = totalPages;
+        document.getElementById('total-pages').textContent = total;
         document.getElementById('prev-page').disabled = page === 1;
-        document.getElementById('next-page').disabled = page === totalPages;
+        document.getElementById('next-page').disabled = page === total;
     }
 
     // Función para actualizar la lista de boletos seleccionados
@@ -624,19 +694,19 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedTotal.textContent = (selectedTickets.length * ticketPrice).toFixed(2);
         
         // Actualizar lista de boletos
-         if (selectedTickets.length > 0) {
-        selectedList.innerHTML = `
-            <div class="flex flex-wrap gap-2">
-                ${selectedTickets.sort((a, b) => a - b).map(ticket => `
-                <div class="bg-primary text-white px-2 py-1 rounded-full text-xs flex items-center">
-                    #${ticket.toString().padStart(5, '0')}
-                    <button class="ml-1 text-xs hover:text-accent" onclick="removeTicket('${ticket}')">
-                        <i class="fas fa-times"></i>
-                    </button>
+        if (selectedTickets.length > 0) {
+            selectedList.innerHTML = `
+                <div class="flex flex-wrap gap-2">
+                    ${selectedTickets.sort((a, b) => a - b).map(ticket => `
+                    <div class="bg-primary text-white px-2 py-1 rounded-full text-xs flex items-center">
+                        #${ticket.toString().padStart(5, '0')}
+                        <button class="ml-1 text-xs hover:text-accent" onclick="removeTicket('${ticket}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    `).join('')}
                 </div>
-                `).join('')}
-            </div>
-        `;
+            `;
             continueBtn.disabled = false;
             
             // Actualizar resumen en paso 3
@@ -669,14 +739,14 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Eventos de paginación
-    document.getElementById('prev-page').addEventListener('click', function() {
+    document.getElementById('prev-page').addEventListener('click', () => {
         if (currentPage > 1) {
             currentPage--;
             loadTickets(currentPage);
         }
     });
 
-    document.getElementById('next-page').addEventListener('click', function() {
+    document.getElementById('next-page').addEventListener('click', () => {
         if (currentPage < totalPages) {
             currentPage++;
             loadTickets(currentPage);
@@ -699,13 +769,13 @@ document.addEventListener('DOMContentLoaded', function() {
             el.classList.add('ticket-available');
         });
         
-        // Generar boletos aleatorios disponibles
-        const availableTickets = allTickets
-            .filter(boleto => boleto.estado === 'disponible' && !selectedTickets.includes(boleto.numero_boleto))
-            .map(boleto => boleto.numero_boleto);
+        // Obtener boletos disponibles de la página actual
+        const availableTickets = Array.from(document.querySelectorAll('.ticket-available'))
+            .map(el => el.dataset.numero)
+            .filter(num => num !== undefined);
         
         if (availableTickets.length < quantity) {
-            alert(`Solo quedan ${availableTickets.length} boletos disponibles`);
+            alert(`Solo quedan ${availableTickets.length} boletos disponibles en esta página`);
             return;
         }
         
@@ -716,7 +786,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedTickets.push(randomTicket);
             availableTickets.splice(randomIndex, 1);
             
-            // Actualizar visualmente si está en la página actual
+            // Actualizar visualmente
             const ticketElement = document.querySelector(`.ticket-available[data-numero="${randomTicket}"]`);
             if (ticketElement) {
                 ticketElement.classList.remove('ticket-available');
@@ -771,6 +841,62 @@ document.addEventListener('DOMContentLoaded', function() {
             detallesDiv.innerHTML = '<p class="text-danger">Error al mostrar detalles</p>';
         }
     });
+
+     // Función para mostrar mensajes (éxito/error)
+     function mostrarMensaje(titulo, mensaje, esError = false) {
+            // Eliminar modales existentes primero
+            const modalesExistentes = document.querySelectorAll('.modal-exito');
+            modalesExistentes.forEach(modal => modal.remove());
+
+            const modal = document.createElement('div');
+            modal.className = 'modal-exito';
+            modal.innerHTML = `
+                <div class="modal-contenido">
+                    <h3 class="${esError ? 'error' : ''}">${titulo}</h3>
+                    <p>${mensaje}</p>
+                    <button onclick="cerrarModal()">Aceptar</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        window.cerrarModal = function() {
+            const modal = document.querySelector('.modal-exito');
+            if (modal) {
+                modal.remove();
+            }
+        };
+        // Reemplaza el evento submit del formulario
+document.getElementById('formulario-pago').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            mostrarMensaje('Éxito', data.message);
+            // Opcional: resetear el formulario o redirigir
+            this.reset();
+            selectedTickets = [];
+            updateSelectedTickets();
+            showStep(1);
+        } else {
+            mostrarMensaje('Error', data.message, true);
+        }
+    } catch (error) {
+        mostrarMensaje('Error', 'Ocurrió un error al procesar la solicitud', true);
+        console.error('Error:', error);
+    }
+});
+        
+
     function iniciarContador(fechaFin) {
         const tiempoObjetivo = new Date(fechaFin).getTime();
         const intervalo = setInterval(function() {
@@ -794,12 +920,14 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById("countdown-seconds").innerText = segundos.toString().padStart(2, '0');
         }, 1);
     }
+
     // Iniciar el contador con la fecha de fin del evento
     iniciarContador("<?= date('Y-m-d H:i:s', strtotime($evento['fecha_fin'])) ?>");
+    
     // Inicializar
-    loadTickets(1);
+    loadTickets(currentPage);
     updateSelectedTickets();
 });
-    </script>
+</script>
 </body>
 </html>

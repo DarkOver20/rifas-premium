@@ -447,12 +447,40 @@ function optimizarImagen($ruta, $max_width = 1200, $max_height = 800) {
     return $result;
 }
 
-function obtenerBoletosDisponiblesPaginados($evento_id, $por_pagina, $offset) {
+function obtenerBoletosDisponiblesPaginados($evento_id, $pagina = 1, $por_pagina = 100) {
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT * FROM boletos 
-                          WHERE evento_id = ? AND estado = 'disponible' 
-                          ORDER BY numero_boleto 
-                          LIMIT ? OFFSET ?");
+    $offset = ($pagina - 1) * $por_pagina;
+    $stmt = $pdo->prepare("
+        SELECT * FROM boletos 
+        WHERE evento_id = ? AND estado = 'disponible'
+        ORDER BY numero_boleto
+        LIMIT ? OFFSET ?
+    ");
     $stmt->execute([$evento_id, $por_pagina, $offset]);
     return $stmt->fetchAll();
+}
+
+function contarBoletosDisponibles($evento_id) {
+    $pdo = getDBConnection();
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM boletos WHERE evento_id = ? AND estado = 'disponible'");
+    $stmt->execute([$evento_id]);
+    return $stmt->fetchColumn();
+}
+
+function verificarDisponibilidadBoletos($evento_id, $numeros_boletos) {
+    $pdo = getDBConnection();
+    
+    // Convertir array a string para la consulta
+    $placeholders = implode(',', array_fill(0, count($numeros_boletos), '?'));
+    
+    $sql = "SELECT numero_boleto FROM boletos 
+            WHERE evento_id = ? 
+            AND numero_boleto IN ($placeholders)
+            AND estado != 'disponible'";
+    
+    $stmt = $pdo->prepare($sql);
+    $params = array_merge([$evento_id], $numeros_boletos);
+    $stmt->execute($params);
+    
+    return $stmt->fetchAll(PDO::FETCH_COLUMN);
 }

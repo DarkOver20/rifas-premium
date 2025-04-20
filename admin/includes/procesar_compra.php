@@ -63,6 +63,18 @@ if (isset($_FILES['comprobante_pago']) && $_FILES['comprobante_pago']['error'] =
     exit;
 }
 
+// Verificar disponibilidad de boletos antes de procesar
+$boletos_no_disponibles = verificarDisponibilidadBoletos($evento_id, $boletos_seleccionados);
+
+if (!empty($boletos_no_disponibles)) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Algunos boletos ya no están disponibles: ' . implode(', ', $boletos_no_disponibles),
+        'boletos_no_disponibles' => $boletos_no_disponibles
+    ]);
+    exit;
+}
+
 // Iniciar transacción
 $pdo->beginTransaction();
 

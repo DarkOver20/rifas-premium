@@ -67,7 +67,6 @@ CREATE TABLE IF NOT EXISTS transacciones (
     telefono VARCHAR(20) NOT NULL,
     cedula VARCHAR(20) NOT NULL,
     estado VARCHAR(100) NOT NULL,
-    referencia_pago VARCHAR(255),
     metodo_pago_id INT UNSIGNED NOT NULL,
     referencia_transaccion VARCHAR(255) NOT NULL,
     comprobante_pago VARCHAR(255) NOT NULL,
@@ -83,28 +82,6 @@ CREATE TABLE IF NOT EXISTS transacciones (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     INDEX idx_estado_compra (estado_compra),
     INDEX idx_fecha_compra (fecha_compra)
-);
-
--- Tabla de métodos de pago
-CREATE TABLE IF NOT EXISTS metodos_pago (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    detalles TEXT, -- Detalles variables en formato JSON
-    icono VARCHAR(255), -- Ruta o nombre del archivo del icono
-    activo TINYINT(1) DEFAULT 1,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabla de notificaciones (solo para administradores)
-CREATE TABLE IF NOT EXISTS notificaciones (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL,
-    titulo VARCHAR(255) NOT NULL,
-    mensaje TEXT NOT NULL,
-    leida BOOLEAN DEFAULT FALSE,
-    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
-    INDEX idx_leida (leida)
 );
 
 -- Trigger para actualizar boletos_disponibles cuando cambia el estado de un boleto
