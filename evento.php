@@ -359,18 +359,20 @@ $total_paginas = ceil($total_boletos / 100);
                                     <!-- Los boletos se cargarán dinámicamente con JavaScript -->
                                 </div>
                             </div>                            
-                            <!-- Boletos seleccionados -->
-                            <div class="mb-6 bg-gray-800/50 rounded-lg p-4">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-gray-300">Boletos seleccionados: <span id="selected-count">0</span></span>
-                                    <span class="text-primary font-bold">Total: $<span id="selected-total">0.00</span></span>
+                                <!-- Boletos seleccionados -->
+                                <div class="mb-6 bg-gray-800/50 rounded-lg p-4">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-gray-300">Boletos seleccionados: <span id="selected-count">0</span></span>
+                                        <div class="text-right">
+                                            <span class="text-primary font-bold block" id="selected-total">$0.00 USD</span>
+                                            <span class="text-xs text-gray-400" id="selected-total-equivalent"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex flex-wrap gap-2 min-h-10" id="selected-tickets-list">
+                                        <p class="text-gray-400 text-sm">No hay boletos seleccionados</p>
+                                    </div>
                                 </div>
-                                
-                                <div class="flex flex-wrap gap-2 min-h-10" id="selected-tickets-list">
-                                    <p class="text-gray-400 text-sm">No hay boletos seleccionados</p>
-                                </div>
-                            </div>
-                            
                             <!-- Botón de continuar -->
                             <button id="continue-btn" onclick="showStep(2)" class="w-full bg-success text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-green-700 transition-all disabled:opacity-50" disabled>
                                 <span>Continuar</span>
@@ -471,17 +473,20 @@ $total_paginas = ceil($total_boletos / 100);
                                 <div class="flex flex-wrap gap-2 mb-4" id="selected-tickets-display"></div>
                                 
                                 <div class="border-t border-gray-700 pt-4">
-                                    <div class="flex justify-between text-gray-300 mb-2">
-                                        <span>Precio por boleto:</span>
-                                        <span>$<?= number_format($evento['precio_boleto'], 2) ?></span>
-                                    </div>
-                                    <div class="flex justify-between text-gray-300 mb-2">
-                                        <span>Cantidad de boletos:</span>
-                                        <span id="cart-count">0</span>
-                                    </div>
-                                    <div class="flex justify-between text-white font-bold text-xl pt-2 border-t border-gray-700">
-                                        <span>Total a pagar:</span>
-                                        <span id="cart-total">$0</span>
+                                <div class="border-t border-gray-700 pt-4">
+                                <div class="flex justify-between text-gray-300 mb-2">
+                                    <span>Precio por boleto:</span>
+                                    <span>$<?= number_format($evento['precio_boleto'], 2) ?> USD</span>
+                                </div>
+                                <div class="flex justify-between text-gray-300 mb-2">
+                                    <span>Cantidad de boletos:</span>
+                                    <span id="cart-count">0</span>
+                                </div>
+                                <div class="flex justify-between text-white font-bold text-xl pt-2 border-t border-gray-700">
+                                    <span>Total a pagar:</span>
+                                    <div class="text-right">
+                                        <span id="cart-total">$0.00 USD</span>
+                                        <div class="text-xs text-gray-400" id="cart-total-equivalent"></div>
                                     </div>
                                 </div>
                             </div>
@@ -679,51 +684,125 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('next-page').disabled = page === total;
     }
 
-    // Función para actualizar la lista de boletos seleccionados
-    function updateSelectedTickets() {
-        const selectedCount = document.getElementById('selected-count');
-        const selectedTotal = document.getElementById('selected-total');
-        const selectedList = document.getElementById('selected-tickets-list');
-        const continueBtn = document.getElementById('continue-btn');
-        const cartCount = document.getElementById('cart-count');
-        const cartTotal = document.getElementById('cart-total');
-        const selectedDisplay = document.getElementById('selected-tickets-display');
+    // Función para actualizar los totales con conversión
+function updateTotalsWithConversion(conversionData = null) {
+    const totalUSD = selectedTickets.length * ticketPrice;
+    
+    // Actualizar en paso 1
+    document.getElementById('selected-total').textContent = `$${totalUSD.toFixed(2)} USD`;
+    
+    // Actualizar en paso 3
+    document.getElementById('cart-total').textContent = `$${totalUSD.toFixed(2)} USD`;
+    
+    // Limpiar equivalentes
+    document.getElementById('selected-total-equivalent').textContent = '';
+    document.getElementById('cart-total-equivalent').textContent = '';
+    
+    // Si hay datos de conversión, mostrar también el equivalente
+    if (conversionData && conversionData.success && conversionData.conversion) {
+        const convertedTotal = `${conversionData.precio_convertido.toFixed(2)} ${conversionData.moneda}`;
         
-        // Actualizar contadores
-        selectedCount.textContent = selectedTickets.length;
-        selectedTotal.textContent = (selectedTickets.length * ticketPrice).toFixed(2);
+        // Actualizar en paso 1
+        document.getElementById('selected-total').textContent = convertedTotal;
+        document.getElementById('selected-total-equivalent').textContent = `Equivalente: $${totalUSD.toFixed(2)} USD`;
         
-        // Actualizar lista de boletos
-        if (selectedTickets.length > 0) {
-            selectedList.innerHTML = `
-                <div class="flex flex-wrap gap-2">
-                    ${selectedTickets.sort((a, b) => a - b).map(ticket => `
-                    <div class="bg-primary text-white px-2 py-1 rounded-full text-xs flex items-center">
-                        #${ticket.toString().padStart(5, '0')}
-                        <button class="ml-1 text-xs hover:text-accent" onclick="removeTicket('${ticket}')">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    `).join('')}
-                </div>
-            `;
-            continueBtn.disabled = false;
-            
-            // Actualizar resumen en paso 3
-            if (cartCount) cartCount.textContent = selectedTickets.length;
-            if (cartTotal) cartTotal.textContent = `$${(selectedTickets.length * ticketPrice).toFixed(2)}`;
-            if (selectedDisplay) {
-                selectedDisplay.innerHTML = selectedTickets.map(ticket => `
-                    <div class="bg-gray-700 text-white px-3 py-1 rounded-full text-sm">
-                        #${ticket}
-                    </div>
-                `).join('');
+        // Actualizar en paso 3
+        document.getElementById('cart-total').textContent = convertedTotal;
+        document.getElementById('cart-total-equivalent').textContent = `Equivalente: $${totalUSD.toFixed(2)} USD`;
+    }
+}
+
+// Modificar el event listener del método de pago
+document.getElementById('payment-method').addEventListener('change', function() {
+    const detallesDiv = document.getElementById('detalles-metodo-pago-seleccionado');
+    const selectedOption = this.options[this.selectedIndex];
+    const detallesJson = selectedOption.getAttribute('data-detalles');
+    const metodo_pago_id = this.value;
+
+    // Limpiar detalles previos
+    detallesDiv.innerHTML = '';
+
+    // Mostrar detalles del método de pago
+    if (detallesJson) {
+        try {
+            const detalles = JSON.parse(detallesJson);
+            let detallesHTML = '<ul class="space-y-1">';
+
+            if (detalles.detalles) {
+                const detallesMetodo = JSON.parse(detalles.detalles);
+                for (const [key, value] of Object.entries(detallesMetodo)) {
+                    detallesHTML += `<li><strong>${key}:</strong> ${value}</li>`;
+                }
             }
-        } else {
-            selectedList.innerHTML = '<p class="text-gray-400 text-sm">No hay boletos seleccionados</p>';
-            continueBtn.disabled = true;
+
+            detallesHTML += '</ul>';
+            detallesDiv.innerHTML = detallesHTML;
+        } catch (error) {
+            console.error('Error al parsear JSON:', error);
+            detallesDiv.innerHTML = '<p class="text-danger">Error al mostrar detalles</p>';
         }
     }
+
+    // Obtener y aplicar tasa de cambio si hay boletos seleccionados
+    if (selectedTickets.length > 0) {
+        const totalUSD = selectedTickets.length * ticketPrice;
+        
+        fetch(`/rifas-premium/api/calcular_precio.php?metodo_pago_id=${metodo_pago_id}&precio=${totalUSD}`)
+            .then(response => response.json())
+            .then(data => {
+                updateTotalsWithConversion(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                updateTotalsWithConversion(); // Mostrar solo en USD si hay error
+            });
+    }
+});
+
+// Modificar la función updateSelectedTickets para usar la nueva función
+function updateSelectedTickets() {
+    const selectedCount = document.getElementById('selected-count');
+    const selectedList = document.getElementById('selected-tickets-list');
+    const continueBtn = document.getElementById('continue-btn');
+    const cartCount = document.getElementById('cart-count');
+    const selectedDisplay = document.getElementById('selected-tickets-display');
+    
+    // Actualizar contadores
+    selectedCount.textContent = selectedTickets.length;
+    if (cartCount) cartCount.textContent = selectedTickets.length;
+    
+    // Actualizar totales (llama a la nueva función)
+    updateTotalsWithConversion();
+    
+    // Resto del código para actualizar la lista de boletos...
+    if (selectedTickets.length > 0) {
+        selectedList.innerHTML = `
+            <div class="flex flex-wrap gap-2">
+                ${selectedTickets.sort((a, b) => a - b).map(ticket => `
+                <div class="bg-primary text-white px-2 py-1 rounded-full text-xs flex items-center">
+                    #${ticket.toString().padStart(5, '0')}
+                    <button class="ml-1 text-xs hover:text-accent" onclick="removeTicket('${ticket}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                `).join('')}
+            </div>
+        `;
+        continueBtn.disabled = false;
+        
+        // Actualizar resumen en paso 3
+        if (selectedDisplay) {
+            selectedDisplay.innerHTML = selectedTickets.map(ticket => `
+                <div class="bg-gray-700 text-white px-3 py-1 rounded-full text-sm">
+                    #${ticket}
+                </div>
+            `).join('');
+        }
+    } else {
+        selectedList.innerHTML = '<p class="text-gray-400 text-sm">No hay boletos seleccionados</p>';
+        continueBtn.disabled = true;
+    }
+}
 
     // Función para remover un boleto de la selección
     window.removeTicket = function(ticketNumber) {
@@ -812,35 +891,78 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+// Modificar el event listener del método de pago
+document.getElementById('payment-method').addEventListener('change', function() {
+    const detallesDiv = document.getElementById('detalles-metodo-pago-seleccionado');
+    const selectedOption = this.options[this.selectedIndex];
+    const detallesJson = selectedOption.getAttribute('data-detalles');
+    const metodo_pago_id = this.value;
+
+    // Limpiar detalles previos
+    detallesDiv.innerHTML = '';
+
     // Mostrar detalles del método de pago
-    document.getElementById('payment-method').addEventListener('change', function() {
-        const detallesDiv = document.getElementById('detalles-metodo-pago-seleccionado');
-        const selectedOption = this.options[this.selectedIndex];
-        const detallesJson = selectedOption.getAttribute('data-detalles');
-        
-        if (!detallesJson) {
-            detallesDiv.innerHTML = '';
-            return;
-        }
-        
+    if (detallesJson) {
         try {
             const detalles = JSON.parse(detallesJson);
             let detallesHTML = '<ul class="space-y-1">';
-            
+
             if (detalles.detalles) {
                 const detallesMetodo = JSON.parse(detalles.detalles);
                 for (const [key, value] of Object.entries(detallesMetodo)) {
                     detallesHTML += `<li><strong>${key}:</strong> ${value}</li>`;
                 }
             }
-            
+
             detallesHTML += '</ul>';
             detallesDiv.innerHTML = detallesHTML;
         } catch (error) {
             console.error('Error al parsear JSON:', error);
             detallesDiv.innerHTML = '<p class="text-danger">Error al mostrar detalles</p>';
         }
-    });
+    }
+
+    // Obtener y aplicar tasa de cambio si hay boletos seleccionados
+    if (selectedTickets.length > 0) {
+        const totalUSD = selectedTickets.length * ticketPrice;
+        
+        fetch(`/rifas-premium/api/calcular_precio.php?metodo_pago_id=${metodo_pago_id}&precio=${totalUSD}`)
+            .then(response => response.json())
+            .then(data => {
+                updateTotalsWithConversion(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                updateTotalsWithConversion(); // Mostrar solo en USD si hay error
+            });
+    }
+});
+function updateTotalsWithConversion(conversionData = null) {
+    const totalUSD = selectedTickets.length * ticketPrice;
+    
+    // Actualizar en paso 1
+    document.getElementById('selected-total').textContent = `$${totalUSD.toFixed(2)} USD`;
+    
+    // Actualizar en paso 3
+    document.getElementById('cart-total').textContent = `$${totalUSD.toFixed(2)} USD`;
+    
+    // Limpiar equivalentes
+    document.getElementById('selected-total-equivalent').textContent = '';
+    document.getElementById('cart-total-equivalent').textContent = '';
+    
+    // Si hay datos de conversión, mostrar también el equivalente
+    if (conversionData && conversionData.success && conversionData.conversion) {
+        const convertedTotal = `${conversionData.precio_convertido.toFixed(2)} ${conversionData.moneda}`;
+        
+        // Actualizar en paso 1
+        document.getElementById('selected-total').textContent = convertedTotal;
+        document.getElementById('selected-total-equivalent').textContent = `Equivalente: $${totalUSD.toFixed(2)} USD`;
+        
+        // Actualizar en paso 3
+        document.getElementById('cart-total').textContent = convertedTotal;
+        document.getElementById('cart-total-equivalent').textContent = `Equivalente: $${totalUSD.toFixed(2)} USD`;
+    }
+}
 
      // Función para mostrar mensajes (éxito/error)
      function mostrarMensaje(titulo, mensaje, esError = false) {
@@ -927,6 +1049,7 @@ document.getElementById('formulario-pago').addEventListener('submit', async func
     // Inicializar
     loadTickets(currentPage);
     updateSelectedTickets();
+    
 });
 </script>
 </body>

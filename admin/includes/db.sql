@@ -84,6 +84,30 @@ CREATE TABLE IF NOT EXISTS transacciones (
     INDEX idx_fecha_compra (fecha_compra)
 );
 
+-- Tabla de tipos de pago (monedas)
+CREATE TABLE IF NOT EXISTS tipos_pago (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    codigo VARCHAR(3) NOT NULL UNIQUE, -- Ej: USD, VES, COP, MXN
+    simbolo VARCHAR(5) NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+-- Tabla de tasas de cambio
+CREATE TABLE IF NOT EXISTS tasas_cambio (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tipo_pago_id INT UNSIGNED NOT NULL,
+    tasa DECIMAL(10,2) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (tipo_pago_id) REFERENCES tipos_pago(id) ON DELETE CASCADE,
+    UNIQUE KEY (tipo_pago_id) -- Solo una tasa activa por tipo de pago
+);
+
+-- Modificar tabla metodos_pago para agregar tipo de pago
+ALTER TABLE metodos_pago 
+ADD COLUMN tipo_pago_id INT UNSIGNED NULL,
+ADD FOREIGN KEY (tipo_pago_id) REFERENCES tipos_pago(id) ON DELETE SET NULL;
+
 -- Trigger para actualizar boletos_disponibles cuando cambia el estado de un boleto
 DELIMITER //
 CREATE TRIGGER after_boleto_update

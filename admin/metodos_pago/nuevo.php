@@ -3,19 +3,19 @@ require_once dirname(__DIR__) . '/includes/config.php';
 require_once dirname(__DIR__) . '/includes/functions.php';
 require_login();
 require_admin();
+
 $errores = [];
 $mensaje_exito = '';
 
+// Obtener tipos de pago para el select
+$tipos_pago = obtener_tipos_pago();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre']);
-    $detalles_array = [];
-    $detalles_json = '';
-
-    if (empty($nombre)) {
-        $errores['nombre'] = 'El nombre del método de pago es requerido.';
-    }
-
+    $tipo_pago_id = isset($_POST['tipo_pago_id']) && $_POST['tipo_pago_id'] ? (int)$_POST['tipo_pago_id'] : null;
+    
     // Procesar los detalles dinámicos
+    $detalles_array = [];
     if (isset($_POST['detalle_nombre']) && is_array($_POST['detalle_nombre'])) {
         for ($i = 0; $i < count($_POST['detalle_nombre']); $i++) {
             $nombre_detalle = trim($_POST['detalle_nombre'][$i]);
@@ -24,18 +24,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $detalles_array[$nombre_detalle] = $valor_detalle;
             }
         }
-        $detalles_json = json_encode($detalles_array);
+    }
+    $detalles_json = json_encode($detalles_array);
+
+    // Validaciones
+    if (empty($nombre)) {
+        $errores['nombre'] = 'El nombre del método de pago es requerido.';
     }
 
-    // Subir el icono
+    // Procesar icono
     $icono = '';
     if (isset($_FILES['icono']) && $_FILES['icono']['error'] === UPLOAD_ERR_OK) {
         $nombre_archivo = $_FILES['icono']['name'];
-        $extension = pathinfo($nombre_archivo, PATHINFO_EXTENSION);
+        $extension = strtolower(pathinfo($nombre_archivo, PATHINFO_EXTENSION));
         $nombre_base = uniqid('icono_') . '.' . $extension;
-        $ruta_destino = UPLOAD_DIR . $nombre_base; // Asegúrate de tener UPLOAD_DIR definido en config.php
-
-        if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])) {
+        $ruta_destino = UPLOAD_DIR . $nombre_base;
+        
+        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
             if (move_uploaded_file($_FILES['icono']['tmp_name'], $ruta_destino)) {
                 $icono = 'admin/uploads/' . $nombre_base;
             } else {
@@ -47,11 +52,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errores)) {
-        global $pdo;
-        $stmt = $pdo->prepare("INSERT INTO metodos_pago (nombre, detalles, icono) VALUES (?, ?, ?)");
-        $stmt->execute([$nombre, $detalles_json, $icono]);
+        try {
+            global $pdo;
+            
+            if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
+                // Editar método existente
+                $id = (int)$_GET['editar'];
+                $stmt = $pdo->prepare("UPDATE metodos_pago SET nombre = ?, detalles = ?, icono = ?, tipo_pago_id = ? WHERE id = ?");
+                $stmt->execute([$nombre, $detalles_json, $icono, $tipo_pago_id, $id]);
+                $mensaje_exito = 'Método de pago actualizado con éxito.';
+            } else {
+                // Crear nuevo método
+                $stmt = $pdo->prepare("INSERT INTO metodos_pago (nombre, detalles, icono, tipo_pago_id) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$nombre, $detalles_json, $icono, $tipo_pago_id]);
+                $mensaje_exito = 'Método de pago añadido con éxito.';
+            }
+            
+            header("Location: index.php?exito=" . urlencode($mensaje_exito));
+            exit();
+        } catch (PDOException $e) {
+            $errores['general'] = 'Error al guardar el método de pago: ' . $e->getMessage();
+        }
+    }
+}
 
-        $mensaje_exito = 'Método de pago añadido con éxito.';
+// Si estamos editando, cargar los datos existentes
+$metodo_actual = null;
+if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
+    $id = (int)$_GET['editar'];
+    $stmt = $pdo->prepare("SELECT * FROM metodos_pago WHERE id = ?");
+    $stmt->execute([$id]);
+    $metodo_actual = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$metodo_actual) {
+        header("Location: index.php");
+        exit();
     }
 }
 ?>
@@ -94,29 +129,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Añadir Nuevo Método de Pago</h1>
-
-        <a href="/rifas-premium/metodos" class="button">Volver a la lista de métodos de pago</a>
-
-        <?php if (!empty($errores)): ?>
-            <div class="error">
-                <ul>
-                    <?php foreach ($errores as $error): ?>
-                        <li><?php echo $error; ?></li>
+    <h1><?= isset($metodo_actual) ? 'Editar' : 'Añadir' ?> Método de Pago</h1>
+    
+    <?php if (!empty($errores)): ?>
+        <div class="error">
+            <ul>
+                <?php foreach ($errores as $error): ?>
+                    <li><?= $error ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+    
+    <form method="POST" enctype="multipart/form-data">
+        <div>
+            <label for="nombre">Nombre del Método de Pago:</label>
+            <input type="text" id="nombre" name="nombre" required 
+                   value="<?= isset($metodo_actual['nombre']) ? htmlspecialchars($metodo_actual['nombre']) : '' ?>">
+        </div>
+        
+        <div>
+            <label for="tipo_pago_id">Tipo de Pago (Moneda):</label>
+            <select id="tipo_pago_id" name="tipo_pago_id">
+                <option value="">Dólares (USD) - Sin conversión</option>
+                <?php foreach ($tipos_pago as $tipo): ?>
+                    <option value="<?= $tipo['id'] ?>" 
+                        <?= (isset($metodo_actual['tipo_pago_id']) && $metodo_actual['tipo_pago_id'] == $tipo['id'] ? 'selected' : '') ?>>
+                        <?= htmlspecialchars($tipo['nombre']) ?> (<?= $tipo['codigo'] ?>)
+                    </option>
                     <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-        <?php if (!empty($mensaje_exito)): ?>
-            <div class="success"><?php echo $mensaje_exito; ?></div>
-        <?php endif; ?>
-
-        <form method="POST" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="nombre">Nombre del Método de Pago:</label>
-                <input type="text" id="nombre" name="nombre" required>
+                </select>
+                <small>Selecciona un tipo de pago si requiere conversión de moneda</small>
             </div>
 
             <div id="detalles-dinamicos">

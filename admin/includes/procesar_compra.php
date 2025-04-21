@@ -1,4 +1,5 @@
 <?php
+// Limpiar cualquier buffer de salida
 while (ob_get_level()) ob_end_clean();
 
 require_once './config.php';
@@ -7,13 +8,6 @@ require_once './functions.php';
 header('Content-Type: application/json');
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
-if (error_get_last()) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Error interno del servidor'
-    ]);
-    exit;
-}
 
 // Validar y sanitizar datos
 $evento_id = filter_input(INPUT_POST, 'evento_id', FILTER_VALIDATE_INT);
@@ -21,10 +15,10 @@ $nombre = trim(filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING));
 $telefono = preg_replace('/[^0-9+\- ]/', '', trim(filter_input(INPUT_POST, 'telefono', FILTER_SANITIZE_STRING)));
 $cedula = preg_replace('/[^0-9]/', '', trim(filter_input(INPUT_POST, 'cedula', FILTER_SANITIZE_STRING)));
 $estado = trim(filter_input(INPUT_POST, 'estado', FILTER_SANITIZE_STRING));
-$referencia_pago = trim(filter_input(INPUT_POST, 'referencia_pago', FILTER_SANITIZE_STRING));
 $metodo_pago_id = filter_input(INPUT_POST, 'metodo_pago', FILTER_VALIDATE_INT);
 $referencia_transaccion = trim(filter_input(INPUT_POST, 'referencia_transaccion', FILTER_SANITIZE_STRING));
 $boletos_seleccionados = json_decode($_POST['boletos_seleccionados'], true);
+
 // Validaciones básicas
 if (!$evento_id || !$nombre || !$telefono || !$cedula || !$estado || !$metodo_pago_id || !$referencia_transaccion || empty($boletos_seleccionados)) {
     echo json_encode(['success' => false, 'message' => 'Datos incompletos o inválidos']);
@@ -38,18 +32,14 @@ if (!$evento) {
     exit;
 }
 
-// Calcular monto total
+// Calcular monto total en dólares (como antes)
 $monto_total = count($boletos_seleccionados) * $evento['precio_boleto'];
 
 // Procesar comprobante de pago
 $comprobante_pago = '';
 if (isset($_FILES['comprobante_pago']) && $_FILES['comprobante_pago']['error'] === UPLOAD_ERR_OK) {
-    // Limpiar nombre y cédula para el nombre del archivo
-    $nombre_limpio = preg_replace('/[^a-z0-9]/', '-', strtolower($nombre));
-    $cedula_limpia = preg_replace('/[^0-9]/', '', $cedula);
-    
     $extension = pathinfo($_FILES['comprobante_pago']['name'], PATHINFO_EXTENSION);
-    $nombre_archivo = 'comprobante_' . $nombre_limpio . '-' . $cedula_limpia . '.' . $extension;
+    $nombre_archivo = 'comprobante_' . uniqid() . '_' . $cedula . '.' . $extension;
     $ruta_destino = UPLOAD_DIR . $nombre_archivo;
     
     if (move_uploaded_file($_FILES['comprobante_pago']['tmp_name'], $ruta_destino)) {
@@ -63,14 +53,12 @@ if (isset($_FILES['comprobante_pago']) && $_FILES['comprobante_pago']['error'] =
     exit;
 }
 
-// Verificar disponibilidad de boletos antes de procesar
+// Verificar disponibilidad de boletos
 $boletos_no_disponibles = verificarDisponibilidadBoletos($evento_id, $boletos_seleccionados);
-
 if (!empty($boletos_no_disponibles)) {
     echo json_encode([
         'success' => false,
-        'message' => 'Algunos boletos ya no están disponibles: ' . implode(', ', $boletos_no_disponibles),
-        'boletos_no_disponibles' => $boletos_no_disponibles
+        'message' => 'Algunos boletos ya no están disponibles: ' . implode(', ', $boletos_no_disponibles)
     ]);
     exit;
 }
@@ -79,15 +67,15 @@ if (!empty($boletos_no_disponibles)) {
 $pdo->beginTransaction();
 
 try {
-    // 1. Crear la transacción
+    // 1. Crear la transacción (versión simplificada como antes)
     $stmt = $pdo->prepare("INSERT INTO transacciones (
-        evento_id, nombre, telefono, cedula, estado, referencia_pago, 
+        evento_id, nombre, telefono, cedula, estado, 
         metodo_pago_id, referencia_transaccion, comprobante_pago, 
-        boletos_seleccionados, monto_total, estado_compra
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendiente')");
+        boletos_seleccionados, monto_total, estado_compra, fecha_compra
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendiente', NOW())");
     
     $stmt->execute([
-        $evento_id, $nombre, $telefono, $cedula, $estado, $referencia_pago,
+        $evento_id, $nombre, $telefono, $cedula, $estado,
         $metodo_pago_id, $referencia_transaccion, $comprobante_pago,
         json_encode($boletos_seleccionados), $monto_total
     ]);
@@ -109,23 +97,25 @@ try {
     
     // Verificar que se actualizaron todos los boletos
     if ($stmt->rowCount() !== count($boletos_seleccionados)) {
-        throw new Exception("Algunos boletos no pudieron ser reservados");
+        throw new Exception("No se pudieron reservar todos los boletos seleccionados");
     }
     
     $pdo->commit();
     
+    // Respuesta exitosa
     echo json_encode([
         'success' => true,
         'message' => 'Compra procesada correctamente. Los boletos han sido reservados pendientes de aprobación.',
         'transaccion_id' => $transaccion_id,
-        'boletos_reservados' => $boletos_seleccionados // Envía los números de boletos reservados
+        'boletos_reservados' => $boletos_seleccionados
     ]);
     
 } catch (Exception $e) {
     $pdo->rollBack();
+    error_log("Error en procesar_compra.php: " . $e->getMessage());
+    
     echo json_encode([
         'success' => false,
-        'message' => 'Error al procesar la compra: ' . $e->getMessage()
+        'message' => 'Error al procesar la compra. Por favor intente nuevamente.'
     ]);
 }
-?>

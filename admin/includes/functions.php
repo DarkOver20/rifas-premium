@@ -484,3 +484,81 @@ function verificarDisponibilidadBoletos($evento_id, $numeros_boletos) {
     
     return $stmt->fetchAll(PDO::FETCH_COLUMN);
 }
+
+// TASAS
+
+// Obtener todos los tipos de pago
+function obtener_tipos_pago($activos = true) {
+    global $pdo;
+    $sql = "SELECT * FROM tipos_pago";
+    if ($activos) {
+        $sql .= " WHERE activo = 1";
+    }
+    $stmt = $pdo->query($sql);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Obtener tasa de cambio por tipo de pago
+function obtener_tasa_cambio($tipo_pago_id) {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT * FROM tasas_cambio WHERE tipo_pago_id = ?");
+    $stmt->execute([$tipo_pago_id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+// Actualizar o crear tasa de cambio
+function actualizar_tasa_cambio($tipo_pago_id, $tasa) {
+    global $pdo;
+    
+    // Verificar si ya existe una tasa para este tipo de pago
+    $tasa_existente = obtener_tasa_cambio($tipo_pago_id);
+    
+    if ($tasa_existente) {
+        // Actualizar tasa existente
+        $stmt = $pdo->prepare("UPDATE tasas_cambio SET tasa = ?, fecha_actualizacion = NOW() WHERE tipo_pago_id = ?");
+        return $stmt->execute([$tasa, $tipo_pago_id]);
+    } else {
+        // Crear nueva tasa
+        $stmt = $pdo->prepare("INSERT INTO tasas_cambio (tipo_pago_id, tasa) VALUES (?, ?)");
+        return $stmt->execute([$tipo_pago_id, $tasa]);
+    }
+}
+
+// Obtener métodos de pago con información de tasa de cambio
+function obtener_metodos_pago_con_tasas($activos = true) {
+    global $pdo;
+    
+    $sql = "SELECT mp.*, tp.nombre AS tipo_pago_nombre, tp.codigo AS tipo_pago_codigo, 
+                   tp.simbolo AS tipo_pago_simbolo, tc.tasa
+            FROM metodos_pago mp
+            LEFT JOIN tipos_pago tp ON mp.tipo_pago_id = tp.id
+            LEFT JOIN tasas_cambio tc ON tp.id = tc.tipo_pago_id";
+    
+    if ($activos) {
+        $sql .= " WHERE mp.activo = 1";
+    }
+    
+    $stmt = $pdo->query($sql);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Calcular precio con tasa de cambio
+function calcular_precio_con_tasa($precio_dolares, $metodo_pago_id) {
+    global $pdo;
+    
+    $sql = "SELECT tc.tasa 
+            FROM metodos_pago mp
+            LEFT JOIN tipos_pago tp ON mp.tipo_pago_id = tp.id
+            LEFT JOIN tasas_cambio tc ON tp.id = tc.tipo_pago_id
+            WHERE mp.id = ?";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$metodo_pago_id]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($result && $result['tasa'] !== null) {
+        return $precio_dolares * $result['tasa'];
+    }
+    
+    return $precio_dolares; // Si no hay tasa, devolver el precio original en dólares
+}
