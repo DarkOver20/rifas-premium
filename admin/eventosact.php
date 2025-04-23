@@ -266,12 +266,6 @@ $eventos_finalizados = obtenerEventos('finalizado');
 <body class="antialiased bg-background text-white">
     <!-- Navbar -->
     <header class="fixed w-full top-0 left-0 z-40 bg-secondary/90 backdrop-blur-md shadow-lg border-b border-gray-800">
-    <?php
-    // Display memory usage
-    echo "<div style='position: fixed; bottom: 0; left: 0; background-color: #f0f0f0; color: #333; padding: 10px; font-size: 12px;'>";
-    echo "Pico de uso de RAM: " . round(memory_get_peak_usage() / 1024 / 1024, 2) . " MB";
-    echo "</div>";
-    ?>
     <div class="flex items-center justify-between px-4 py-3">
             <div class="flex items-center">
                 <button id="sidebar-toggle" class="lg:hidden text-white mr-4">
@@ -283,7 +277,7 @@ $eventos_finalizados = obtenerEventos('finalizado');
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
                     <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-                        Bólidos Rifas
+                    A&M Recreciones
                     </span>
                 </a>
             </div>
@@ -331,11 +325,6 @@ $eventos_finalizados = obtenerEventos('finalizado');
                 <a href="./" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-trophy w-5 text-center text-gray-400"></i>
                     <span>Eventos</span>
-                </a>
-                
-                <a href="/rifas-premium/admin/perfil" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
-                    <i class="fas fa-users w-5 text-center text-gray-400"></i>
-                    <span>Perfil</span>
                 </a>
                 
                 <a href="/rifas-premium/metodos" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">

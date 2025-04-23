@@ -576,8 +576,13 @@ $metodos_de_pago = obtener_metodos_pago();
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <?php if (!empty($eventos_activos)): ?>
           <?php foreach ($eventos_activos as $evento): ?>
-            <div class="bg-secondary rounded-xl overflow-hidden shadow-xl card-hover fade-in">
-              <div class="relative">
+
+
+            <div class="bg-secondary rounded-xl overflow-hidden shadow-xl card-hover fade-in"  data-event-id="<?= $evento['id'] ?>" data-event-end="<?= date('Y-m-d H:i:s', strtotime($evento['fecha_fin'])) ?>">
+              
+
+
+            <div class="relative">
                 <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
                      alt="<?= htmlspecialchars($evento['titulo']) ?>" 
                      class="w-full h-56 object-cover img-loading"
@@ -654,7 +659,7 @@ $metodos_de_pago = obtener_metodos_pago();
           <?php foreach ($eventos_finalizados as $evento): ?>
             <div class="bg-secondary rounded-xl overflow-hidden shadow-xl card-hover fade-in">
               <div class="relative">
-                <img src="uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
+                <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
                      alt="<?= htmlspecialchars($evento['titulo']) ?>" 
                      class="w-full h-56 object-cover img-loading"
                      loading="lazy"
@@ -978,14 +983,87 @@ $metodos_de_pago = obtener_metodos_pago();
       }
     }
     
-    createParticles();
-  </script>
-  <?php
-    // Display memory usage
-    echo "<div style='position: fixed; bottom: 0; left: 0; background-color: #f0f0f0; color: #333; padding: 10px; font-size: 12px;'>";
-    echo "Pico de uso de RAM: " . round(memory_get_peak_usage() / 1024 / 1024, 2) . " MB";
-    echo "</div>";
-    ?>
+    createParticles(); 
+document.addEventListener('DOMContentLoaded', function() {
+    // Función para actualizar todos los contadores
+    function updateAllCounters() {
+        document.querySelectorAll('[data-event-end]').forEach(eventCard => {
+            const eventId = eventCard.dataset.eventId;
+            const endDate = new Date(eventCard.dataset.eventEnd);
+            const now = new Date();
+            const diffMs = endDate - now;
+            
+            // Elementos del DOM que necesitamos actualizar
+            const timeElement = eventCard.querySelector('.text-sm.font-bold'); // Elemento del tiempo restante
+            const statusBadge = eventCard.querySelector('.absolute.top-4.right-4 span'); // Badge de estado
+            const buyButton = eventCard.querySelector('.btn-glow'); // Botón de compra
+
+            if (diffMs <= 0) {
+                // El evento ha terminado
+                if (timeElement) timeElement.textContent = "Evento finalizado";
+                
+                // Cambiar el estado visual
+                if (statusBadge) {
+                    statusBadge.innerHTML = '<i class="fas fa-flag-checkered mr-1"></i> Finalizado';
+                    statusBadge.classList.remove('bg-primary');
+                    statusBadge.classList.add('bg-gray-700');
+                }
+                
+                // Ocultar botón de compra
+                if (buyButton) {
+                    buyButton.style.display = 'none';
+                }
+                
+                // Llamar a la API para actualizar el estado en la base de datos
+                updateEventStatus(eventId);
+            } else {
+                // Actualizar el contador
+                const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                if (timeElement) timeElement.textContent = `${days}d ${hours}h`;
+            }
+        });
+    }
+    
+    // Función para llamar al backend y actualizar el estado
+    async function updateEventStatus(eventId) {
+    try {
+        console.log(`Intentando actualizar estado del evento ${eventId}`);
+        const response = await fetch('/rifas-premium/api/update_event_status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ eventId: eventId })
+        });
+        
+        const data = await response.json();
+        console.log('Respuesta del servidor:', data);
+        
+        if (!data.success) {
+            console.error('Error al actualizar el evento:', data.message);
+            // Reintentar después de 30 segundos
+            setTimeout(() => updateEventStatus(eventId), 30000);
+        }
+    } catch (error) {
+        console.error('Error en la solicitud:', error);
+        // Reintentar después de 1 minuto
+        setTimeout(() => updateEventStatus(eventId), 60000);
+    }
+}
+    
+    // Actualizar contadores cada minuto
+    updateAllCounters();
+    setInterval(updateAllCounters, 60000);
+    
+    // También actualizar cuando la pestaña gana visibilidad
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            updateAllCounters();
+        }
+    });
+});
+</script>
 
 </body>
 </html>

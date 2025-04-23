@@ -329,11 +329,6 @@ $total_ventas = calcularVentasTotales();
                     <span>Eventos</span>
                 </a>
                 
-                <a href="/rifas-premium/admin/perfil" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
-                    <i class="fas fa-users w-5 text-center text-gray-400"></i>
-                    <span>Perfil</span>
-                </a>
-                
                 <a href="/rifas-premium/metodos" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-dollar-sign w-5 text-center text-gray-400"></i>
                     <span>Metodos de Pagos</span>
