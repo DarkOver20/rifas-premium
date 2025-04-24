@@ -176,18 +176,81 @@ function generarBoletosLotes($evento_id, $total_boletos, $lote_size = 1000) {
     }
 }
 
-function asignarBoletoGanador($evento_id, $numero_boleto) {
+/**
+ * Verificar un boleto antes de asignarlo como ganador
+ */
+if (isset($_GET['action']) && $_GET['action'] === 'verificar_boleto') {
+    $evento_id = intval($_GET['evento_id']);
+    $numero_boleto = sanitize($_GET['numero_boleto']);
+    
+    $pdo = getDBConnection();
+    $stmt = $pdo->prepare("SELECT b.*, t.nombre AS comprador 
+                          FROM boletos b
+                          LEFT JOIN transacciones t ON b.transaccion_id = t.id
+                          WHERE b.evento_id = ? AND b.numero_boleto = ?");
+    $stmt->execute([$evento_id, $numero_boleto]);
+    $boleto = $stmt->fetch();
+    
+    if ($boleto) {
+        echo json_encode([
+            'existe' => true,
+            'estado' => $boleto['estado'],
+            'comprador' => $boleto['comprador'] ?? null
+        ]);
+    } else {
+        echo json_encode(['existe' => false]);
+    }
+    exit;
+}
+/**
+ * Asignar boleto ganador
+ */
+if (isset($_POST['action']) && $_POST['action'] === 'asignar_ganador') {
+    header('Content-Type: application/json');
+    
+    $evento_id = intval($_POST['evento_id']);
+    $numero_boleto = sanitize($_POST['numero_boleto']);
+    
     $pdo = getDBConnection();
     
-    $stmt = $pdo->prepare("SELECT id FROM boletos WHERE evento_id = ? AND numero_boleto = ? AND estado = 'pagado'");
-    $stmt->execute([$evento_id, $numero_boleto]);
-    
-    if (!$stmt->fetch()) {
-        return false;
+    try {
+        // Verificar que el boleto existe y está pagado
+        $stmt = $pdo->prepare("SELECT b.*, t.nombre, t.cedula, t.telefono
+                              FROM boletos b
+                              JOIN transacciones t ON b.transaccion_id = t.id
+                              WHERE b.evento_id = ? AND b.numero_boleto = ? AND b.estado = 'pagado'");
+        $stmt->execute([$evento_id, $numero_boleto]);
+        $boleto = $stmt->fetch();
+        
+        if ($boleto) {
+            // Asignar boleto ganador
+            $stmt = $pdo->prepare("UPDATE eventos SET boleto_ganador = ? WHERE id = ?");
+            $stmt->execute([$numero_boleto, $evento_id]);
+            
+            // Devolver información del comprador
+            echo json_encode([
+                'success' => true,
+                'message' => 'Boleto ganador asignado correctamente',
+                'comprador' => [
+                    'nombre' => $boleto['nombre'],
+                    'cedula' => $boleto['cedula'],
+                    'telefono' => $boleto['telefono'],
+                ]
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'El boleto no existe o no está pagado'
+            ]);
+        }
+    } catch (PDOException $e) {
+        error_log("Error al asignar boleto ganador: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error al asignar el boleto ganador: ' . $e->getMessage()
+        ]);
     }
-    
-    $stmt = $pdo->prepare("UPDATE eventos SET boleto_ganador = ? WHERE id = ?");
-    return $stmt->execute([$numero_boleto, $evento_id]);
+    exit;
 }
 
 /**********************************************
@@ -562,3 +625,4 @@ function calcular_precio_con_tasa($precio_dolares, $metodo_pago_id) {
     
     return $precio_dolares; // Si no hay tasa, devolver el precio original en dólares
 }
+

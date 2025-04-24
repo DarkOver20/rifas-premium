@@ -4,7 +4,7 @@ require_once './admin/includes/functions.php';
 
 // Obtener eventos directamente desde PHP
 $eventos_activos = obtenerEventos('activo');
-$eventos_finalizados = obtenerEventos('finalizado');
+$eventos_finalizados = array_slice(obtenerEventos('finalizado'), 0, 3);
 $metodos_de_pago = obtener_metodos_pago();
 
 ?>
@@ -650,7 +650,7 @@ $metodos_de_pago = obtener_metodos_pago();
           <span class="bg-gradient-to-r from-three to-primary bg-clip-text text-transparent">Eventos anteriores</span>
         </h2>
         <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-          Revisa nuestros eventos pasados y los afortunados ganadores.
+          Nuestros eventos finalizados recientemente y sus afortunados ganadores. <br> ¡Tu podrias ser uno de ellos!
         </p>
       </div>
       

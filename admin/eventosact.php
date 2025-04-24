@@ -391,11 +391,58 @@ $eventos_finalizados = obtenerEventos('finalizado');
                                     </span>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+      
+     <!-- Eventos Finalizados -->
+     <section class="mb-8 fade-in" style="transition-delay: 0.3s">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <h2 class="text-xl font-bold">
+                        <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Eventos Finalizados</span>
+                    </h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <?php foreach ($eventos_finalizados as $evento): ?>
+                    <div class="bg-secondary rounded-xl overflow-hidden shadow-lg evento-card">
+                        <div class="relative">
+                            <div class="h-48 bg-gray-800 flex items-center justify-center">
+                            <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
+                                    alt="<?= htmlspecialchars($evento['titulo']) ?>" 
+                                    class="w-full h-full object-cover object-center" 
+                                    loading="lazy"> 
+                            </div>
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                                <h3 class="text-lg font-bold text-white"><?= htmlspecialchars($evento['titulo']) ?></h3>
+                                <div class="flex justify-between text-xs text-gray-300">
+                                    <span>Precio: $<?= number_format($evento['precio_boleto'], 2) ?></span>
+                                    <span><?= $evento['boletos_disponibles'] ?> disponibles</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <div>
+                                    <div class="text-xs text-gray-400">Fecha fin</div>
+                                    <div class="text-sm font-medium"><?= date('d/m/Y', strtotime($evento['fecha_fin'])) ?></div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xs text-gray-400">Estado</div>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
+                                        Activo
+                                    </span>
+                                </div>
+                            </div>
                             
                             <div class="flex justify-between gap-2">
-                                <a href="eventos/editar.php?id=<?= $evento['id'] ?>" class="flex-1 btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-md text-sm text-center transition-all">
-                                    <i class="fas fa-edit mr-1"></i> Editar
-                                </a>
+                                <button onclick="mostrarModalGanador(<?= $evento['id'] ?>)" 
+                                        class="flex-1 btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-md text-sm text-center transition-all">
+                                    <i class="fas fa-trophy mr-1"></i> Asignar Ganador
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -404,6 +451,64 @@ $eventos_finalizados = obtenerEventos('finalizado');
             </section>
         </div>
     </main>
+<!-- Modal para asignar boleto ganador -->
+<!-- Modal para asignar boleto ganador -->
+<div id="modalGanador" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div class="bg-secondary rounded-xl shadow-xl w-full max-w-md">
+        <div class="p-6">
+            <h3 class="text-xl font-bold text-white mb-4">Asignar Boleto Ganador</h3>
+            
+            <!-- Sección de éxito (oculta inicialmente) -->
+            <div id="successMessage" class="hidden mb-4 p-4 bg-success/20 border border-success/30 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-check-circle text-success"></i>
+                    <span id="successText" class="text-success"></span>
+                </div>
+                
+                <!-- Información del comprador -->
+                <div id="compradorInfo" class="mt-3 space-y-2 hidden">
+                    <h4 class="font-bold text-white">Información del Ganador:</h4>
+                    <p id="compradorNombre" class="text-gray-300"></p>
+                    <p id="compradorCedula" class="text-gray-300"></p>
+                    <p id="compradorTelefono" class="text-gray-300"></p>
+                    <p id="compradorEmail" class="text-gray-300"></p>
+                </div>
+            </div>
+            
+            <form id="formGanador" method="POST" action="/rifas-premium/admin/includes/functions.php">
+                <input type="hidden" name="action" value="asignar_ganador">
+                <input type="hidden" id="evento_id" name="evento_id" value="">
+                
+                <div class="mb-4">
+                    <label for="numero_boleto" class="block text-gray-300 mb-2">
+                        Número de Boleto Ganador
+                    </label>
+                    <input type="text" id="numero_boleto" name="numero_boleto" 
+                           class="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-gray-500"
+                           placeholder="Ingrese el número del boleto ganador">
+                    <p id="errorBoleto" class="text-danger text-sm mt-1 hidden"></p>
+                </div>
+                
+                <div class="bg-gray-800/50 p-4 rounded-lg mb-4 hidden" id="infoBoleto">
+                    <h4 class="font-bold text-white mb-2">Información del Boleto</h4>
+                    <p id="boletoEstado" class="text-gray-300"></p>
+                    <p id="boletoComprador" class="text-gray-300"></p>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="cerrarModal()" 
+                            class="px-4 py-2 border border-gray-600 text-gray-300 hover:text-white rounded-lg">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="submitButton"
+                            class="btn-glow bg-gradient-to-r from-primary to-primary-dark text-white px-4 py-2 rounded-lg">
+                        Confirmar Ganador
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
     <!-- Scripts -->
     <script>
@@ -446,6 +551,134 @@ $eventos_finalizados = obtenerEventos('finalizado');
                 }
             });
         }
+
+
+
+        // Mostrar modal para asignar boleto ganador
+function mostrarModalGanador(eventoId) {
+    document.getElementById('evento_id').value = eventoId;
+    document.getElementById('modalGanador').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    
+    // Limpiar campos al abrir
+    document.getElementById('numero_boleto').value = '';
+    document.getElementById('infoBoleto').classList.add('hidden');
+    document.getElementById('errorBoleto').classList.add('hidden');
+}
+
+// Cerrar modal y limpiar todo
+function cerrarModal() {
+    document.getElementById('modalGanador').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+    
+    // Limpiar campos y mensajes
+    document.getElementById('numero_boleto').value = '';
+    document.getElementById('errorBoleto').classList.add('hidden');
+    document.getElementById('infoBoleto').classList.add('hidden');
+    document.getElementById('successMessage').classList.add('hidden');
+    document.getElementById('compradorInfo').classList.add('hidden');
+    
+    // Habilitar campos por si estaban deshabilitados
+    document.getElementById('numero_boleto').disabled = false;
+    document.getElementById('submitButton').disabled = false;
+}
+
+// Verificar boleto mientras se escribe
+document.getElementById('numero_boleto').addEventListener('input', function() {
+    const numeroBoleto = this.value.trim();
+    const eventoId = document.getElementById('evento_id').value;
+    const errorElement = document.getElementById('errorBoleto');
+    const infoElement = document.getElementById('infoBoleto');
+    
+    if (numeroBoleto.length > 0) {
+        // Hacer petición AJAX para verificar el boleto
+        fetch(`/rifas-premium/admin/includes/functions.php?action=verificar_boleto&evento_id=${eventoId}&numero_boleto=${numeroBoleto}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.existe) {
+                    errorElement.classList.add('hidden');
+                    infoElement.classList.remove('hidden');
+                    
+                    document.getElementById('boletoEstado').textContent = `Estado: ${data.estado}`;
+                    
+                    if (data.comprador) {
+                        document.getElementById('boletoComprador').textContent = `Comprador: ${data.comprador}`;
+                    } else {
+                        document.getElementById('boletoComprador').textContent = 'Boleto no asignado';
+                    }
+                } else {
+                    infoElement.classList.add('hidden');
+                    errorElement.textContent = 'Este boleto no existe para este evento';
+                    errorElement.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    } else {
+        infoElement.classList.add('hidden');
+        errorElement.classList.add('hidden');
+    }
+});
+// Manejar envío del formulario
+document.getElementById('formGanador').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const errorElement = document.getElementById('errorBoleto');
+    const successElement = document.getElementById('successMessage');
+    const successText = document.getElementById('successText');
+    const compradorInfo = document.getElementById('compradorInfo');
+    
+    // Resetear estados
+    errorElement.classList.add('hidden');
+    successElement.classList.add('hidden');
+    compradorInfo.classList.add('hidden');
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            return response.text().then(text => {
+                throw new Error('La respuesta no es JSON: ' + text);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Mostrar mensaje de éxito
+            successText.textContent = data.message || 'Boleto ganador asignado correctamente';
+            successElement.classList.remove('hidden');
+            
+            // Mostrar información del comprador si está disponible
+            if (data.comprador) {
+                document.getElementById('compradorNombre').textContent = 'Nombre: ' + (data.comprador.nombre || 'N/A');
+                document.getElementById('compradorCedula').textContent = 'Cédula: ' + (data.comprador.cedula || 'N/A');
+                document.getElementById('compradorTelefono').textContent = 'Teléfono: ' + (data.comprador.telefono || 'N/A');
+                compradorInfo.classList.remove('hidden');
+            }
+            
+            // Deshabilitar el formulario temporalmente
+            document.getElementById('numero_boleto').disabled = true;
+            document.getElementById('submitButton').disabled = true;
+            
+
+        } else {
+            errorElement.textContent = data.message || 'Error al asignar el boleto ganador';
+            errorElement.classList.remove('hidden');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        errorElement.textContent = 'Error en el servidor: ' + error.message;
+        errorElement.classList.remove('hidden');
+    });
+});
+
     </script>
 
 </body>
