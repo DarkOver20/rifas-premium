@@ -498,7 +498,7 @@ $metodos_de_pago = obtener_metodos_pago();
                   <?php else: ?>
             <!-- Puedes mantener algunos métodos por defecto si no hay en la base de datos -->
                   <div class="flex flex-col items-center opacity-80 hover:opacity-100 transition-all">
-                <p>no hay rifas.</p>
+                <p>No hay rifas disponibles en este momento.</p>
                  </div>
                   <?php endif; ?>
                   </section></div>
