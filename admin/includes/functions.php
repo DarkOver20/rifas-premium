@@ -214,11 +214,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'asignar_ganador') {
     $pdo = getDBConnection();
     
     try {
-        // Verificar que el boleto existe y está pagado
+        // Verificar que el boleto existe
         $stmt = $pdo->prepare("SELECT b.*, t.nombre, t.cedula, t.telefono
                               FROM boletos b
-                              JOIN transacciones t ON b.transaccion_id = t.id
-                              WHERE b.evento_id = ? AND b.numero_boleto = ? AND b.estado = 'pagado'");
+                              LEFT JOIN transacciones t ON b.transaccion_id = t.id
+                              WHERE b.evento_id = ? AND b.numero_boleto = ?");
         $stmt->execute([$evento_id, $numero_boleto]);
         $boleto = $stmt->fetch();
         
@@ -240,7 +240,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'asignar_ganador') {
         } else {
             echo json_encode([
                 'success' => false,
-                'message' => 'El boleto no existe o no está pagado'
+                'message' => 'El boleto no existe'
             ]);
         }
     } catch (PDOException $e) {
@@ -252,7 +252,60 @@ if (isset($_POST['action']) && $_POST['action'] === 'asignar_ganador') {
     }
     exit;
 }
-
+/**
+ * Obtener información del ganador actual
+ */
+if (isset($_GET['action']) && $_GET['action'] === 'obtener_ganador') {
+    // Limpiar cualquier salida previa
+    ob_clean();
+    
+    // Forzar el tipo de contenido a JSON
+    header('Content-Type: application/json');    
+    try {
+        $evento_id = intval($_GET['evento_id']);
+        
+        $pdo = getDBConnection();
+        $stmt = $pdo->prepare("SELECT 
+                e.boleto_ganador, 
+                t.nombre, 
+                t.cedula, 
+                t.telefono,
+                t.email
+            FROM eventos e
+            LEFT JOIN boletos b ON e.boleto_ganador = b.numero_boleto AND e.id = b.evento_id
+            LEFT JOIN transacciones t ON b.transaccion_id = t.id
+            WHERE e.id = ?");
+        $stmt->execute([$evento_id]);
+        $ganador = $stmt->fetch();
+        
+        if (!$ganador || empty($ganador['boleto_ganador'])) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Este evento no tiene un boleto ganador asignado'
+            ]);
+            exit;
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'boleto_ganador' => $ganador['boleto_ganador'],
+            'comprador' => [
+                'nombre' => $ganador['nombre'] ?? 'No disponible',
+                'cedula' => $ganador['cedula'] ?? 'No disponible',
+                'telefono' => $ganador['telefono'] ?? 'No disponible',
+                'email' => $ganador['email'] ?? 'No disponible'
+            ]
+        ]);
+        
+    } catch (Exception $e) {
+        error_log("Error en obtener_ganador: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error al obtener información del ganador'
+        ]);
+    }
+    exit;
+}
 /**********************************************
  * FUNCIONES DE BOLETOS
  **********************************************/
