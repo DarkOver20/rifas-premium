@@ -14,7 +14,7 @@ $total_ventas = calcularVentasTotales();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - Rifas A&M</title>
+    <title>Panel de Administración - A&M Recreciones</title>
     
     <!-- Preconexión y precarga estratégica -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -273,9 +273,9 @@ $total_ventas = calcularVentasTotales();
                 <button id="sidebar-toggle" class="lg:hidden text-white mr-4">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <a href="" class="flex items-center gap-2 group" aria-label="Rifas A&M">
+                <a href="" class="flex items-center gap-2 group" aria-label="A&M Recreciones">
                     <img src="./uploads/logocolor.webp" 
-                         alt="Logo Rifas A&M" 
+                         alt="Logo A&M Recreciones" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
                     <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
@@ -345,7 +345,7 @@ $total_ventas = calcularVentasTotales();
                 <h1 class="text-3xl font-bold mb-2">
                     <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Panel de Control</span>
                 </h1>
-                <p class="text-gray-400">Bienvenido al centro de administración de Rifas A&M</p>
+                <p class="text-gray-400">Bienvenido al centro de administración de A&M Recreciones</p>
             </div>
             
             <!-- Stats Cards -->
