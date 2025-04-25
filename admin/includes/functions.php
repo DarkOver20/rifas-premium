@@ -1,4 +1,5 @@
 <?php
+
 /**********************************************
  * FUNCIONES DE CONEXIÓN Y CONFIGURACIÓN
  **********************************************/
@@ -11,7 +12,9 @@ function getDBConnection() {
     static $pdo = null;
     
     if ($pdo === null) {
+
         try {
+
             $pdo = new PDO(
                 "mysql:host=".DB_HOST.";dbname=".DB_NAME.";charset=utf8mb4", 
                 DB_USER, 
@@ -262,6 +265,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'obtener_ganador') {
     // Forzar el tipo de contenido a JSON
     header('Content-Type: application/json');    
     try {
+        require_once './config.php';
+
         $evento_id = intval($_GET['evento_id']);
         
         $pdo = getDBConnection();
@@ -269,8 +274,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'obtener_ganador') {
                 e.boleto_ganador, 
                 t.nombre, 
                 t.cedula, 
-                t.telefono,
-                t.email
+                t.telefono
             FROM eventos e
             LEFT JOIN boletos b ON e.boleto_ganador = b.numero_boleto AND e.id = b.evento_id
             LEFT JOIN transacciones t ON b.transaccion_id = t.id
@@ -292,8 +296,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'obtener_ganador') {
             'comprador' => [
                 'nombre' => $ganador['nombre'] ?? 'No disponible',
                 'cedula' => $ganador['cedula'] ?? 'No disponible',
-                'telefono' => $ganador['telefono'] ?? 'No disponible',
-                'email' => $ganador['email'] ?? 'No disponible'
+                'telefono' => $ganador['telefono'] ?? 'No disponible'
             ]
         ]);
         
