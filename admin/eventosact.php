@@ -6,6 +6,7 @@ require_admin();
 
 $eventos_activos = obtenerEventos('activo');
 $eventos_finalizados = obtenerEventos('finalizado');
+
 ?>
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
@@ -298,6 +299,7 @@ $eventos_finalizados = obtenerEventos('finalizado');
 }
     </style>
 </head>
+
 <body class="antialiased bg-background text-white">
     <!-- Navbar -->
     <header class="fixed w-full top-0 left-0 z-40 bg-secondary/90 backdrop-blur-md shadow-lg border-b border-gray-800">
@@ -516,7 +518,6 @@ $eventos_finalizados = obtenerEventos('finalizado');
                     <p id="compradorNombre" class="text-gray-300"></p>
                     <p id="compradorCedula" class="text-gray-300"></p>
                     <p id="compradorTelefono" class="text-gray-300"></p>
-                    <p id="compradorEmail" class="text-gray-300"></p>
                 </div>
             </div>
             
@@ -554,15 +555,14 @@ $eventos_finalizados = obtenerEventos('finalizado');
         </div>
     </div>
 </div>
-
 <!-- Modal para ver información del ganador -->
 <div id="modalInfoGanador" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black bg-opacity-50">
     <div class="bg-secondary rounded-xl shadow-xl w-full max-w-md">
         <div class="p-6">
             <h3 class="text-xl font-bold text-white mb-4">Información del Ganador</h3>
             
-            <div id="ganadorContent" class="space-y-4">
-                <!-- La información se cargará dinámicamente aquí -->
+            <div id="ganadorContent" class="bg-gray-800/50 p-4 rounded-lg">
+                <!-- La información del ganador se cargará aquí dinámicamente -->
             </div>
             
             <div class="flex justify-end mt-6">
@@ -743,33 +743,27 @@ document.getElementById('formGanador').addEventListener('submit', function(e) {
     });
 });
 
-
 // Mostrar información del ganador existente
 function mostrarInfoGanador(eventoId) {
     fetch(`/rifas-premium/admin/includes/functions.php?action=obtener_ganador&evento_id=${eventoId}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error en la respuesta del servidor');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             const modal = document.getElementById('modalInfoGanador');
             const content = document.getElementById('ganadorContent');
             
             if (data.success) {
                 content.innerHTML = `
-                    <div class="bg-gray-800/50 p-4 rounded-lg">
-                        <h4 class="font-bold text-white mb-2">Boleto Ganador: ${data.boleto_ganador}</h4>
-                        <p class="text-gray-300"><strong>Nombre:</strong> ${data.comprador.nombre}</p>
-                        <p class="text-gray-300"><strong>Cédula:</strong> ${data.comprador.cedula}</p>
-                        <p class="text-gray-300"><strong>Teléfono:</strong> ${data.comprador.telefono}</p>
-                    </div>
+                    <h4 class="font-bold text-white mb-2">Boleto Ganador: ${data.boleto_ganador}</h4>
+                    ${data.comprador ? `
+                        <p class="text-gray-300"><strong>Nombre:</strong> ${data.comprador.nombre || 'No disponible'}</p>
+                        <p class="text-gray-300"><strong>Cédula:</strong> ${data.comprador.cedula || 'No disponible'}</p>
+                        <p class="text-gray-300"><strong>Teléfono:</strong> ${data.comprador.telefono || 'No disponible'}</p>
+                    ` : '<p class="text-gray-300">No hay información del comprador disponible</p>'}
                 `;
             } else {
                 content.innerHTML = `
                     <div class="bg-danger/20 border border-danger/30 text-danger p-4 rounded-lg">
-                        <i class="fas fa-exclamation-circle mr-2"></i> ${data.message}
+                        <i class="fas fa-exclamation-circle mr-2"></i> ${data.message || 'No hay ganador asignado para este evento'}
                     </div>
                 `;
             }
@@ -789,7 +783,6 @@ function mostrarInfoGanador(eventoId) {
             document.body.classList.add('overflow-hidden');
         });
 }
-
 // Cerrar modal de información
 function cerrarModalInfo() {
     document.getElementById('modalInfoGanador').classList.add('hidden');
