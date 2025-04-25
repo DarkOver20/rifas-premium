@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS eventos (
     boletos_disponibles INT NOT NULL,
     fecha_inicio DATETIME,
     fecha_fin DATETIME,
-    estado ENUM('activo', 'finalizado', 'proximamente') DEFAULT 'proximamente',
+    estado ENUM('activo', 'finalizado') DEFAULT 'activo',
     premio_principal TEXT,
     boleto_ganador VARCHAR(10),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
