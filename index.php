@@ -51,6 +51,13 @@ switch ($request) {
         require __DIR__ . '/admin/metodos_pago/nuevo.php';
         break; 
 
+    
+    case 'metodos/tasas':
+            // Página de crear metodos de pago
+            require_admin();
+            require __DIR__ . '/admin/metodos_pago/tasas.php';
+            break; 
+
     case 'admin/perfil':
         // Página de crear metodos de pago
         require_admin();
@@ -67,7 +74,7 @@ switch ($request) {
         if (preg_match('/^evento\/(\d+)\/[a-z0-9-]+$/i', $request, $matches)) {
             // Vista de evento público
             $_GET['id'] = (int)$matches[1];
-            require __DIR__ . '/evento.php';
+            require __DIR__ . '/evento2.php';
         }
             
         elseif (preg_match('/^admin\/solicitud\/comprobante-([a-z0-9-]+)$/i', $request, $matches)) {

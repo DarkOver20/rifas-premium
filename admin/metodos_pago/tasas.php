@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $_SESSION['mensaje_exito'] = 'Tasas de cambio actualizadas correctamente.';
-    header("Location: tasas.php");
+    header("Location: /rifas-premium/metodos/tasas");
     exit();
 }
 ?>

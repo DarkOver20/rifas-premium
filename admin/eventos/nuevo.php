@@ -437,19 +437,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <?php endif; ?>
               
               <!-- Estado -->
-              <div>
-                <label for="estado" class="block text-gray-300 mb-2 font-medium">
-                  Estado <span class="text-danger">*</span>
-                </label>
-                <?php $selected_activo = (isset($_POST['estado']) && $_POST['estado'] === 'activo') ? 'selected' : '';
-                      $selected_prox = (isset($_POST['estado']) && $_POST['estado'] === 'proximamente') ? 'selected' : '';
-                    ?>
-                              
-                <select id="estado" name="estado" required class="w-full form-input px-4 py-3 bg-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white">
-  <option value="activo" <?= $selected_activo ?>>Activo</option>
-  <option value="proximamente" <?= $selected_prox ?>>Próximamente</option>
-</select>
-            </div>
+
             </div>
           </div>
           
