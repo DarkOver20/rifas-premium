@@ -292,8 +292,31 @@ $total_paginas = ceil($total_boletos / 100);
                     </div>
                 </div>
 
-                <!-- Columna derecha (Proceso de compra) -->
-                <div class="lg:col-span-8">
+               <!-- Columna derecha (Proceso de compra o mensaje de evento finalizado) -->
+<div class="lg:col-span-8">
+    <?php if ($evento['estado'] == 'finalizado'): ?>
+        <!-- Mensaje de evento finalizado -->
+        <div class="bg-secondary rounded-xl shadow-lg overflow-hidden border border-gray-800 p-8 text-center">
+            <div class="text-5xl mb-4 text-primary">
+                <i class="fas fa-flag-checkered"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-4">¡Este evento ha finalizado!</h2>
+            <p class="text-gray-300 mb-6">El sorteo de esta rifa ya se realizó y no es posible comprar más boletos.</p>
+            
+            <?php if (!empty($evento['boleto_ganador'])): ?>
+                <div class="bg-gray-800/50 rounded-lg p-4 max-w-md mx-auto">
+                    <h3 class="text-lg font-bold text-primary mb-2">Boleto ganador</h3>
+                    <div class="text-3xl font-bold text-white mb-2"><?= $evento['boleto_ganador'] ?></div>
+                    <p class="text-gray-300 text-sm">¡Felicidades al ganador!</p>
+                </div>
+            <?php endif; ?>
+            
+            <a href="/rifas-premium" class="inline-block mt-6 bg-primary text-white px-6 py-3 rounded-lg font-bold hover:bg-primary-dark transition-all">
+                <i class="fas fa-arrow-left mr-2"></i> Ver otros eventos
+            </a>
+        </div>
+    <?php else: ?>
+        <!-- Contenido actual del proceso de compra -->
                     <!-- Pasos de compra -->
                     <div class="mb-8">
                         <div class="flex items-center justify-between text-sm text-gray-400">
@@ -508,7 +531,8 @@ $total_paginas = ceil($total_boletos / 100);
 </div>
 
         </div>
-    </main>
+    </main> <?php endif; ?>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-background border-t border-gray-800 pt-16 pb-8">

@@ -366,24 +366,37 @@ function obtenerBoletosPorTransaccion($transaccion_id) {
     $stmt->execute([$transaccion_id]);
     return $stmt->fetchAll();
 }
-
-function obtenerSolicitudesPendientes() {
+function obtenerSolicitudesPendientes($pagina = 1, $por_pagina = 10) {
     $pdo = getDBConnection();
+    $offset = ($pagina - 1) * $por_pagina;
     
     $sql = "SELECT t.id, 
-    t.nombre AS comprador_nombre,
-    t.cedula AS comprador_cedula,
-    e.titulo AS evento_titulo,
-    t.monto_total AS monto,
-    t.fecha_compra AS fecha_transaccion,
-    (SELECT COUNT(*) FROM boletos WHERE transaccion_id = t.id) AS cantidad_boletos
-FROM transacciones t
-JOIN eventos e ON t.evento_id = e.id
-WHERE t.estado_compra = 'pendiente'
-ORDER BY t.fecha_compra DESC
-LIMIT 10";
+                   t.nombre AS comprador_nombre,
+                   t.cedula AS comprador_cedula,
+                   e.titulo AS evento_titulo,
+                   t.monto_total AS monto,
+                   t.fecha_compra AS fecha_transaccion,
+                   (SELECT COUNT(*) FROM boletos WHERE transaccion_id = t.id) AS cantidad_boletos
+            FROM transacciones t
+            JOIN eventos e ON t.evento_id = e.id
+            WHERE t.estado_compra = 'pendiente'
+            ORDER BY t.fecha_compra ASC  -- Ordenamos por fecha más antigua primero
+            LIMIT :limit OFFSET :offset";
     
-    return $pdo->query($sql)->fetchAll();
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':limit', $por_pagina, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    return $stmt->fetchAll();
+}
+
+function contarSolicitudesPendientes() {
+    $pdo = getDBConnection();
+    $sql = "SELECT COUNT(*) 
+            FROM transacciones 
+            WHERE estado_compra = 'pendiente'";
+    return $pdo->query($sql)->fetchColumn();
 }
 
 function procesarTransaccion($transaccion_id, $accion, $usuario_id, $notas = '') {

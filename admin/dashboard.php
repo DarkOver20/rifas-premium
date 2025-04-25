@@ -4,10 +4,14 @@ require_once dirname(__DIR__) . '/admin/includes/functions.php';
 require_login();
 require_admin();
 
-$eventos_finalizados = obtenerEventos('finalizado');
-$solicitudes_pendientes = obtenerSolicitudesPendientes();
-$total_usuarios = contarUsuarios();
-$total_ventas = calcularVentasTotales();
+// Obtener el número de página actual (por defecto 1)
+$pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
+$por_pagina = 10;
+
+// Obtener solicitudes paginadas
+$solicitudes_pendientes = obtenerSolicitudesPendientes($pagina_actual, $por_pagina);
+$total_solicitudes = contarSolicitudesPendientes();
+$total_paginas = ceil($total_solicitudes / $por_pagina);$total_ventas = calcularVentasTotales();
 ?>
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
@@ -412,6 +416,32 @@ $total_ventas = calcularVentasTotales();
                                 <?php endif; ?>
                             </tbody>
                         </table>
+                        <!-- Agrega esto después del cierre de la tabla pero dentro de la sección -->
+<div class="flex items-center justify-between mt-4 px-4 py-3 bg-secondary rounded-b-lg">
+    <div class="text-sm text-gray-400">
+        Mostrando <?= count($solicitudes_pendientes) ?> de <?= $total_solicitudes ?> solicitudes
+    </div>
+    
+    <div class="flex gap-2">
+        <?php if ($pagina_actual > 1): ?>
+            <a href="?pagina=<?= $pagina_actual - 1 ?>" class="px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-all">
+                <i class="fas fa-chevron-left"></i> Anterior
+            </a>
+        <?php endif; ?>
+        
+        <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
+            <a href="?pagina=<?= $i ?>" class="px-3 py-1 rounded-md transition-all <?= $i == $pagina_actual ? 'bg-primary text-white' : 'bg-primary/10 hover:bg-primary/20 text-primary' ?>">
+                <?= $i ?>
+            </a>
+        <?php endfor; ?>
+        
+        <?php if ($pagina_actual < $total_paginas): ?>
+            <a href="?pagina=<?= $pagina_actual + 1 ?>" class="px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-all">
+                Siguiente <i class="fas fa-chevron-right"></i>
+            </a>
+        <?php endif; ?>
+    </div>
+</div>
                     </div>
                 </div>
             </section>

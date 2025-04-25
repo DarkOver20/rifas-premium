@@ -436,7 +436,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p class="error-message"><?= $errores['fechas'] ?></p>
               <?php endif; ?>
               
-              <!-- Estado -->
+               <!-- Estado -->
+              <input type="hidden" id="estado" name="estado" value="activo">
 
             </div>
           </div>
