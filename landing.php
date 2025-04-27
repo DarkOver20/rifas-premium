@@ -463,7 +463,7 @@ $metodos_de_pago = obtener_metodos_pago();
                   
                   
                   <?php $evento_destacado = $eventos_activos[0]; ?>
-                  <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento_destacado['imagen']) ?>"
+                  <img src="/rifas-premium/admin/uploads/eventos/<?= htmlspecialchars($evento_destacado['imagen']) ?>"
                        alt="<?= htmlspecialchars($evento_destacado['titulo']) ?>" 
                        class="w-full h-48 object-cover rounded-xl mb-4 img-loading"
                        loading="lazy"
@@ -582,7 +582,7 @@ $metodos_de_pago = obtener_metodos_pago();
 
 
             <div class="relative">
-                <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
+                <img src="/rifas-premium/admin/uploads/eventos/<?= htmlspecialchars($evento['imagen']) ?>" 
                      alt="<?= htmlspecialchars($evento['titulo']) ?>" 
                      class="w-full h-56 object-cover img-loading"
                      loading="lazy"
@@ -658,7 +658,7 @@ $metodos_de_pago = obtener_metodos_pago();
           <?php foreach ($eventos_finalizados as $evento): ?>
             <div class="bg-secondary rounded-xl overflow-hidden shadow-xl card-hover fade-in">
               <div class="relative">
-                <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
+                <img src="/rifas-premium/admin/uploads/eventos/<?= htmlspecialchars($evento['imagen']) ?>" 
                      alt="<?= htmlspecialchars($evento['titulo']) ?>" 
                      class="w-full h-56 object-cover img-loading"
                      loading="lazy"
@@ -685,9 +685,6 @@ $metodos_de_pago = obtener_metodos_pago();
       <?php if (!empty($evento['boleto_ganador'])): ?>
         <!-- Cuando hay ganador -->
         <div class="text-center">
-          <span class="inline-block bg-primary/20 text-primary px-4 py-1 rounded-full text-sm font-bold mb-4">
-            <i class="fas fa-trophy mr-1"></i> ¡GANADOR ANUNCIADO!
-          </span>
           <h3 class="text-xl font-bold text-white mb-3">Felicidades al ganador</h3>
           <div class="text-3xl font-bold text-primary mb-4">
             Boleto #<?= htmlspecialchars($evento['boleto_ganador']) ?>
@@ -695,14 +692,10 @@ $metodos_de_pago = obtener_metodos_pago();
           <div class="flex justify-center mb-4">
             <i class="fas fa-trophy text-3xl text-primary animate-bounce"></i>
           </div>
-          <p class="text-gray-300 text-sm">¡Gracias a todos por participar!</p>
         </div>
       <?php else: ?>
         <!-- Cuando no hay ganador aún -->
         <div class="text-center">
-          <span class="inline-block bg-gray-700 text-gray-300 px-4 py-1 rounded-full text-sm font-bold mb-4">
-            <i class="fas fa-clock mr-1"></i> PRÓXIMAMENTE
-          </span>
           <h3 class="text-xl font-bold text-white mb-3">Anunciando al ganador</h3>
           <p class="text-gray-300 mb-4">En breve anunciaremos al afortunado</p>
           <div class="flex justify-center gap-2">
@@ -710,7 +703,6 @@ $metodos_de_pago = obtener_metodos_pago();
             <div class="w-3 h-3 bg-primary rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
             <div class="w-3 h-3 bg-primary rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
           </div>
-          <p class="text-gray-400 mt-4">Estamos verificando los resultados finales</p>
         </div>
       <?php endif; ?>
     </div>
@@ -870,7 +862,7 @@ $metodos_de_pago = obtener_metodos_pago();
       <div class="border-t border-gray-800 pt-8">
         <div class="flex flex-col md:flex-row justify-between items-center">
           <p class="text-gray-400 text-sm mb-4 md:mb-0">
-            © 2024 A&M Recreaciones. Todos los derechos reservados.
+            © 2025 A&M Recreaciones. Todos los derechos reservados.
           </p>
           
           <div class="flex space-x-3">

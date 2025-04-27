@@ -448,8 +448,8 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
     
     <?php 
     // Construir la ruta correcta al comprobante
-    $comprobantePath = dirname(__DIR__) . "/uploads/" . htmlspecialchars($transaccion['comprobante_pago']);
-    $publicPath = "/rifas-premium/admin/uploads/" . htmlspecialchars($transaccion['comprobante_pago']);
+    $comprobantePath = dirname(__DIR__) . "/uploads/comprobantes/" . htmlspecialchars($transaccion['comprobante_pago']);
+    $publicPath = "/rifas-premium/admin/uploads/comprobantes/" . htmlspecialchars($transaccion['comprobante_pago']);
     
     if (isset($transaccion['comprobante_pago']) && !empty($transaccion['comprobante_pago']) && file_exists($comprobantePath)): ?>
             <img src="<?= $publicPath ?>" 

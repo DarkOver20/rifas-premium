@@ -38,11 +38,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nombre_archivo = $_FILES['icono']['name'];
         $extension = strtolower(pathinfo($nombre_archivo, PATHINFO_EXTENSION));
         $nombre_base = uniqid('icono_') . '.' . $extension;
-        $ruta_destino = UPLOAD_DIR . $nombre_base;
+        $ruta_destino = dirname(__DIR__) . '/uploads/metodos/' . $nombre_base;
         
         if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
             if (move_uploaded_file($_FILES['icono']['tmp_name'], $ruta_destino)) {
-                $icono = 'admin/uploads/' . $nombre_base;
+                $icono = 'admin/uploads/metodos/' . $nombre_base;
             } else {
                 $errores['icono'] = 'Error al subir el icono.';
             }

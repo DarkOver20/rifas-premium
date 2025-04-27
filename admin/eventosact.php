@@ -401,7 +401,7 @@ $eventos_finalizados = obtenerEventos('finalizado');
                     <div class="bg-secondary rounded-xl overflow-hidden shadow-lg evento-card">
                         <div class="relative">
                             <div class="h-48 bg-gray-800 flex items-center justify-center">
-                            <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
+                            <img src="/rifas-premium/admin/uploads/eventos/<?= htmlspecialchars($evento['imagen']) ?>" 
                                     alt="<?= htmlspecialchars($evento['titulo']) ?>" 
                                     class="w-full h-full object-cover object-center" 
                                     loading="lazy"> 
@@ -458,7 +458,7 @@ $eventos_finalizados = obtenerEventos('finalizado');
                     <div class="bg-secondary rounded-xl overflow-hidden shadow-lg evento-card">
                         <div class="relative">
                             <div class="h-48 bg-gray-800 flex items-center justify-center">
-                            <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
+                            <img src="/rifas-premium/admin/uploads/eventos/<?= htmlspecialchars($evento['imagen']) ?>" 
                                     alt="<?= htmlspecialchars($evento['titulo']) ?>" 
                                     class="w-full h-full object-cover object-center" 
                                     loading="lazy"> 
