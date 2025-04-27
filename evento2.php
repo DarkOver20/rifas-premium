@@ -410,32 +410,31 @@ $total_paginas = ceil($total_boletos / 100);
                         </div>
                     </div>
 
-                    <!-- Paso 2: Datos personales -->
-<!-- Paso 2: Datos personales + Resumen de compra (versión reorganizada) -->
+<!-- Paso 2: Datos personales + Resumen de compra -->
 <div id="step-2" class="bg-secondary rounded-xl shadow-lg overflow-hidden border border-gray-800 mb-8 hidden">
-    
     <div class="p-6">
-    <button type="button" class="text-gray-400 hover:text-white transition-all" onclick="showStep(1)">
-                        <i class="fas fa-arrow-left mr-2"></i> Volver
-                    </button>
-                    <br>
-                 <di class="text-center"><h3 class="text-lg font-bold text-white mb-4">Tus datos personales</h3></di>
+        <button type="button" class="text-gray-400 hover:text-white transition-all" onclick="showStep(1)">
+            <i class="fas fa-arrow-left mr-2"></i> Volver
+        </button>
+        <br>
+        <div class="text-center"><h3 class="text-lg font-bold text-white mb-4">Tus datos personales</h3></div>
+        
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Columna izquierda: Solo datos personales -->
+            <!-- Columna izquierda: Datos personales -->
             <div>
-
-                
                 <form id="formulario-pago" class="space-y-3" action="/rifas-premium/admin/includes/procesar_compra.php" method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="evento_id" value="<?= $evento_id ?>">
                     <input type="hidden" name="boletos_seleccionados" id="boletos-seleccionados" value="">
                     
                     <div class="space-y-4">
+                        <!-- Nombre completo -->
                         <div>
                             <label class="block text-gray-300 mb-1">Nombre completo</label>
                             <input type="text" id="full-name" name="nombre" required
                                 class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none">
                         </div>
                         
+                        <!-- Cédula y Teléfono -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-gray-300 mb-1">Cédula</label>
@@ -450,28 +449,22 @@ $total_paginas = ceil($total_boletos / 100);
                             </div>
                         </div>
                         
+                        <!-- Estado -->
                         <div>
                             <label class="block text-gray-300 mb-1">Estado</label>
                             <input type="text" id="state" name="estado" required
                                 class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none">
                         </div>
-
-                        <div>
-                            <label class="block text-gray-300 mb-1">Referencia del pago</label>
-                            <input type="text" id="transaction-reference" name="referencia_transaccion" required
-                                class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none">
-                        </div>
                     </div>
-                
             </div>
             
-            <!-- Columna derecha: Todo lo relacionado al pago -->
+            <!-- Columna derecha: Método de pago -->
             <div class="space-y-6">
-                <!-- Sección de método de pago -->
-                <div class="bg-gray-800/50 rounded-lg p-3 mt-10">
+                <div class="bg-gray-800/50 rounded-lg p-3 mt-10 lg:mt-0">
                     <h3 class="text-lg font-bold text-white mb-4">Método de pago</h3>
                     
                     <div class="space-y-2">
+                        <!-- Selección de método -->
                         <div>
                             <label class="block text-gray-300 mb-2">Selecciona tu método de pago</label>
                             <select id="payment-method" name="metodo_pago" required
@@ -489,49 +482,52 @@ $total_paginas = ceil($total_boletos / 100);
                             <div id="detalles-metodo-pago-seleccionado" class="mt-2 text-m text-gray-300"></div>
                         </div>
                         
+                        <!-- Referencia de pago (siempre visible) -->
+                        <div>
+                            <label class="block text-gray-300 mb-1">Referencia del pago</label>
+                            <input type="text" id="transaction-reference" name="referencia_transaccion" required
+                                class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none">
+                        </div>
+                        
+                        <!-- Comprobante -->
                         <div>
                             <label class="block text-gray-300 mb-2">Comprobante de pago</label>
                             <input type="file" id="payment-proof" name="comprobante_pago" accept="image/*" required
                                 class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none">
-
                         </div>
-                        
-                        </form>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Resumen de compra -->
+        <div class="bg-gray-800/50 rounded-lg p-3 mt-6">
+            <div class="mb-4">
+                <h4 class="text-s font-semibold text-gray-300 mb-2">Boletos seleccionados</h4>
+                <div class="flex flex-wrap gap-2 mb-4" id="selected-tickets-display">
+                    <!-- Se llenará dinámicamente con JavaScript -->
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 pt-4 space-y-3">
+                <div class="flex justify-between text-white font-bold text-x pt-2">
+                    <span>Total a pagar:</span>
+                    <div class="text-right">
+                        <span id="cart-total">$0.00 USD</span>
+                        <div class="text-xs text-gray-400" id="cart-total-equivalent"></div>
                     </div>
                 </div>
             </div>
-
         </div>
-<br>
-        <div class="bg-gray-800/50 rounded-l p-3 top-8">
-                    
-                    <div class="mb-4">
-                        <h4 class="text-s font-semibold text-gray-300 mb-2">Boletos seleccionados</h4>
-                        <div class="flex flex-wrap gap-2 mb-4" id="selected-tickets-display">
-                            <!-- Se llenará dinámicamente con JavaScript -->
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-gray-700 pt-4 space-y-3">
-                        <div class="flex justify-between text-white font-bold text-x pt-2 ">
-                            <span>Total a pagar:</span>
-                            <div class="text-right">
-                                <span id="cart-total">$0.00 USD</span>
-                                <div class="text-xs text-gray-400" id="cart-total-equivalent"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-
-                </div>
+        
+        <!-- Botón de compra -->
         <div class="mt-6 flex justify-between items-center">
-                        <button type="submit" form="formulario-pago" class="w-full bg-success text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-green-700 transition-all">
-                            <i class="fas fa-credit-card mr-2"></i> Procesar Compra
-                        </button>
-                    
-                    </div>
+            <button type="submit" form="formulario-pago" class="w-full bg-success text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-green-700 transition-all">
+                <i class="fas fa-credit-card mr-2"></i> Procesar Compra
+            </button>
+        </div>
     </div>
-
 </div>
 
         </div>
@@ -627,6 +623,8 @@ window.showStep = function(stepNumber) {
     const selectedStep = document.getElementById(`step-${stepNumber}`);
     if (selectedStep) {
         selectedStep.classList.remove('hidden');
+        // Desplazamiento suave a la parte superior del paso
+        selectedStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // Actualizar indicadores de progreso (ahora solo 2 pasos)
