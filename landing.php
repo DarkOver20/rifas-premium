@@ -558,7 +558,7 @@ $metodos_de_pago = obtener_metodos_pago();
     </div>
 </section>  
   <!-- Sección de Eventos -->
-  <section class="py-20 bg-background" id="eventos">
+  <section class="pt-5 bg-background" id="eventos">
     <div class="container mx-auto px-4">
       <div class="text-center mb-16 fade-in">
         <span class="inline-block bg-primary/10 text-primary px-4 py-1 rounded-full text-sm font-semibold mb-3">
@@ -572,7 +572,6 @@ $metodos_de_pago = obtener_metodos_pago();
           Elige entre nuestros increíbles eventos. Cada boleto aumenta tus posibilidades de ser el próximo afortunado ganador.
         </p>
       </div>
-      <br><br>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <?php if (!empty($eventos_activos)): ?>
           <?php foreach ($eventos_activos as $evento): ?>
@@ -642,7 +641,7 @@ $metodos_de_pago = obtener_metodos_pago();
       </div>
       
       <!-- Eventos finalizados -->
-      <div class="text-center mt-24 mb-16 fade-in">
+      <div class="text-center mt-12 mb-16 fade-in">
         <span class="inline-block bg-primary/10 text-primary px-4 py-1 rounded-full text-sm font-semibold mb-3">
           <i class="fas fa-history mr-1"></i> Eventos Finalizados
         </span>
@@ -666,8 +665,8 @@ $metodos_de_pago = obtener_metodos_pago();
                      onload="this.classList.remove('img-loading')">
                 
                 <div class="absolute top-4 right-4">
-                  <span class="bg-gray-700 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center">
-                    <i class="fas fa-check-circle mr-1"></i> Finalizado
+                  <span class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center">
+                  <i class="fas fa-check-circle mr-1"></i> Finalizado
                   </span>
                 </div>
                 
@@ -680,13 +679,42 @@ $metodos_de_pago = obtener_metodos_pago();
               </div>
               
               <div class="p-6">
-                <p class="text-gray-300 text-sm mb-4"><?= htmlspecialchars(substr($evento['descripcion'], 0, 150)) ?>...</p>
-                
-                <a href="evento.php?id=<?= $evento['id'] ?>" class="w-full border border-primary text-primary hover:bg-primary hover:text-white py-2 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2">
-                  <i class="fas fa-info-circle"></i>
-                  Ver detalles
-                </a>
-              </div>
+
+    <!-- Anuncio del ganador -->
+    <div class="rounded-xl p-6<?= !empty($evento['boleto_ganador']) ? 'border-primary' : 'border-gray-700' ?>">
+      <?php if (!empty($evento['boleto_ganador'])): ?>
+        <!-- Cuando hay ganador -->
+        <div class="text-center">
+          <span class="inline-block bg-primary/20 text-primary px-4 py-1 rounded-full text-sm font-bold mb-4">
+            <i class="fas fa-trophy mr-1"></i> ¡GANADOR ANUNCIADO!
+          </span>
+          <h3 class="text-xl font-bold text-white mb-3">Felicidades al ganador</h3>
+          <div class="text-3xl font-bold text-primary mb-4">
+            Boleto #<?= htmlspecialchars($evento['boleto_ganador']) ?>
+          </div>
+          <div class="flex justify-center mb-4">
+            <i class="fas fa-trophy text-3xl text-primary animate-bounce"></i>
+          </div>
+          <p class="text-gray-300 text-sm">¡Gracias a todos por participar!</p>
+        </div>
+      <?php else: ?>
+        <!-- Cuando no hay ganador aún -->
+        <div class="text-center">
+          <span class="inline-block bg-gray-700 text-gray-300 px-4 py-1 rounded-full text-sm font-bold mb-4">
+            <i class="fas fa-clock mr-1"></i> PRÓXIMAMENTE
+          </span>
+          <h3 class="text-xl font-bold text-white mb-3">Anunciando al ganador</h3>
+          <p class="text-gray-300 mb-4">En breve anunciaremos al afortunado</p>
+          <div class="flex justify-center gap-2">
+            <div class="w-3 h-3 bg-primary rounded-full animate-bounce"></div>
+            <div class="w-3 h-3 bg-primary rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            <div class="w-3 h-3 bg-primary rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+          </div>
+          <p class="text-gray-400 mt-4">Estamos verificando los resultados finales</p>
+        </div>
+      <?php endif; ?>
+    </div>
+</div>
             </div>
           <?php endforeach; ?>
         <?php else: ?>

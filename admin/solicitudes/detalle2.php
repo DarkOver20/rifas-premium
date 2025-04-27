@@ -145,6 +145,7 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
     z-index: 30;
 }
 
+
 /* Mostrar sidebar por defecto en desktop */
 @media (min-width: 1024px) {
     .sidebar {
@@ -255,6 +256,29 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
             0% { left: -50%; }
             100% { left: 150%; }
         }
+
+    /* Agregar esto al CSS */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        background-color: #222;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
     </style>
 </head>
 <body class="antialiased bg-background text-white">
@@ -502,20 +526,60 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
             html.classList.remove('sidebar-open');
         });
         
-        // Confirmación para acciones importantes
+          // Modal de confirmación mejorado
+    document.addEventListener('DOMContentLoaded', function() {
         const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                const accion = document.activeElement.value;
-                const message = accion === 'aprobar' 
+        if (!form) return;
+        
+        // Crear modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2 class="text-lg font-bold mb-4 text-white">Confirmación</h2>
+                <p id="modal-message" class="text-gray-300 mb-6"></p>
+                <div class="flex justify-center gap-4">
+                    <button id="modal-confirm" class="bg-success hover:bg-success/90 text-white px-4 py-2 rounded-lg font-bold shadow-md transition-all">Confirmar</button>
+                    <button id="modal-cancel" class="bg-danger hover:bg-danger/90 text-white px-4 py-2 rounded-lg font-bold shadow-md transition-all">Cancelar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Manejar clics en los botones de acción
+        const actionButtons = form.querySelectorAll('button[type="submit"]');
+        
+        actionButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const action = this.value;
+                const message = action === 'aprobar' 
                     ? '¿Estás seguro que deseas APROBAR esta transacción?'
                     : '¿Estás seguro que deseas RECHAZAR esta transacción?';
                 
-                if (!confirm(message)) {
-                    e.preventDefault();
-                }
+                document.getElementById('modal-message').textContent = message;
+                modal.style.display = 'flex';
+                
+                // Configurar acciones del modal
+                document.getElementById('modal-confirm').onclick = function() {
+                    // Crear un input oculto con la acción
+                    const actionInput = document.createElement('input');
+                    actionInput.type = 'hidden';
+                    actionInput.name = 'accion';
+                    actionInput.value = action;
+                    form.appendChild(actionInput);
+                    
+                    modal.style.display = 'none';
+                    form.submit();
+                };
+                
+                document.getElementById('modal-cancel').onclick = function() {
+                    modal.style.display = 'none';
+                };
             });
-        }
-    </script>
+        });
+    });
+</script>
 </body>
 </html>
