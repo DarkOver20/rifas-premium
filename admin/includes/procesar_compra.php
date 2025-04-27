@@ -58,7 +58,8 @@ $boletos_no_disponibles = verificarDisponibilidadBoletos($evento_id, $boletos_se
 if (!empty($boletos_no_disponibles)) {
     echo json_encode([
         'success' => false,
-        'message' => 'Algunos boletos ya no están disponibles: ' . implode(', ', $boletos_no_disponibles)
+        'message' => 'Algunos boletos ya no están disponibles: ' . implode(', ', $boletos_no_disponibles),
+        'unavailable_tickets' => $boletos_no_disponibles
     ]);
     exit;
 }
