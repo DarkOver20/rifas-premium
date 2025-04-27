@@ -41,73 +41,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Procesar imagen
     $imagen = '';
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-        $extension = strtolower(pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION));
-        $extensiones_permitidas = ['jpg', 'jpeg', 'png'];
-        
-        if (in_array($extension, $extensiones_permitidas)) {
-            $nombre_archivo = uniqid('evento_') . '.' . $extension;
-            $ruta_destino = rtrim(UPLOAD_DIR, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $nombre_archivo;
+      $extension = strtolower(pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION));
+      $extensiones_permitidas = ['jpg', 'jpeg', 'png'];
+      
+      if (in_array($extension, $extensiones_permitidas)) {
+        $nombre_archivo = uniqid('evento_') . '.' . $extension;
+        $ruta_destino = dirname(__DIR__) . '/uploads/eventos/' . $nombre_archivo;
 
-            // Ensure the upload directory exists
-            if (!is_dir(UPLOAD_DIR)) {
-                mkdir(UPLOAD_DIR, 0755, true);
-            }
-            
-            if (move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_destino)) {
-                $imagen = $nombre_archivo;
-                
-                // Intentar optimizar si GD está instalado
-                if (function_exists('imagecreatefromjpeg')) {
-                    optimizarImagen($ruta_destino, 1200, 800);
-                }
-            } else {
-                $errores['imagen'] = 'Error al subir la imagen. Verifica los permisos del directorio.';
-                error_log("Error al mover archivo: " . print_r(error_get_last(), true));
-            }
-        } else {
-            $errores['imagen'] = 'Formato de imagen no permitido. Solo se aceptan JPG, JPEG, PNG.';
+        // Ensure the upload directory exists
+        if (!is_dir(dirname($ruta_destino))) {
+          mkdir(dirname($ruta_destino), 0755, true);
         }
+        
+        if (move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta_destino)) {
+          $imagen = $nombre_archivo;
+          
+          // Intentar optimizar si GD está instalado
+          if (function_exists('imagecreatefromjpeg')) {
+            optimizarImagen($ruta_destino, 1200, 800);
+          }
+        } else {
+          $errores['imagen'] = 'Error al subir la imagen. Verifica los permisos del directorio.';
+          error_log("Error al mover archivo: " . print_r(error_get_last(), true));
+        }
+      } else {
+        $errores['imagen'] = 'Formato de imagen no permitido. Solo se aceptan JPG, JPEG, PNG.';
+      }
     } else {
-        $errores['imagen'] = 'La imagen es requerida';
+      $errores['imagen'] = 'La imagen es requerida';
     }
     
     if (empty($errores)) {
-        $pdo = getDBConnection();
+      $pdo = getDBConnection();
+      
+      try {
+        $pdo->beginTransaction();
         
-        try {
-            $pdo->beginTransaction();
-            
-            $stmt = $pdo->prepare("INSERT INTO eventos 
-                (titulo, slogan, descripcion, imagen, precio_boleto, total_boletos, boletos_disponibles, 
-                 fecha_inicio, fecha_fin, estado, premio_principal) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            
-            $stmt->execute([
-                $titulo, $slogan, $descripcion, $imagen, $precio_boleto, $total_boletos, $total_boletos,
-                $fecha_inicio, $fecha_fin, $estado, $premio_principal
-            ]);
-            
-            $evento_id = $pdo->lastInsertId();
-            generarBoletosLotes($evento_id, $total_boletos);
-            
-            $pdo->commit();
-            
-            $_SESSION['mensaje_exito'] = 'Evento creado exitosamente con ' . number_format($total_boletos) . ' boletos';
-            header('Location: ../eventos/');
-            exit;
-            
-        } catch (PDOException $e) {
-            $pdo->rollBack();
-            $errores['general'] = 'Error al crear el evento: ' . $e->getMessage();
-            error_log("Error al crear evento: " . $e->getMessage());
-            
-            if (!empty($imagen)) {
-                @unlink(UPLOAD_DIR . $imagen);
-            }
+        $stmt = $pdo->prepare("INSERT INTO eventos 
+          (titulo, slogan, descripcion, imagen, precio_boleto, total_boletos, boletos_disponibles, 
+           fecha_inicio, fecha_fin, estado, premio_principal) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        
+        $stmt->execute([
+          $titulo, $slogan, $descripcion, $imagen, $precio_boleto, $total_boletos, $total_boletos,
+          $fecha_inicio, $fecha_fin, $estado, $premio_principal
+        ]);
+        
+        $evento_id = $pdo->lastInsertId();
+        generarBoletosLotes($evento_id, $total_boletos);
+        
+        $pdo->commit();
+        
+        $_SESSION['mensaje_exito'] = 'Evento creado exitosamente con ' . number_format($total_boletos) . ' boletos';
+        header('Location: ../eventos/');
+        exit;
+        
+      } catch (PDOException $e) {
+        $pdo->rollBack();
+        $errores['general'] = 'Error al crear el evento: ' . $e->getMessage();
+        error_log("Error al crear evento: " . $e->getMessage());
+        
+        if (!empty($imagen)) {
+          @unlink(dirname(__DIR__) . '/uploads/eventos/' . $imagen);
         }
+      }
     }
-}
-?>
+  }
+  ?>
 
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">

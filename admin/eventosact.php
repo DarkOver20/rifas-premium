@@ -395,13 +395,13 @@ $eventos_finalizados = obtenerEventos('finalizado');
                         <i class="fas fa-plus"></i> Nuevo Evento
                     </a>
                 </div>
-                
+                s
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <?php foreach ($eventos_activos as $evento): ?>
                     <div class="bg-secondary rounded-xl overflow-hidden shadow-lg evento-card">
                         <div class="relative">
                             <div class="h-48 bg-gray-800 flex items-center justify-center">
-                            <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
+                            <img src="/rifas-premium/admin/uploads/eventos/<?= htmlspecialchars($evento['imagen']) ?>" 
                                     alt="<?= htmlspecialchars($evento['titulo']) ?>" 
                                     class="w-full h-full object-cover object-center" 
                                     loading="lazy"> 
@@ -409,7 +409,6 @@ $eventos_finalizados = obtenerEventos('finalizado');
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                                 <h3 class="text-lg font-bold text-white"><?= htmlspecialchars($evento['titulo']) ?></h3>
                                 <div class="flex justify-between text-xs text-gray-300">
-                                    <span>Precio: $<?= number_format($evento['precio_boleto'], 2) ?></span>
                                     <span><?= $evento['boletos_disponibles'] ?> disponibles</span>
                                 </div>
                             </div>
@@ -419,7 +418,7 @@ $eventos_finalizados = obtenerEventos('finalizado');
                             <div class="flex justify-between items-center mb-3">
                                 <div>
                                     <div class="text-xs text-gray-400">Fecha fin</div>
-                                    <div class="text-sm font-medium"><?= date('d/m/Y', strtotime($evento['fecha_fin'])) ?></div>
+                                    <div class="text-sm font-medium"><?= date('d/m/Y H:i', strtotime($evento['fecha_fin'])) ?></div>
                                 </div>
                                 <div class="text-right">
                                     <div class="text-xs text-gray-400">Estado</div>
@@ -428,6 +427,18 @@ $eventos_finalizados = obtenerEventos('finalizado');
                                     </span>
                                 </div>
                             </div>
+                            <div class="mb-4">
+                            <span><?=($evento['descripcion']) ?></span><br><br>
+
+                    <div class="flex justify-between text-sm mb-1">
+
+                      <span class="text-gray-300">Boletos vendidos: <?= $evento['total_boletos'] - $evento['boletos_disponibles'] ?>/<?= $evento['total_boletos'] ?></span>
+                      <span class="font-bold text-primary">$<?= number_format($evento['precio_boleto'], 2) ?> c/u</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-bar-fill" style="width: <?= (($evento['total_boletos'] - $evento['boletos_disponibles']) / $evento['total_boletos']) * 100 ?>%"></div>
+                    </div>
+                  </div>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -447,7 +458,7 @@ $eventos_finalizados = obtenerEventos('finalizado');
                     <div class="bg-secondary rounded-xl overflow-hidden shadow-lg evento-card">
                         <div class="relative">
                             <div class="h-48 bg-gray-800 flex items-center justify-center">
-                            <img src="/rifas-premium/admin/uploads/<?= htmlspecialchars($evento['imagen']) ?>" 
+                            <img src="/rifas-premium/admin/uploads/eventos/<?= htmlspecialchars($evento['imagen']) ?>" 
                                     alt="<?= htmlspecialchars($evento['titulo']) ?>" 
                                     class="w-full h-full object-cover object-center" 
                                     loading="lazy"> 
@@ -455,7 +466,6 @@ $eventos_finalizados = obtenerEventos('finalizado');
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                                 <h3 class="text-lg font-bold text-white"><?= htmlspecialchars($evento['titulo']) ?></h3>
                                 <div class="flex justify-between text-xs text-gray-300">
-                                    <span>Precio: $<?= number_format($evento['precio_boleto'], 2) ?></span>
                                     <span><?= $evento['boletos_disponibles'] ?> disponibles</span>
                                 </div>
                             </div>
@@ -465,15 +475,27 @@ $eventos_finalizados = obtenerEventos('finalizado');
                             <div class="flex justify-between items-center mb-3">
                                 <div>
                                     <div class="text-xs text-gray-400">Fecha fin</div>
-                                    <div class="text-sm font-medium"><?= date('d/m/Y', strtotime($evento['fecha_fin'])) ?></div>
+                                    <div class="text-sm font-medium"><?= date('d/m/Y H:i', strtotime($evento['fecha_fin'])) ?></div>
                                 </div>
                                 <div class="text-right">
                                     <div class="text-xs text-gray-400">Estado</div>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
-                                        Activo
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-danger/10 text-danger">
+                                        Finalizado
                                     </span>
                                 </div>
+                                
                             </div>
+                            <div class="mb-4">
+                            <span><?=($evento['descripcion']) ?></span><br><br>
+
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-300">Boletos vendidos: <?= $evento['total_boletos'] - $evento['boletos_disponibles'] ?>/<?= $evento['total_boletos'] ?></span>
+                      <span class="font-bold text-primary">$<?= number_format($evento['precio_boleto'], 2) ?> c/u</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-bar-fill" style="width: <?= (($evento['total_boletos'] - $evento['boletos_disponibles']) / $evento['total_boletos']) * 100 ?>%"></div>
+                    </div>
+                  </div>
                             
                             <div class="flex justify-between gap-2">
     <?php if (!empty($evento['boleto_ganador'])): ?>

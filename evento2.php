@@ -172,6 +172,10 @@ $total_paginas = ceil($total_boletos / 100);
     .modal-exito button:hover {
         background-color: #004999;
     }
+
+    .hidden {
+    display: none !important;
+}
     </style>
 </head>
 <?php
@@ -991,32 +995,35 @@ function updateTotalsWithConversion(conversionData = null) {
         document.getElementById('cart-total-equivalent').textContent = `Equivalente: $${totalUSD.toFixed(2)} USD`;
     }
 }
+// Función para mostrar mensajes (éxito/error)
+function mostrarMensaje(titulo, mensaje, esError = false, callback = null) {
+    // Eliminar modales existentes primero
+    const modalesExistentes = document.querySelectorAll('.modal-exito');
+    modalesExistentes.forEach(modal => modal.remove());
 
-     // Función para mostrar mensajes (éxito/error)
-     function mostrarMensaje(titulo, mensaje, esError = false) {
-            // Eliminar modales existentes primero
-            const modalesExistentes = document.querySelectorAll('.modal-exito');
-            modalesExistentes.forEach(modal => modal.remove());
+    const modal = document.createElement('div');
+    modal.className = 'modal-exito';
+    modal.innerHTML = `
+        <div class="modal-contenido">
+            <h3 class="${esError ? 'error' : ''}">${titulo}</h3>
+            <p>${mensaje}</p>
+            <button onclick="cerrarModal(${callback ? 'true' : 'false'})">Aceptar</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
 
-            const modal = document.createElement('div');
-            modal.className = 'modal-exito';
-            modal.innerHTML = `
-                <div class="modal-contenido">
-                    <h3 class="${esError ? 'error' : ''}">${titulo}</h3>
-                    <p>${mensaje}</p>
-                    <button onclick="cerrarModal()">Aceptar</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
+window.cerrarModal = function(redirectToStep1 = false) {
+    const modal = document.querySelector('.modal-exito');
+    if (modal) {
+        modal.remove();
+    }
+    if (redirectToStep1) {
+        showStep(1);
+    }
+};
 
-        window.cerrarModal = function() {
-            const modal = document.querySelector('.modal-exito');
-            if (modal) {
-                modal.remove();
-            }
-        };
-        // Reemplaza el evento submit del formulario
+// Reemplaza el evento submit del formulario
 document.getElementById('formulario-pago').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -1038,14 +1045,36 @@ document.getElementById('formulario-pago').addEventListener('submit', async func
             updateSelectedTickets();
             showStep(1);
         } else {
-            mostrarMensaje('Error', data.message, true);
+            // Verificar si hay boletos no disponibles en la respuesta
+            if (data.unavailable_tickets && data.unavailable_tickets.length > 0) {
+                // Ocultar los boletos no disponibles en todas las páginas
+                data.unavailable_tickets.forEach(ticketNumber => {
+                    // Quitar de la selección si estaba seleccionado
+                    selectedTickets = selectedTickets.filter(num => num !== ticketNumber);
+                    
+                    // Buscar y ocultar los elementos en el DOM
+                    const ticketElements = document.querySelectorAll(`[data-numero="${ticketNumber}"]`);
+                    ticketElements.forEach(element => {
+                        element.classList.add('hidden'); // Ocultar completamente
+                        element.onclick = null; // Eliminar el evento click
+                    });
+                });
+                
+                // Actualizar la lista de seleccionados
+                updateSelectedTickets();
+                
+                // Mostrar mensaje con opción de redirigir al paso 1
+                mostrarMensaje('Error', data.message, true, true);
+            } else {
+                // Mostrar mensaje de error normal
+                mostrarMensaje('Error', data.message, true);
+            }
         }
     } catch (error) {
         mostrarMensaje('Error', 'Ocurrió un error al procesar la solicitud', true);
         console.error('Error:', error);
     }
 });
-        
 
     function iniciarContador(fechaFin) {
         const tiempoObjetivo = new Date(fechaFin).getTime();

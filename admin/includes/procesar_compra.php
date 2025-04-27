@@ -20,7 +20,10 @@ $referencia_transaccion = trim(filter_input(INPUT_POST, 'referencia_transaccion'
 $boletos_seleccionados = json_decode($_POST['boletos_seleccionados'], true);
 
 // Validaciones básicas
-if (!$evento_id || !$nombre || !$telefono || !$cedula || !$estado || !$metodo_pago_id || !$referencia_transaccion || empty($boletos_seleccionados)) {
+if (
+    !$evento_id || !$nombre || !$telefono || !$cedula || !$estado ||
+    !$metodo_pago_id || !$referencia_transaccion || empty($boletos_seleccionados)
+) {
     echo json_encode(['success' => false, 'message' => 'Datos incompletos o inválidos']);
     exit;
 }
@@ -32,18 +35,22 @@ if (!$evento) {
     exit;
 }
 
-// Calcular monto total en dólares (como antes)
+// Calcular monto total en dólares
 $monto_total = count($boletos_seleccionados) * $evento['precio_boleto'];
 
 // Procesar comprobante de pago
 $comprobante_pago = '';
+$ruta_destino = '';
+$archivo_subido = false;
+
 if (isset($_FILES['comprobante_pago']) && $_FILES['comprobante_pago']['error'] === UPLOAD_ERR_OK) {
     $extension = pathinfo($_FILES['comprobante_pago']['name'], PATHINFO_EXTENSION);
     $nombre_archivo = 'comprobante_' . uniqid() . '_' . $cedula . '.' . $extension;
-    $ruta_destino = UPLOAD_DIR . $nombre_archivo;
-    
+    $ruta_destino = dirname(__DIR__) . '/uploads/comprobantes/' . $nombre_archivo;
+
     if (move_uploaded_file($_FILES['comprobante_pago']['tmp_name'], $ruta_destino)) {
         $comprobante_pago = $nombre_archivo;
+        $archivo_subido = true;
     } else {
         echo json_encode(['success' => false, 'message' => 'Error al subir el comprobante de pago']);
         exit;
@@ -56,9 +63,15 @@ if (isset($_FILES['comprobante_pago']) && $_FILES['comprobante_pago']['error'] =
 // Verificar disponibilidad de boletos
 $boletos_no_disponibles = verificarDisponibilidadBoletos($evento_id, $boletos_seleccionados);
 if (!empty($boletos_no_disponibles)) {
+    // Eliminar el archivo subido si la validación falla
+    if ($archivo_subido && file_exists($ruta_destino)) {
+        unlink($ruta_destino);
+    }
+
     echo json_encode([
         'success' => false,
-        'message' => 'Algunos boletos ya no están disponibles: ' . implode(', ', $boletos_no_disponibles)
+        'message' => 'Algunos boletos ya no están disponibles: ' . implode(', ', $boletos_no_disponibles),
+        'unavailable_tickets' => $boletos_no_disponibles
     ]);
     exit;
 }
@@ -67,21 +80,21 @@ if (!empty($boletos_no_disponibles)) {
 $pdo->beginTransaction();
 
 try {
-    // 1. Crear la transacción (versión simplificada como antes)
+    // 1. Crear la transacción
     $stmt = $pdo->prepare("INSERT INTO transacciones (
         evento_id, nombre, telefono, cedula, estado, 
         metodo_pago_id, referencia_transaccion, comprobante_pago, 
         boletos_seleccionados, monto_total, estado_compra, fecha_compra
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendiente', NOW())");
-    
+
     $stmt->execute([
         $evento_id, $nombre, $telefono, $cedula, $estado,
         $metodo_pago_id, $referencia_transaccion, $comprobante_pago,
         json_encode($boletos_seleccionados), $monto_total
     ]);
-    
+
     $transaccion_id = $pdo->lastInsertId();
-    
+
     // 2. Actualizar el estado de los boletos a "reservado"
     $placeholders = implode(',', array_fill(0, count($boletos_seleccionados), '?'));
     $sql = "UPDATE boletos 
@@ -90,18 +103,18 @@ try {
                 fecha_reserva = NOW()
             WHERE evento_id = ? 
             AND numero_boleto IN ($placeholders)";
-    
+
     $params = array_merge([$transaccion_id, $evento_id], $boletos_seleccionados);
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    
+
     // Verificar que se actualizaron todos los boletos
     if ($stmt->rowCount() !== count($boletos_seleccionados)) {
         throw new Exception("No se pudieron reservar todos los boletos seleccionados");
     }
-    
+
     $pdo->commit();
-    
+
     // Respuesta exitosa
     echo json_encode([
         'success' => true,
@@ -109,11 +122,17 @@ try {
         'transaccion_id' => $transaccion_id,
         'boletos_reservados' => $boletos_seleccionados
     ]);
-    
+
 } catch (Exception $e) {
     $pdo->rollBack();
+
+    // Eliminar el archivo subido si la transacción falla
+    if ($archivo_subido && file_exists($ruta_destino)) {
+        unlink($ruta_destino);
+    }
+
     error_log("Error en procesar_compra.php: " . $e->getMessage());
-    
+
     echo json_encode([
         'success' => false,
         'message' => 'Error al procesar la compra. Por favor intente nuevamente.'
