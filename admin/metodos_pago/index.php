@@ -406,6 +406,10 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
                     <i class="fas fa-dollar-sign w-5 text-center text-primary"></i>
                     <span>Métodos de Pago</span>
                 </a>
+                <a href="/rifas-premium/metodos/tasas" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
+                    <i class="fa-solid fa-money-bill-transfer w-5 text-center text-gray-400"></i>
+                    <span>Tasas</span>
+                </a>
             </nav>
         </div>
     </aside>

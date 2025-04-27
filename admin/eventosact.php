@@ -366,7 +366,11 @@ $eventos_finalizados = obtenerEventos('finalizado');
                 
                 <a href="/rifas-premium/metodos" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-dollar-sign w-5 text-center text-gray-400"></i>
-                    <span>Metodos de Pagos</span>
+                    <span>Métodos de Pago</span>
+                </a>
+                <a href="/rifas-premium/metodos/tasas" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
+                    <i class="fa-solid fa-money-bill-transfer w-5 text-center text-gray-400"></i>
+                    <span>Tasas</span>
                 </a>
             </nav>
         </div>
