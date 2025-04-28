@@ -177,6 +177,7 @@ $total_paginas = ceil($total_boletos / 100);
     display: none !important;
 }
     </style>
+
 </head>
 <?php
     // Display memory usage
@@ -343,22 +344,22 @@ $total_paginas = ceil($total_boletos / 100);
                             <h2 class="text-2xl font-bold text-white mb-6">Selecciona tus boletos</h2>
                             
                             <!-- Selector de método aleatorio -->
-                            <div class="mb-6 flex items-center gap-4">
-                                <div class="flex items-center flex-1">
+                            <div class="mb-6 flex flex-col sm:flex-row items-center gap-4">
+                                <div class="flex items-center flex-1 w-full">
                                     <label class="block text-gray-300 mr-2">Cantidad:</label>
-                                    <div class="flex items-center max-w-xs">
+                                    <div class="flex items-center w-full max-w-xs">
                                         <button id="decrease-random" class="bg-gray-700 text-white px-3 py-1 rounded-l-lg hover:bg-gray-600">
                                             <i class="fas fa-minus"></i>
                                         </button>
                                         <input type="number" min="1" max="20" value="1"
                                             class="bg-gray-800 text-white text-center w-full py-1 border-t border-b border-gray-700"
-                                            id="random-quantity">
+                                            id="random-quantity" style="min-width: 3rem;">
                                         <button id="increase-random" class="bg-gray-700 text-white px-3 py-1 rounded-r-lg hover:bg-gray-600">
                                             <i class="fas fa-plus"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <button id="random-btn" class="bg-primary text-white px-4 py-2 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary-dark transition-all">
+                                <button id="random-btn" class="bg-primary text-white px-4 py-2 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary-dark transition-all w-full sm:w-auto">
                                     <i class="fas fa-random"></i>
                                     <span>Selección aleatoria</span>
                                 </button>

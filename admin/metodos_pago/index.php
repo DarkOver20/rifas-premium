@@ -57,17 +57,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errores['nombre'] = 'El nombre del método de pago es requerido.';
     }
 
+ 
     // Procesar icono
     $icono = isset($_POST['icono_actual']) ? $_POST['icono_actual'] : '';
     if (isset($_FILES['icono']) && $_FILES['icono']['error'] === UPLOAD_ERR_OK) {
         $nombre_archivo = $_FILES['icono']['name'];
         $extension = strtolower(pathinfo($nombre_archivo, PATHINFO_EXTENSION));
         $nombre_base = uniqid('icono_') . '.' . $extension;
-        $ruta_destino = UPLOAD_DIR . $nombre_base;
-        
+        $ruta_destino = UPLOAD_DIR . 'metodos/' . $nombre_base;
+
         if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+            // Crear el directorio si no existe
+            if (!is_dir(UPLOAD_DIR . 'metodos/')) {
+                mkdir(UPLOAD_DIR . 'metodos/', 0755, true);
+            }
+
             if (move_uploaded_file($_FILES['icono']['tmp_name'], $ruta_destino)) {
-                $icono = 'admin/uploads/' . $nombre_base;
+                $icono = '' . $nombre_base;
                 // Eliminar icono anterior si existe
                 if (!empty($_POST['icono_actual']) && file_exists(dirname(__DIR__) . '/' . $_POST['icono_actual'])) {
                     unlink(dirname(__DIR__) . '/' . $_POST['icono_actual']);
@@ -465,17 +471,16 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200"><?= $metodo['id'] ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
                                             <?= htmlspecialchars($metodo['nombre']) ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <?php if (!empty($metodo['icono'])): ?>
-                                                <img src="/rifas-premium/<?= htmlspecialchars($metodo['icono']) ?>" 
-                                                     alt="<?= htmlspecialchars($metodo['nombre']) ?>" 
-                                                     class="method-icon">
-                                            <?php else: ?>
-                                                <div class="text-gray-400 text-sm">Sin icono</div>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <?php if (!empty($metodo['icono'])): ?>
+                                                    <img src="/rifas-premium/admin/uploads/metodos/<?= htmlspecialchars($metodo['icono']) ?>" 
+                                                    alt="<?= htmlspecialchars($metodo['nombre']) ?>" 
+                                                         class="method-icon">
+                                                <?php else: ?>
+                                                    <div class="text-gray-400 text-sm">Sin icono</div>
+                                                <?php endif; ?>
+                                            </td>        <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="status-badge <?= $metodo['activo'] ? 'status-active' : 'status-inactive' ?>">
                                                 <?= $metodo['activo'] ? 'Activo' : 'Desactivado' ?>
                                             </span>
@@ -589,7 +594,7 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
                                    <div id="icono-preview">
     <?php if (isset($metodo_actual['icono']) && !empty($metodo_actual['icono'])): ?>
         <div class="mt-2 flex items-center">
-            <img src="/rifas-premium/<?= htmlspecialchars($metodo_actual['icono']) ?>" 
+            <img src="/rifas-premium/admin/uploads/metodos/<?= htmlspecialchars($metodo_actual['icono']) ?>" 
                  class="h-10 w-10 object-contain bg-gray-800 rounded-md">
             <span class="ml-2 text-sm text-gray-300">Icono actual</span>
         </div>
@@ -598,7 +603,7 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
                                    <p class="mt-1 text-xs text-gray-400">Formatos permitidos: JPG, JPEG, PNG, GIF, WEBP</p>
                             <?php if (isset($metodo_actual['icono']) && !empty($metodo_actual['icono'])): ?>
                                 <div class="mt-2 flex items-center">
-                                    <img src="/rifas-premium/<?= htmlspecialchars($metodo_actual['icono']) ?>" 
+                                    <img src="/rifas-premium/admin/uploads/metodos/<?= htmlspecialchars($metodo_actual['icono']) ?>" 
                                          class="h-10 w-10 object-contain bg-gray-800 rounded-md">
                                     <span class="ml-2 text-sm text-gray-300">Icono actual</span>
                                 </div>
@@ -677,7 +682,6 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
         }
         
         function limpiarFormulario() {
-            
             metodoForm.reset();
             metodoForm.querySelector('input[name="id"]').value = '';
             metodoForm.querySelector('input[name="icono_actual"]').value = '';
@@ -690,10 +694,11 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
                            class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary">
                 </div>
             `;
-            
+            const iconoPreview = document.querySelector('#icono-preview');
+            if (iconoPreview) {
+                iconoPreview.innerHTML = '';
+            }
             limpiarErrores();
-           
-            
         }
         
         function limpiarErrores() {
@@ -831,7 +836,7 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
         if (iconoActual && iconoPreview) { 
             iconoPreview.innerHTML = `
                 <div class="mt-2 flex items-center">
-                    <img src="/rifas-premium/${escapeHtml(iconoActual)}"
+                    <img src="/rifas-premium/admin/uploads/metodos${escapeHtml(iconoActual)}"
                          class="h-10 w-10 object-contain bg-gray-800 rounded-md"> 
                     <span class="ml-2 text-sm text-gray-300">Icono actual</span> 
                 </div>
@@ -969,7 +974,7 @@ async function editarMetodo(id) {
         if (iconoActual && iconoPreview) {
             iconoPreview.innerHTML = `
                 <div class="mt-2 flex items-center">
-                    <img src="/rifas-premium/${escapeHtml(iconoActual)}" 
+                    <img src="/rifas-premium/admin/uploads/metodos/${escapeHtml(iconoActual)}" 
                          class="h-10 w-10 object-contain bg-gray-800 rounded-md">
                     <span class="ml-2 text-sm text-gray-300">Icono actual</span>
                 </div>
@@ -1062,7 +1067,7 @@ async function editarMetodo(id) {
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                     ${result.data.icono ? 
-                        `<img src="/rifas-premium/${escapeHtml(result.data.icono)}" 
+                        `<img src="/rifas-premium/admin/uploads/metodos/${escapeHtml(result.data.icono)}" 
                           class="method-icon">` : 
                         '<div class="text-gray-400 text-sm">Sin icono</div>'}
                     </td>
@@ -1104,7 +1109,7 @@ async function editarMetodo(id) {
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                     ${result.data.icono ? 
-                        `<img src="/rifas-premium/${escapeHtml(result.data.icono)}" 
+                        `<img src="/rifas-premium/admin/uploads/metodos/${escapeHtml(result.data.icono)}" 
                           class="method-icon">` : 
                         '<div class="text-gray-400 text-sm">Sin icono</div>'}
                     </td>
