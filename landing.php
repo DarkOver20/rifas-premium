@@ -523,23 +523,25 @@ $metodos_de_pago = obtener_metodos_pago();
       <div class="flex flex-wrap justify-center gap-8 md:gap-12 lg:gap-16">
         <?php if (!empty($metodos_de_pago)): ?>
             <?php foreach ($metodos_de_pago as $metodo): ?>
-                <div class="flex flex-col items-center opacity-80 hover:opacity-100 transition-all">
-                    <?php if (!empty($metodo['icono'])): ?>
-                        <img src="<?php echo htmlspecialchars($metodo['icono']); ?>" 
-                             alt="<?php echo htmlspecialchars($metodo['nombre']); ?>" 
-                             class="h-12 grayscale hover:grayscale-0 transition-all" 
-                             loading="lazy">
-                    <?php else: ?>
-                        <div class="h-12 flex items-center justify-center">
-                            <i class="fas fa-credit-card text-3xl text-gray-400"></i>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <?php
-                    $descripcion = $metodo['nombre']; // Texto principal bajo el icono
-                    ?>
-                    <span class="text-gray-400 text-sm mt-2"><?php echo htmlspecialchars($descripcion); ?></span>
+          <?php if ($metodo['activo'] == 1): ?>
+              <div class="flex flex-col items-center opacity-80 hover:opacity-100 transition-all">
+            <?php if (!empty($metodo['icono'])): ?>
+                <img src="<?php echo htmlspecialchars($metodo['icono']); ?>" 
+               alt="<?php echo htmlspecialchars($metodo['nombre']); ?>" 
+               class="h-12 grayscale hover:grayscale-0 transition-all" 
+               loading="lazy">
+            <?php else: ?>
+                <div class="h-12 flex items-center justify-center">
+              <i class="fas fa-credit-card text-3xl text-gray-400"></i>
                 </div>
+            <?php endif; ?>
+            
+            <?php
+            $descripcion = $metodo['nombre'];
+            ?>
+            <span class="text-gray-400 text-sm mt-2"><?php echo htmlspecialchars($descripcion); ?></span>
+              </div>
+          <?php endif; ?>
             <?php endforeach; ?>
         <?php else: ?>
             <!-- Puedes mantener algunos métodos por defecto si no hay en la base de datos -->

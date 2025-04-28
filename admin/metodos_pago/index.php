@@ -4,18 +4,27 @@ require_once dirname(__DIR__) . '/includes/functions.php';
 require_login();
 require_admin();
 
-// Manejar eliminación AJAX
-if (isset($_GET['eliminar_ajax']) && is_numeric($_GET['eliminar_ajax'])) {
+// Manejar activación/desactivación AJAX
+if (isset($_GET['toggle_activo']) && is_numeric($_GET['toggle_activo'])) {
     header('Content-Type: application/json');
     
     try {
-        $id_eliminar = $_GET['eliminar_ajax'];
-        $stmt = $pdo->prepare("DELETE FROM metodos_pago WHERE id = ?");
-        $stmt->execute([$id_eliminar]);
+        $id = $_GET['toggle_activo'];
+        $stmt = $pdo->prepare("UPDATE metodos_pago SET activo = NOT activo WHERE id = ?");
+        $stmt->execute([$id]);
         
-        echo json_encode(['success' => true, 'message' => 'Método eliminado correctamente']);
+        // Obtener el nuevo estado
+        $stmt = $pdo->prepare("SELECT activo FROM metodos_pago WHERE id = ?");
+        $stmt->execute([$id]);
+        $activo = $stmt->fetchColumn();
+        
+        echo json_encode([
+            'success' => true, 
+            'message' => $activo ? 'Método activado correctamente' : 'Método desactivado correctamente',
+            'activo' => (bool)$activo
+        ]);
     } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Error al eliminar: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Error al cambiar estado: ' . $e->getMessage()]);
     }
     exit();
 }
@@ -450,7 +459,7 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
                             </thead>
                             <tbody class="divide-y divide-gray-800" id="tabla-metodos">
                                 <?php foreach ($metodos_pago as $metodo): ?>
-                                    <tr data-id="<?= $metodo['id'] ?>">
+                                    <tr data-id="<?= $metodo['id'] ?>" class="<?= $metodo['activo'] ? '' : 'opacity-50' ?>">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200"><?= $metodo['id'] ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
                                             <?= htmlspecialchars($metodo['nombre']) ?>
@@ -466,21 +475,22 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="status-badge <?= $metodo['activo'] ? 'status-active' : 'status-inactive' ?>">
-                                                <?= $metodo['activo'] ? 'Activo' : 'Inactivo' ?>
+                                                <?= $metodo['activo'] ? 'Activo' : 'Desactivado' ?>
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div class="flex items-center justify-end gap-2">
-                                                <button onclick="editarMetodo(<?= $metodo['id'] ?>)" 
-                                                        class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                                                    <i class="fas fa-edit text-xs"></i> Editar
-                                                </button>
-                                                <button onclick="eliminarMetodo(<?= $metodo['id'] ?>)" 
-                                                        class="btn-glow bg-danger/10 hover:bg-danger/20 text-danger px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                                                    <i class="fas fa-trash text-xs"></i> Eliminar
-                                                </button>
-                                            </div>
-                                        </td>
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button onclick="editarMetodo(<?= $metodo['id'] ?>)" 
+                                                    class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
+                                                <i class="fas fa-edit text-xs"></i> Editar
+                                            </button>
+                                            <button onclick="toggleActivoMetodo(<?= $metodo['id'] ?>, this)" 
+                                                    class="btn-glow <?= $metodo['activo'] ? 'bg-warning/10 hover:bg-warning/20 text-warning' : 'bg-success/10 hover:bg-success/20 text-success' ?> px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
+                                                <i class="fas <?= $metodo['activo'] ? 'fa-eye-slash' : 'fa-eye' ?> text-xs"></i> 
+                                                <?= $metodo['activo'] ? 'Desactivar' : 'Activar' ?>
+                                            </button>
+                                        </div>
+                                    </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -835,44 +845,76 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
         mostrarNotificacion('error', 'Error al cargar el método para editar');
         toggleModal(false);
     }
-}
-        // Función para eliminar con AJAX
-        async function eliminarMetodo(id) {
-            if (!confirm('¿Estás seguro de eliminar este método de pago?')) {
-                return;
-            }
+}async function toggleActivoMetodo(id, boton) {
+    if (!confirm('¿Estás seguro de que deseas cambiar el estado de este método de pago?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`./metodos?toggle_activo=${id}`);
+        const result = await response.json();
         
-            try {
-                const response = await fetch(`./metodos?eliminar_ajax=${id}`);
-                const result = await response.json();
-        
-                if (result.success) {
-                    mostrarNotificacion('success', result.message);
-                    // Eliminar la fila de la tabla
-                    document.querySelector(`tr[data-id="${id}"]`)?.remove();
-                    
-                    // Si no quedan métodos, mostrar mensaje
-                    if (document.querySelectorAll('#tabla-metodos tr').length === 0) {
-                        document.querySelector('#tabla-metodos').innerHTML = `
-                            <tr>
-                                <td colspan="5" class="p-6 text-center text-gray-400">
-                                    No hay métodos de pago registrados.
-                                    <button id="abrir-modal-vacio" class="text-primary hover:underline">
-                                        Crear un nuevo método
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                        document.getElementById('abrir-modal-vacio').addEventListener('click', () => toggleModal(true));
-                    }
+        if (result.success) {
+            mostrarNotificacion('success', result.message);
+            
+            // Actualizar la fila
+            const fila = document.querySelector(`tr[data-id="${id}"]`);
+            if (fila) {
+                // Actualizar badge de estado
+                const statusBadge = fila.querySelector('.status-badge');
+                if (result.activo) {
+                    statusBadge.className = 'status-badge status-active';
+                    statusBadge.textContent = 'Activo';
                 } else {
-                    mostrarNotificacion('error', result.message);
+                    statusBadge.className = 'status-badge status-inactive';
+                    statusBadge.textContent = 'Inactivo';
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarNotificacion('error', 'Error de conexión');
+                
+                // Actualizar botón
+                if (boton) {
+                    if (result.activo) {
+                        boton.className = 'btn-glow bg-warning/10 hover:bg-warning/20 text-warning px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
+                        boton.innerHTML = '<i class="fas fa-eye-slash text-xs"></i> Desactivar';
+                    } else {
+                        boton.className = 'btn-glow bg-success/10 hover:bg-success/20 text-success px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
+                        boton.innerHTML = '<i class="fas fa-eye text-xs"></i> Activar';
+                    }
+                }
+            }
+        } else {
+            mostrarNotificacion('error', result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('error', 'Error de conexión');
+    }
+}
+
+// En la función editarMetodo, actualizar el botón de toggle al cargar
+async function editarMetodo(id) {
+    try {
+        // (Mantén todo el código existente de editarMetodo)
+        
+        // Después de cargar los datos, actualizar el botón de toggle si existe
+        const fila = document.querySelector(`tr[data-id="${id}"]`);
+        if (fila) {
+            const toggleBtn = fila.querySelector('button[onclick^="toggleActivoMetodo"]');
+            if (toggleBtn) {
+                const activo = htmlDoc.querySelector('.status-badge')?.textContent?.trim() === 'Activo';
+                if (activo) {
+                    toggleBtn.className = 'btn-glow bg-warning/10 hover:bg-warning/20 text-warning px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
+                    toggleBtn.innerHTML = '<i class="fas fa-eye-slash text-xs"></i> Desactivar';
+                } else {
+                    toggleBtn.className = 'btn-glow bg-success/10 hover:bg-success/20 text-success px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
+                    toggleBtn.innerHTML = '<i class="fas fa-eye text-xs"></i> Activar';
+                }
             }
         }
+    } catch (error) {
+        // (Mantén el manejo de errores existente)
+    }
+}
+
         
         // Función para mostrar notificaciones
         function mostrarNotificacion(tipo, mensaje) {
@@ -903,119 +945,130 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
             
             // Validación básica del lado del cliente
             if (!document.getElementById('nombre').value.trim()) {
-                mostrarErrores({ nombre: 'El nombre es requerido' });
-                return;
+            mostrarErrores({ nombre: 'El nombre es requerido' });
+            return;
             }
             
             const formData = new FormData(this);
             const isEdit = formData.get('id') !== '';
             
             try {
-                const response = await fetch('./metodos' + (isEdit ? `?editar=${formData.get('id')}` : ''), {
-                    method: 'POST',
-                    body: formData
-                });
+            const response = await fetch('./metodos' + (isEdit ? `?editar=${formData.get('id')}` : ''), {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                mostrarNotificacion('success', result.message);
+                limpiarErrores();
                 
-                const result = await response.json();
+                setTimeout(() => {
+                toggleModal(false);
                 
-                if (result.success) {
-                    mostrarNotificacion('success', result.message);
-                    limpiarErrores();
+                if (isEdit) {
+                    // Actualizar fila existente
+                    const fila = document.querySelector(`tr[data-id="${result.data.id}"]`);
+                    if (fila) {
+                    fila.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${result.data.id}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                        ${escapeHtml(result.data.nombre)}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                        ${result.data.icono ? 
+                            `<img src="/rifas-premium/${escapeHtml(result.data.icono)}" 
+                              class="method-icon">` : 
+                            '<div class="text-gray-400 text-sm">Sin icono</div>'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge ${result.data.activo ? 'status-active' : 'status-inactive'}">
+                            ${result.data.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="editarMetodo(${result.data.id})" 
+                                class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
+                            <i class="fas fa-edit text-xs"></i> Editar
+                            </button>
+                            <button onclick="eliminarMetodo(${result.data.id})" 
+                                class="btn-glow bg-danger/10 hover:bg-danger/20 text-danger px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
+                            <i class="fas fa-trash text-xs"></i> Eliminar
+                            </button>
+                        </div>
+                        </td>
+                    `;
                     
-                    setTimeout(() => {
-                        toggleModal(false);
-                        
-                        if (isEdit) {
-                            // Actualizar fila existente
-                            const fila = document.querySelector(`tr[data-id="${result.data.id}"]`);
-                            if (fila) {
-                                fila.innerHTML = `
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${result.data.id}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
-                                        ${escapeHtml(result.data.nombre)}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        ${result.data.icono ? 
-                                            `<img src="/rifas-premium/${escapeHtml(result.data.icono)}" 
-                                                  class="method-icon">` : 
-                                            '<div class="text-gray-400 text-sm">Sin icono</div>'}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="status-badge ${result.data.activo ? 'status-active' : 'status-inactive'}">
-                                            ${result.data.activo ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <button onclick="editarMetodo(${result.data.id})" 
-                                                    class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                                                <i class="fas fa-edit text-xs"></i> Editar
-                                            </button>
-                                            <button onclick="eliminarMetodo(${result.data.id})" 
-                                                    class="btn-glow bg-danger/10 hover:bg-danger/20 text-danger px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                                                <i class="fas fa-trash text-xs"></i> Eliminar
-                                            </button>
-                                        </div>
-                                    </td>
-                                `;
-                            }
+                    // Actualizar botón de toggle
+                    const toggleBtn = fila.querySelector('button[onclick^="toggleActivoMetodo"]');
+                    if (toggleBtn) {
+                        if (result.data.activo) {
+                        toggleBtn.className = 'btn-glow bg-warning/10 hover:bg-warning/20 text-warning px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
+                        toggleBtn.innerHTML = '<i class="fas fa-eye-slash text-xs"></i> Desactivar';
                         } else {
-                            // Añadir nueva fila
-                            const tbody = document.querySelector('#tabla-metodos');
-                            if (tbody) {
-                                // Si estaba vacío, limpiar el mensaje
-                                if (tbody.querySelector('td[colspan="5"]')) {
-                                    tbody.innerHTML = '';
-                                }
-                                
-                                const fila = document.createElement('tr');
-                                fila.dataset.id = result.data.id;
-                                fila.innerHTML = `
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${result.data.id}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
-                                        ${escapeHtml(result.data.nombre)}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        ${result.data.icono ? 
-                                            `<img src="/rifas-premium/${escapeHtml(result.data.icono)}" 
-                                                  class="method-icon">` : 
-                                            '<div class="text-gray-400 text-sm">Sin icono</div>'}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="status-badge ${result.data.activo ? 'status-active' : 'status-inactive'}">
-                                            ${result.data.activo ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <button onclick="editarMetodo(${result.data.id})" 
-                                                    class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                                                <i class="fas fa-edit text-xs"></i> Editar
-                                            </button>
-                                            <button onclick="eliminarMetodo(${result.data.id})" 
-                                                    class="btn-glow bg-danger/10 hover:bg-danger/20 text-danger px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                                                <i class="fas fa-trash text-xs"></i> Eliminar
-                                            </button>
-                                        </div>
-                                    </td>
-                                `;
-                                tbody.prepend(fila);
-                            }
+                        toggleBtn.className = 'btn-glow bg-success/10 hover:bg-success/20 text-success px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
+                        toggleBtn.innerHTML = '<i class="fas fa-eye text-xs"></i> Activar';
                         }
-                    }, 500);
+                    }
+                    }
                 } else {
-                    if (result.errors) {
-                        mostrarErrores(result.errors);
-                    } else {
-                        mostrarNotificacion('error', result.message);
+                    // Añadir nueva fila
+                    const tbody = document.querySelector('#tabla-metodos');
+                    if (tbody) {
+                    // Si estaba vacío, limpiar el mensaje
+                    if (tbody.querySelector('td[colspan="5"]')) {
+                        tbody.innerHTML = '';
+                    }
+                    
+                    const fila = document.createElement('tr');
+                    fila.dataset.id = result.data.id;
+                    fila.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${result.data.id}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                        ${escapeHtml(result.data.nombre)}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                        ${result.data.icono ? 
+                            `<img src="/rifas-premium/${escapeHtml(result.data.icono)}" 
+                              class="method-icon">` : 
+                            '<div class="text-gray-400 text-sm">Sin icono</div>'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge ${result.data.activo ? 'status-active' : 'status-inactive'}">
+                            ${result.data.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="editarMetodo(${result.data.id})" 
+                                class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
+                            <i class="fas fa-edit text-xs"></i> Editar
+                            </button>
+                            <button onclick="eliminarMetodo(${result.data.id})" 
+                                class="btn-glow bg-danger/10 hover:bg-danger/20 text-danger px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
+                            <i class="fas fa-trash text-xs"></i> Eliminar
+                            </button>
+                        </div>
+                        </td>
+                    `;
+                    tbody.prepend(fila);
                     }
                 }
+                }, 500);
+            } else {
+                if (result.errors) {
+                mostrarErrores(result.errors);
+                } else {
+                mostrarNotificacion('error', result.message);
+                }
+            }
             } catch (error) {
-                console.error('Error:', error);
-                mostrarNotificacion('error', 'Error de conexión');
+            console.error('Error:', error);
+            mostrarNotificacion('error', 'Error de conexión');
             }
         });
-        
         // Al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
