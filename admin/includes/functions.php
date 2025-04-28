@@ -468,7 +468,7 @@ function obtener_metodos_pago($activo = true) {
     $pdo = getDBConnection();
     $sql = "SELECT * FROM metodos_pago";
     if ($activo) {
-        $sql .= " WHERE activo = 1";
+        $sql .= " WHERE (activo = 1 OR activo = 0)";
     }
     return $pdo->query($sql)->fetchAll();
 }
@@ -694,4 +694,5 @@ function calcular_precio_con_tasa($precio_dolares, $metodo_pago_id) {
     
     return $precio_dolares; // Si no hay tasa, devolver el precio original en dólares
 }
+
 

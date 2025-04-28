@@ -473,11 +473,15 @@ $total_paginas = ceil($total_boletos / 100);
                                 <?php
                                 $metodos_pago = obtener_metodos_pago(true);
                                 foreach ($metodos_pago as $metodo):
+                                    if ($metodo['activo'] == 1): 
                                 ?>
                                 <option value="<?= $metodo['id'] ?>" data-detalles='<?= htmlspecialchars(json_encode($metodo)) ?>'>
                                     <?= htmlspecialchars($metodo['nombre']) ?>
                                 </option>
-                                <?php endforeach; ?>
+                                <?php 
+                                    endif;
+                                endforeach; 
+                                ?>
                             </select>
                             <div id="detalles-metodo-pago-seleccionado" class="mt-2 text-m text-gray-300"></div>
                         </div>

@@ -282,20 +282,20 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
     </style>
 </head>
 <body class="antialiased bg-background text-white">
-    <!-- Navbar -->
-    <header class="fixed w-full top-0 left-0 z-40 bg-secondary/90 backdrop-blur-md shadow-lg border-b border-gray-800">
-        <div class="flex items-center justify-between px-4 py-3">
+        <!-- Navbar -->
+        <header class="fixed w-full top-0 left-0 z-40 bg-secondary/90 backdrop-blur-md shadow-lg border-b border-gray-800">
+    <div class="flex items-center justify-between px-4 py-3">
             <div class="flex items-center">
                 <button id="sidebar-toggle" class="lg:hidden text-white mr-4">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <a href="../" class="flex items-center gap-2 group" aria-label="Bólidos Rifas">
-                    <img src="./uploads/logocolor.webp" 
-                         alt="Logo Bólidos Rifas" 
+                <a href="" class="flex items-center gap-2 group" aria-label="A&M Recreciones">
+                    <img src="../uploads/logo.jpg" 
+                         alt="Logo A&M Recreciones" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
                     <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-                        Bólidos Rifas
+                        A&M Recreciones
                     </span>
                 </a>
             </div>
@@ -305,7 +305,7 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
                     <span class="text-sm text-gray-300">Bienvenido,</span>
                     <span class="font-medium"><?= htmlspecialchars($_SESSION['usuario_nombre']) ?></span>
                 </div>
-                <a href="/logout" class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 transition-all">
+                <a href="/rifas-premium/logout.php" class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 transition-all">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
             </div>
@@ -335,7 +335,7 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
             </div>
             
             <nav class="space-y-1">
-                <a href="/rifas-premium/dashboard/" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg">
+                <a href="/rifas-premium/dashboard" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-tachometer-alt w-5 text-center text-primary"></i>
                     <span>Dashboard</span>
                 </a>
@@ -345,14 +345,13 @@ $boletos = obtenerBoletosPorTransaccion($transaccion_id);
                     <span>Eventos</span>
                 </a>
                 
-                <a href="/rifas-premium/admin/perfil" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
-                    <i class="fas fa-users w-5 text-center text-gray-400"></i>
-                    <span>Perfil</span>
-                </a>
-                
                 <a href="/rifas-premium/metodos" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
                     <i class="fas fa-dollar-sign w-5 text-center text-gray-400"></i>
-                    <span>Metodos de Pagos</span>
+                    <span>Métodos de Pago</span>
+                </a>
+                <a href="/rifas-premium/metodos/tasas" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
+                    <i class="fa-solid fa-money-bill-transfer w-5 text-center text-gray-400"></i>
+                    <span>Tasas</span>
                 </a>
             </nav>
         </div>

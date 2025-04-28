@@ -309,8 +309,8 @@ $eventos_finalizados = obtenerEventos('finalizado');
                     <i class="fas fa-bars text-xl"></i>
                 </button>
                 <a href="../" class="flex items-center gap-2 group" aria-label="Bólidos Rifas">
-                    <img src="https://storage.googleapis.com/a1aa/image/AeamUydK5EmKTfsd6-73yLVqiwQJTSps5dL04l_p_jc.jpg" 
-                         alt="Logo Bólidos Rifas" 
+                    <img src="/admin/uploads/logo.png" 
+                         alt="A&M Recreciones" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
                     <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
@@ -399,7 +399,7 @@ $eventos_finalizados = obtenerEventos('finalizado');
                         <i class="fas fa-plus"></i> Nuevo Evento
                     </a>
                 </div>
-                s
+
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <?php foreach ($eventos_activos as $evento): ?>
                     <div class="bg-secondary rounded-xl overflow-hidden shadow-lg evento-card">
