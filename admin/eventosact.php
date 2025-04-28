@@ -355,12 +355,12 @@ $eventos_finalizados = obtenerEventos('finalizado');
             
             <nav class="space-y-1">
                 <a href="/rifas-premium/dashboard/" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg">
-                    <i class="fas fa-tachometer-alt w-5 text-center text-primary"></i>
+                    <i class="fas fa-tachometer-alt w-5 text-center text-gray-400"></i>
                     <span>Dashboard</span>
                 </a>
                 
                 <a href="./" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg">
-                    <i class="fas fa-trophy w-5 text-center text-gray-400"></i>
+                    <i class="fas fa-trophy w-5 text-center text-primary"></i>
                     <span>Eventos</span>
                 </a>
                 

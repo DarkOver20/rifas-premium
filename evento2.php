@@ -534,9 +534,9 @@ $total_paginas = ceil($total_boletos / 100);
     </div>
 </div>
 
-        </div>
-    </main> <?php endif; ?>
-    </div>
+</div>  </div>  </div>
+     <?php endif; ?>  </main>
+    
 
     <!-- Footer -->
     <footer class="bg-background border-t border-gray-800 pt-16 pb-8">

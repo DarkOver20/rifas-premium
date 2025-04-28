@@ -1,3 +1,7 @@
+
+
+
+
 <?php
 require_once dirname(__DIR__) . '/includes/config.php';
 require_once dirname(__DIR__) . '/includes/functions.php';
@@ -429,9 +433,7 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
             <div class="mb-8 fade-in">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <h1 class="text-2xl md:text-3xl font-bold">
-                        <span class="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                            Métodos de Pago
-                        </span>
+                    <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Metodos de Pago</span>
                     </h1>
                     
                     <button id="abrir-modal" 
@@ -506,8 +508,8 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
         </div>
     </main>
 
-    <!-- Modal para añadir/editar método -->
-    <div id="metodo-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75">
+     <!-- Modal para añadir/editar método -->
+     <div id="metodo-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75">
         <div class="bg-secondary rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-4">
@@ -753,10 +755,144 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
             detallesContainer.appendChild(nuevoDetalle);
         });
         
-        // Función para editar método
-        async function editarMetodo(id) {
+       async function editarMetodo(id) {
     try {
         // Mostrar loader o estado de carga
+        document.getElementById('modal-titulo').textContent = 'Cargando...';         toggleModal(true); 
+        // Obtener los datos del método
+        const response = await fetch(`./metodos?editar=${id}`); 
+        const result = await response.text(); 
+
+        // Crear un DOM temporal para parsear la respuesta
+        const parser = new DOMParser();
+        const htmlDoc = parser.parseFromString(result, 'text/html');
+        const metodoActual = htmlDoc.querySelector('input[name="id"]')?.value;
+
+        if (!metodoActual) { 
+            throw new Error('No se pudo cargar el método'); 
+        }
+
+        // Actualizar la URL sin recargar
+        history.pushState(null, '', `?editar=${id}`); 
+        // Cargar los datos en el formulario
+        document.getElementById('modal-titulo').textContent = 'Editar Método de Pago'; 
+        document.querySelector('input[name="id"]').value = metodoActual; 
+        document.querySelector('input[name="nombre"]').value = htmlDoc.querySelector('input[name="nombre"]')?.value || ''; 
+
+        // Cargar tipo de pago
+        const tipoPagoSelect = document.getElementById('tipo_pago_id'); 
+        const tipoPagoValue = htmlDoc.querySelector('select[name="tipo_pago_id"]')?.value || ''; 
+        if (tipoPagoSelect && tipoPagoValue) { 
+            tipoPagoSelect.value = tipoPagoValue; 
+        }
+
+        // Cargar icono actual
+        const iconoActual = htmlDoc.querySelector('input[name="icono_actual"]')?.value || ''; 
+        document.querySelector('input[name="icono_actual"]').value = iconoActual; 
+
+        // Cargar detalles dinámicos
+        const detallesContainer = document.getElementById('detalles-container'); 
+        detallesContainer.innerHTML = ''; 
+
+        const detallesInputs = htmlDoc.querySelectorAll('[name^="detalle_nombre"]'); 
+        if (detallesInputs.length > 0) { 
+            detallesInputs.forEach((input, index) => { 
+                const nombre = input.value; 
+                const valor = htmlDoc.querySelectorAll('[name^="detalle_valor"]')[index]?.value || '';
+
+                if (nombre || valor) { 
+                    const div = document.createElement('div'); 
+                    div.className = 'flex space-x-2'; 
+                    div.innerHTML = `
+                        <input type="text" name="detalle_nombre[]" placeholder="Nombre (Ej: Teléfono)"
+                               class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary" 
+                               value="${escapeHtml(nombre)}"> 
+                        <input type="text" name="detalle_valor[]" placeholder="Valor"
+                               class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary" 
+                               value="${escapeHtml(valor)}"> 
+                    `; 
+                    detallesContainer.appendChild(div); 
+                }
+            }); 
+        } else {
+            // Si no hay detalles, agregar un campo vacío
+            detallesContainer.innerHTML = `
+                <div class="flex space-x-2">
+                    <input type="text" name="detalle_nombre[]" placeholder="Nombre (Ej: Teléfono)"
+                           class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"> 
+                    <input type="text" name="detalle_valor[]" placeholder="Valor"
+                           class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"> 
+                </div>
+            `; 
+        }
+
+        // Mostrar imagen actual si existe
+        const iconoPreview = document.querySelector('#icono-preview'); 
+        if (iconoActual && iconoPreview) { 
+            iconoPreview.innerHTML = `
+                <div class="mt-2 flex items-center">
+                    <img src="/rifas-premium/${escapeHtml(iconoActual)}"
+                         class="h-10 w-10 object-contain bg-gray-800 rounded-md"> 
+                    <span class="ml-2 text-sm text-gray-300">Icono actual</span> 
+                </div>
+            `; 
+        }
+
+    } catch (error) {
+        console.error('Error al cargar método:', error); 
+        mostrarNotificacion('error', 'Error al cargar el método para editar'); 
+        toggleModal(false); 
+    }
+}
+async function toggleActivoMetodo(id, boton) {
+    if (!confirm('¿Estás seguro de que deseas cambiar el estado de este método de pago?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`./metodos?toggle_activo=${id}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            mostrarNotificacion('success', result.message);
+            
+            // Actualizar la fila
+            const fila = document.querySelector(`tr[data-id="${id}"]`);
+            if (fila) {
+                // Actualizar badge de estado
+                const statusBadge = fila.querySelector('.status-badge');
+                if (result.activo) {
+                    statusBadge.className = 'status-badge status-active';
+                    statusBadge.textContent = 'Activo';
+                } else {
+                    statusBadge.className = 'status-badge status-inactive';
+                    statusBadge.textContent = 'Inactivo';
+                }
+                
+                // Actualizar botón
+                if (boton) {
+                    if (result.activo) {
+                        boton.className = 'btn-glow bg-warning/10 hover:bg-warning/20 text-warning px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
+                        boton.innerHTML = '<i class="fas fa-eye-slash text-xs"></i> Desactivar';
+                    } else {
+                        boton.className = 'btn-glow bg-success/10 hover:bg-success/20 text-success px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
+                        boton.innerHTML = '<i class="fas fa-eye text-xs"></i> Activar';
+                    }
+                }
+            }
+        } else {
+            mostrarNotificacion('error', result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('error', 'Error de conexión');
+    }
+}
+
+// En la función editarMetodo, actualizar el botón de toggle al cargar
+async function editarMetodo(id) {
+    try {
+ // Mostrar loader o estado de carga
         document.getElementById('modal-titulo').textContent = 'Cargando...';
         toggleModal(true);
         
@@ -840,61 +976,7 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
             `;
         }
         
-    } catch (error) {
-        console.error('Error al cargar método:', error);
-        mostrarNotificacion('error', 'Error al cargar el método para editar');
-        toggleModal(false);
-    }
-}async function toggleActivoMetodo(id, boton) {
-    if (!confirm('¿Estás seguro de que deseas cambiar el estado de este método de pago?')) {
-        return;
-    }
 
-    try {
-        const response = await fetch(`./metodos?toggle_activo=${id}`);
-        const result = await response.json();
-        
-        if (result.success) {
-            mostrarNotificacion('success', result.message);
-            
-            // Actualizar la fila
-            const fila = document.querySelector(`tr[data-id="${id}"]`);
-            if (fila) {
-                // Actualizar badge de estado
-                const statusBadge = fila.querySelector('.status-badge');
-                if (result.activo) {
-                    statusBadge.className = 'status-badge status-active';
-                    statusBadge.textContent = 'Activo';
-                } else {
-                    statusBadge.className = 'status-badge status-inactive';
-                    statusBadge.textContent = 'Inactivo';
-                }
-                
-                // Actualizar botón
-                if (boton) {
-                    if (result.activo) {
-                        boton.className = 'btn-glow bg-warning/10 hover:bg-warning/20 text-warning px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
-                        boton.innerHTML = '<i class="fas fa-eye-slash text-xs"></i> Desactivar';
-                    } else {
-                        boton.className = 'btn-glow bg-success/10 hover:bg-success/20 text-success px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
-                        boton.innerHTML = '<i class="fas fa-eye text-xs"></i> Activar';
-                    }
-                }
-            }
-        } else {
-            mostrarNotificacion('error', result.message);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('error', 'Error de conexión');
-    }
-}
-
-// En la función editarMetodo, actualizar el botón de toggle al cargar
-async function editarMetodo(id) {
-    try {
-        // (Mantén todo el código existente de editarMetodo)
-        
         // Después de cargar los datos, actualizar el botón de toggle si existe
         const fila = document.querySelector(`tr[data-id="${id}"]`);
         if (fila) {
@@ -911,7 +993,9 @@ async function editarMetodo(id) {
             }
         }
     } catch (error) {
-        // (Mantén el manejo de errores existente)
+        console.error('Error al cargar método:', error);
+        mostrarNotificacion('error', 'Error al cargar el método para editar');
+        toggleModal(false);
     }
 }
 
@@ -968,96 +1052,86 @@ async function editarMetodo(id) {
                 toggleModal(false);
                 
                 if (isEdit) {
-                    // Actualizar fila existente
-                    const fila = document.querySelector(`tr[data-id="${result.data.id}"]`);
-                    if (fila) {
-                    fila.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${result.data.id}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
-                        ${escapeHtml(result.data.nombre)}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                        ${result.data.icono ? 
-                            `<img src="/rifas-premium/${escapeHtml(result.data.icono)}" 
-                              class="method-icon">` : 
-                            '<div class="text-gray-400 text-sm">Sin icono</div>'}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="status-badge ${result.data.activo ? 'status-active' : 'status-inactive'}">
-                            ${result.data.activo ? 'Activo' : 'Inactivo'}
-                        </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div class="flex items-center justify-end gap-2">
-                            <button onclick="editarMetodo(${result.data.id})" 
-                                class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                            <i class="fas fa-edit text-xs"></i> Editar
-                            </button>
-                            <button onclick="eliminarMetodo(${result.data.id})" 
-                                class="btn-glow bg-danger/10 hover:bg-danger/20 text-danger px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                            <i class="fas fa-trash text-xs"></i> Eliminar
-                            </button>
-                        </div>
-                        </td>
-                    `;
-                    
-                    // Actualizar botón de toggle
-                    const toggleBtn = fila.querySelector('button[onclick^="toggleActivoMetodo"]');
-                    if (toggleBtn) {
-                        if (result.data.activo) {
-                        toggleBtn.className = 'btn-glow bg-warning/10 hover:bg-warning/20 text-warning px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
-                        toggleBtn.innerHTML = '<i class="fas fa-eye-slash text-xs"></i> Desactivar';
-                        } else {
-                        toggleBtn.className = 'btn-glow bg-success/10 hover:bg-success/20 text-success px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1';
-                        toggleBtn.innerHTML = '<i class="fas fa-eye text-xs"></i> Activar';
-                        }
-                    }
-                    }
-                } else {
-                    // Añadir nueva fila
-                    const tbody = document.querySelector('#tabla-metodos');
-                    if (tbody) {
-                    // Si estaba vacío, limpiar el mensaje
-                    if (tbody.querySelector('td[colspan="5"]')) {
-                        tbody.innerHTML = '';
-                    }
-                    
-                    const fila = document.createElement('tr');
-                    fila.dataset.id = result.data.id;
-                    fila.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${result.data.id}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
-                        ${escapeHtml(result.data.nombre)}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                        ${result.data.icono ? 
-                            `<img src="/rifas-premium/${escapeHtml(result.data.icono)}" 
-                              class="method-icon">` : 
-                            '<div class="text-gray-400 text-sm">Sin icono</div>'}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="status-badge ${result.data.activo ? 'status-active' : 'status-inactive'}">
-                            ${result.data.activo ? 'Activo' : 'Inactivo'}
-                        </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div class="flex items-center justify-end gap-2">
-                            <button onclick="editarMetodo(${result.data.id})" 
-                                class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                            <i class="fas fa-edit text-xs"></i> Editar
-                            </button>
-                            <button onclick="eliminarMetodo(${result.data.id})" 
-                                class="btn-glow bg-danger/10 hover:bg-danger/20 text-danger px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
-                            <i class="fas fa-trash text-xs"></i> Eliminar
-                            </button>
-                        </div>
-                        </td>
-                    `;
-                    tbody.prepend(fila);
-                    }
+            // Actualizar fila existente
+            const fila = document.querySelector(`tr[data-id="${result.data.id}"]`);
+            if (fila) {
+                fila.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${result.data.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                    ${escapeHtml(result.data.nombre)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                    ${result.data.icono ? 
+                        `<img src="/rifas-premium/${escapeHtml(result.data.icono)}" 
+                          class="method-icon">` : 
+                        '<div class="text-gray-400 text-sm">Sin icono</div>'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="status-badge ${result.data.activo ? 'status-active' : 'status-inactive'}">
+                        ${result.data.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center justify-end gap-2">
+                        <button onclick="editarMetodo(${result.data.id})" 
+                            class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
+                        <i class="fas fa-edit text-xs"></i> Editar
+                        </button>
+                        <button onclick="toggleActivoMetodo(${result.data.id}, this)" 
+                            class="btn-glow ${result.data.activo ? 'bg-warning/10 hover:bg-warning/20 text-warning' : 'bg-success/10 hover:bg-success/20 text-success'} px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
+                        <i class="fas ${result.data.activo ? 'fa-eye-slash' : 'fa-eye'} text-xs"></i> 
+                        ${result.data.activo ? 'Desactivar' : 'Activar'}
+                        </button>
+                    </div>
+                    </td>
+                `;
+            }
+        } else {
+            // Añadir nueva fila
+            const tbody = document.querySelector('#tabla-metodos');
+            if (tbody) {
+                // Si estaba vacío, limpiar el mensaje
+                if (tbody.querySelector('td[colspan="5"]')) {
+                    tbody.innerHTML = '';
                 }
-                }, 500);
-            } else {
+                
+                const fila = document.createElement('tr');
+                fila.dataset.id = result.data.id;
+                fila.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${result.data.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                    ${escapeHtml(result.data.nombre)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                    ${result.data.icono ? 
+                        `<img src="/rifas-premium/${escapeHtml(result.data.icono)}" 
+                          class="method-icon">` : 
+                        '<div class="text-gray-400 text-sm">Sin icono</div>'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="status-badge ${result.data.activo ? 'status-active' : 'status-inactive'}">
+                        ${result.data.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center justify-end gap-2">
+                        <button onclick="editarMetodo(${result.data.id})" 
+                            class="btn-glow bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
+                        <i class="fas fa-edit text-xs"></i> Editar
+                        </button>
+                        <button onclick="toggleActivoMetodo(${result.data.id}, this)" 
+                            class="btn-glow ${result.data.activo ? 'bg-warning/10 hover:bg-warning/20 text-warning' : 'bg-success/10 hover:bg-success/20 text-success'} px-3 py-1 rounded-md text-xs transition-all inline-flex items-center gap-1">
+                        <i class="fas ${result.data.activo ? 'fa-eye-slash' : 'fa-eye'} text-xs"></i> 
+                        ${result.data.activo ? 'Desactivar' : 'Activar'}
+                        </button>
+                    </div>
+                    </td>
+                `;
+                tbody.prepend(fila);
+            }
+        }
+    }, 500);
+} else {
                 if (result.errors) {
                 mostrarErrores(result.errors);
                 } else {

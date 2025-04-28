@@ -277,8 +277,8 @@ $total_paginas = ceil($total_solicitudes / $por_pagina);$total_ventas = calcular
                 <button id="sidebar-toggle" class="lg:hidden text-white mr-4">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <a href="" class="flex items-center gap-2 group" aria-label="A&M Recreciones">
-                    <img src="../uploads/logo.jpg" 
+                <a href="/rifas-premium/dashboard " class="flex items-center gap-2 group" aria-label="A&M Recreaciones">
+                <img src="../uploads/logo.jpg" 
                          alt="Logo A&M Recreciones" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">

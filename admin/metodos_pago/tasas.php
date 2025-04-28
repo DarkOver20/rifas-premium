@@ -267,13 +267,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button id="sidebar-toggle" class="lg:hidden text-white mr-4">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <a href="/rifas-premium/admin" class="flex items-center gap-2 group">
-                    <img src="../uploads/logo.jpg" 
+                <a href="/rifas-premium/dashboard " class="flex items-center gap-2 group" aria-label="A&M Recreaciones">
+                <img src="../uploads/logo.jpg" 
                          alt="Logo A&M Recreciones" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
-                    <span class="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                        A&M Recreciones
+                    <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
+                    A&M Recreciones
                     </span>
                 </a>
             </div>
@@ -338,7 +338,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Header -->
             <div class="mb-8 fade-in">
                 <h1 class="text-3xl font-bold mb-2">
-                    <span class="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Tasas de Cambio</span>
+                <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Tasas de Cambio</span>
                 </h1>
                 <p class="text-gray-400">Administra las tasas de conversión para los diferentes métodos de pago</p>
             </div>

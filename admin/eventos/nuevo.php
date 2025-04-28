@@ -256,19 +256,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <header class="fixed w-full top-0 left-0 z-50 bg-secondary/90 backdrop-blur-md shadow-lg border-b border-gray-800">
     <div class="container mx-auto px-4 py-3">
       <div class="flex justify-between items-center">
-        <a href="../" class="flex items-center gap-2 group" aria-label="Bólidos Rifas">
-          <img src="https://storage.googleapis.com/a1aa/image/AeamUydK5EmKTfsd6-73yLVqiwQJTSps5dL04l_p_jc.jpg" 
-               alt="Logo Bólidos Rifas" 
+        <a href="/rifas-premium/dashboard " class="flex items-center gap-2 group" aria-label="A&M Recreaciones">
+          <img src="" 
+               alt="Logo A&M Recreaciones" 
                class="h-10 w-10 rounded-lg"
                loading="eager">
           <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-            Bólidos Rifas
+            A&M Recreaciones
           </span>
         </a>
         
         <div class="flex items-center gap-4">
-          <span class="text-white"><?= htmlspecialchars($_SESSION['usuario_nombre']) ?></span>
-          <a href="../../../logout.php" class="text-gray-300 hover:text-white transition-all">
+          <span class="text-white">Bienvenido, <?= htmlspecialchars($_SESSION['usuario_nombre']) ?></span>
+          <a href="../logout.php" class="text-gray-300 hover:text-white transition-all">
             <i class="fas fa-sign-out-alt text-xl"></i>
           </a>
         </div>
