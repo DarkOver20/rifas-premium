@@ -45,11 +45,11 @@ switch ($request) {
         require __DIR__ . '/admin/metodos_pago/index.php';
         break;
 
-    case 'metodos/crear':
-        // Página de crear metodos de pago
-        require_admin();
-        require __DIR__ . '/admin/metodos_pago/nuevo.php';
-        break; 
+    // case 'metodos/crear':
+    //     // Página de crear metodos de pago
+    //     require_admin();
+    //     require __DIR__ . '/admin/metodos_pago/nuevo.php';
+    //     break; 
 
     
     case 'metodos/tasas':
@@ -58,11 +58,11 @@ switch ($request) {
             require __DIR__ . '/admin/metodos_pago/tasas.php';
             break; 
 
-    case 'admin/perfil':
-        // Página de crear metodos de pago
-        require_admin();
-        require __DIR__ . '/admin/usuario/perfil.php';
-        break; 
+    // case 'admin/perfil':
+    //     // Página de crear metodos de pago
+    //     require_admin();
+    //     require __DIR__ . '/admin/usuario/perfil.php';
+    //     break; 
             
     case 'logout':
         // Cerrar sesión
@@ -103,7 +103,7 @@ switch ($request) {
         else {
             // Página no encontrada
             header("HTTP/1.0 404 Not Found");
-            require __DIR__ . '/404.php';
+            require __DIR__ . '../404.php';
         }
 
         

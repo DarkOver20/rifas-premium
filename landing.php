@@ -887,28 +887,32 @@ $metodos_de_pago = obtener_metodos_pago();
 
   <!-- Scripts optimizados -->
   <script>
-    // Mobile Menu Toggle
-    const mobileMenuButton = document.getElementById('mobile-menu-button');
-    const mobileMenu = document.getElementById('mobile-menu');
+  const mobileMenuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const mobileMenuContent = mobileMenu.querySelector('div'); // El panel del menú
+  
+  mobileMenuButton.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+    setTimeout(() => {
+      mobileMenu.classList.toggle('opacity-0');
+      mobileMenu.classList.toggle('translate-y-4');
+    }, 10);
+  });
+  
+  // Cerrar menú al hacer clic fuera (corregido)
+  document.addEventListener('click', (e) => {
+    const isClickInsideMenuContent = mobileMenuContent.contains(e.target);
+    const isClickOnMenuButton = mobileMenuButton.contains(e.target);
+    const isMenuOpen = !mobileMenu.classList.contains('hidden');
     
-    mobileMenuButton.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
+    if (!isClickInsideMenuContent && !isClickOnMenuButton && isMenuOpen) {
+      mobileMenu.classList.add('opacity-0');
+      mobileMenu.classList.add('translate-y-4');
       setTimeout(() => {
-        mobileMenu.classList.toggle('opacity-0');
-        mobileMenu.classList.toggle('translate-y-4');
-      }, 10);
-    });
-    
-    // Cerrar menú al hacer clic fuera
-    document.addEventListener('click', (e) => {
-      if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
-        mobileMenu.classList.add('opacity-0');
-        mobileMenu.classList.add('translate-y-4');
-        setTimeout(() => {
-          mobileMenu.classList.add('hidden');
-        }, 300);
-      }
-    });
+        mobileMenu.classList.add('hidden');
+      }, 300);
+    }
+  });
     
     // Smooth scrolling para enlaces internos
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
