@@ -570,7 +570,7 @@ $total_paginas = ceil($total_boletos / 100);
     
 
 <!-- Sección de búsqueda de boleto -->
-<section class="bg-background py-12">
+<section class="bg-background py-12" id="buscar-boleto"><br>
     <div class="container mx-auto px-4">
         <div class="bg-secondary rounded-xl shadow-lg overflow-hidden border border-gray-800 p-6">
             <h2 class="text-2xl font-bold text-white mb-6">Buscar Boleto</h2>
@@ -1185,6 +1185,8 @@ document.getElementById('formulario-pago').addEventListener('submit', async func
             selectedTickets = [];
             updateSelectedTickets();
             showStep(1);
+            window.location.hash = '#buscar-boleto';
+
         } else {
             // Verificar si hay boletos no disponibles en la respuesta
             if (data.unavailable_tickets && data.unavailable_tickets.length > 0) {

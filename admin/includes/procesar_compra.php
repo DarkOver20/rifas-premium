@@ -115,13 +115,13 @@ try {
 
     $pdo->commit();
 
-    // Respuesta exitosa
-    echo json_encode([
-        'success' => true,
-        'message' => 'Compra procesada correctamente. Los boletos han sido reservados pendientes de aprobación.',
-        'transaccion_id' => $transaccion_id,
-        'boletos_reservados' => $boletos_seleccionados
-    ]);
+        // Respuesta exitosa
+        echo json_encode([
+            'success' => true,
+            'message' => 'Compra procesada correctamente. Los boletos seleccionados son: ' . implode(', ', $boletos_seleccionados) . '. Han sido reservados pendientes de aprobación.',
+            'transaccion_id' => $transaccion_id,
+            'boletos_reservados' => $boletos_seleccionados
+        ]);
 
 } catch (Exception $e) {
     $pdo->rollBack();
