@@ -1,0 +1,16 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+# Excluir archivos API y recursos
+RewriteCond %{REQUEST_URI} !^/api\.php [NC]
+RewriteCond %{REQUEST_URI} !^/admin/includes/functions\.php [NC]
+RewriteCond %{REQUEST_URI} !^/admin/uploads/ [NC]
+
+# Redirigir todo a index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [L,QSA]
+
+Options -Indexes
+</IfModule>
