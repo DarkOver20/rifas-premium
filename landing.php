@@ -346,7 +346,7 @@ $metodos_de_pago = obtener_metodos_pago();
     <div class="container mx-auto px-4 py-3">
       <div class="flex justify-between items-center bg-secondary/90 backdrop-blur-md rounded-full px-6 py-3 shadow-lg border border-gray-800">
         <a href="#inicio" class="flex items-center gap-2 group" aria-label="RIFAS PREMIUM">
-          <img src="./uploads/logocolor.webp" alt="Logo de RIFAS PREMIUM" class="h-12 w-12 logo-animate transition-all duration-300 group-hover:rotate-12" loading="eager">
+          <img src="./admin/uploads/logo.png" alt="Logo de RIFAS PREMIUM" class="h-12 w-12 logo-animate transition-all duration-300 group-hover:rotate-12" loading="eager">
           <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
           A&M Recreaciones
           </span>
