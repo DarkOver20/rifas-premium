@@ -103,7 +103,7 @@ switch ($request) {
         else {
             // Página no encontrada
             header("HTTP/1.0 404 Not Found");
-            require __DIR__ . '../404.php';
+            require __DIR__ . '/404.php';
         }
 
         

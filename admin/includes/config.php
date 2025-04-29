@@ -4,7 +4,10 @@ define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'rifasam');
-
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("X-XSS-Protection: 1; mode=block");
+header("Referrer-Policy: strict-origin-when-cross-origin");
 // Configuración de la aplicación
 define('SITE_URL', 'http://localhost/rifas-premium');
 define('SITE_NAME', 'Rifas Premium');

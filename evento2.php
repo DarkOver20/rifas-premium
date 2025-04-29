@@ -432,7 +432,8 @@ $total_paginas = ceil($total_boletos / 100);
                         <div>
                             <label class="block text-gray-300 mb-1">Nombre completo</label>
                             <input type="text" id="full-name" name="nombre" required
-                                class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none">
+                                class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none" placeholder="Ej. Alfonso Perez"
+                                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" title="Solo se permiten letras y espacios.">
                         </div>
                         
                         <!-- Cédula y Teléfono -->
@@ -440,21 +441,50 @@ $total_paginas = ceil($total_boletos / 100);
                             <div>
                                 <label class="block text-gray-300 mb-1">Cédula</label>
                                 <input type="text" id="id-number" name="cedula" required
-                                    class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none">
+                                    class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none" placeholder="Ej. 30125963"
+                                    pattern="[0-9]{8,}" title="Debe contener al menos 8 números.">
                             </div>
                             
                             <div>
                                 <label class="block text-gray-300 mb-1">Teléfono</label>
                                 <input type="tel" id="phone" name="telefono" required
-                                    class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none" placeholder="0414-0000000">
+                                    class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none" placeholder="Ej. +00 000000000"
+                                    pattern="[0-9\-\+]+" title="No se permiten letras ni caracteres especiales. Usa el formato +00 000000000">
                             </div>
                         </div>
                         
                         <!-- Estado -->
                         <div>
                             <label class="block text-gray-300 mb-1">Estado</label>
-                            <input type="text" id="state" name="estado" required
+                            <select id="state" name="estado" required
                                 class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none">
+                                <option value="">Selecciona un estado</option>
+                                <option value="Amazonas">Amazonas</option>
+                                <option value="Anzoátegui">Anzoátegui</option>
+                                <option value="Apure">Apure</option>
+                                <option value="Aragua">Aragua</option>
+                                <option value="Barinas">Barinas</option>
+                                <option value="Bolívar">Bolívar</option>
+                                <option value="Carabobo">Carabobo</option>
+                                <option value="Cojedes">Cojedes</option>
+                                <option value="Delta Amacuro">Delta Amacuro</option>
+                                <option value="Caracas">Caracas</option>
+                                <option value="Falcón">Falcón</option>
+                                <option value="Guárico">Guárico</option>
+                                <option value="Lara">Lara</option>
+                                <option value="Mérida">Mérida</option>
+                                <option value="Miranda">Miranda</option>
+                                <option value="Monagas">Monagas</option>
+                                <option value="Nueva Esparta">Nueva Esparta</option>
+                                <option value="Portuguesa">Portuguesa</option>
+                                <option value="Sucre">Sucre</option>
+                                <option value="Táchira">Táchira</option>
+                                <option value="Trujillo">Trujillo</option>
+                                <option value="Vargas">Vargas</option>
+                                <option value="Yaracuy">Yaracuy</option>
+                                <option value="Zulia">Zulia</option>
+                                <option value="Otro país">Otro país</option>
+                            </select>
                         </div>
                     </div>
             </div>
@@ -491,7 +521,7 @@ $total_paginas = ceil($total_boletos / 100);
                         <div>
                             <label class="block text-gray-300 mb-1">Referencia del pago</label>
                             <input type="text" id="transaction-reference" name="referencia_transaccion" required
-                                class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none">
+                                class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-primary focus:outline-none" pattern="[A-Za-z0-9]{6,}" title="Debe contener al menos 6 caracteres alfanuméricos.">
                         </div>
                         
                         <!-- Comprobante -->
@@ -539,6 +569,51 @@ $total_paginas = ceil($total_boletos / 100);
      <?php endif; ?>  </main>
     
 
+<!-- Sección de búsqueda de boleto -->
+<section class="bg-background py-12">
+    <div class="container mx-auto px-4">
+        <div class="bg-secondary rounded-xl shadow-lg overflow-hidden border border-gray-800 p-6">
+            <h2 class="text-2xl font-bold text-white mb-6">Buscar Boleto</h2>
+            
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <input type="text" id="search-ticket-input" 
+                       class="flex-1 bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-700 focus:border-primary focus:outline-none" 
+                       placeholder="Ingresa el número de boleto">
+                <button id="search-ticket-btn" 
+                        class="bg-primary text-white px-6 py-3 rounded-lg font-bold hover:bg-primary-dark transition-all">
+                    <i class="fas fa-search mr-2"></i> Buscar
+                </button>
+            </div>
+            
+            <div id="ticket-result" class="hidden bg-gray-800/50 rounded-lg p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-primary mb-2">Información del Boleto</h3>
+                        <div class="space-y-3">
+                            <p><strong>Evento:</strong> <span id="ticket-event-name">-</span></p>
+                            <p><strong>Número:</strong> <span id="ticket-number">-</span></p>
+                            <p><strong>Estado:</strong> <span id="ticket-status" class="px-2 py-1 rounded-full text-xs font-bold">-</span></p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-bold text-primary mb-2">Información del Comprador</h3>
+                        <div class="space-y-3" id="buyer-info">
+                            <p><strong>Nombre:</strong> <span id="ticket-buyer-name">-</span></p>
+                            <p><strong>Estado:</strong> <span id="ticket-buyer-state">-</span></p>
+                            <p><strong>Teléfono:</strong> <span id="ticket-buyer-phone">-</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="ticket-not-found" class="hidden bg-gray-800/50 rounded-lg p-6 text-center">
+                <i class="fas fa-ticket-alt text-4xl text-gray-500 mb-3"></i>
+                <p class="text-gray-400">No se encontró información para este boleto</p>
+            </div>
+        </div>
+    </div>
+</section>
     <!-- Footer -->
     <footer class="bg-background border-t border-gray-800 pt-16 pb-8">
     <div class="container mx-auto px-4">
@@ -962,7 +1037,7 @@ document.getElementById('payment-method').addEventListener('change', function() 
         const totalUSD = selectedTickets.length * ticketPrice;
         
         fetch(`/rifas-premium/api/calcular_precio.php?metodo_pago_id=${metodo_pago_id}&precio=${totalUSD}`)
-            .then(response => response.json())
+                    .then(response => response.json())
             .then(data => {
                 updateTotalsWithConversion(data);
             })
@@ -972,6 +1047,69 @@ document.getElementById('payment-method').addEventListener('change', function() 
             });
     }
 });
+
+// Función para buscar información de un boleto
+function searchTicket(ticketNumber) {
+    if (!ticketNumber || isNaN(ticketNumber)) {
+        mostrarMensaje('Error', 'Por favor ingresa un número de boleto válido', true);
+        return;
+    }
+
+    fetch(`?action=buscar_boleto&numero=${encodeURIComponent((ticketNumber))}&evento_id=<?= $evento_id ?>`)
+            .then(response => response.json())
+        .then(data => {
+            const resultDiv = document.getElementById('ticket-result');
+            const notFoundDiv = document.getElementById('ticket-not-found');
+            
+            if (data.success && data.boleto) {
+                // Mostrar información básica del boleto
+                document.getElementById('ticket-event-name').textContent = data.boleto.evento || '<?= htmlspecialchars($evento["titulo"]) ?>';
+                document.getElementById('ticket-number').textContent = data.boleto.numero;
+                
+                // Estado del boleto
+                const statusElement = document.getElementById('ticket-status');
+                statusElement.textContent = data.boleto.estado.toUpperCase();
+                statusElement.className = 'px-2 py-1 rounded-full text-xs font-bold ';
+                
+                if (data.boleto.estado === 'pagado' || data.boleto.estado === 'ganador') {
+                    statusElement.className += 'bg-green-500 text-white';
+                } else if (data.boleto.estado === 'reservado') {
+                    statusElement.className += 'bg-yellow-500 text-white';
+                } else {
+                    statusElement.className += 'bg-gray-500 text-white';
+                }
+                
+                // Información del comprador si existe
+                if (data.comprador) {
+                    document.getElementById('ticket-buyer-name').textContent = data.comprador.nombre;
+                    document.getElementById('ticket-buyer-state').textContent = data.comprador.estado;
+                    
+                    // Mostrar teléfono sin ocultar, pero con formato
+                    if (data.comprador.telefono) {
+                        const phone = data.comprador.telefono.toString();
+                        document.getElementById('ticket-buyer-phone').textContent = phone;
+                    }
+                    
+                
+                } else {
+                    document.getElementById('ticket-buyer-name').textContent = 'No asignado';
+                    document.getElementById('ticket-buyer-state').textContent = 'No asignado';
+                    document.getElementById('ticket-buyer-phone').textContent = 'No asignado';
+                }
+                
+                resultDiv.classList.remove('hidden');
+                notFoundDiv.classList.add('hidden');
+            } else {
+                resultDiv.classList.add('hidden');
+                notFoundDiv.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarMensaje('Error', 'Ocurrió un error al buscar el boleto', true);
+        });
+}
+
 function updateTotalsWithConversion(conversionData = null) {
     const totalUSD = selectedTickets.length * ticketPrice;
     
@@ -1102,6 +1240,18 @@ document.getElementById('formulario-pago').addEventListener('submit', async func
             document.getElementById("countdown-seconds").innerText = segundos.toString().padStart(2, '0');
         }, 1);
     }
+    // Agrega esto al final de tu script principal
+document.getElementById('search-ticket-btn').addEventListener('click', function() {
+    const ticketNumber = document.getElementById('search-ticket-input').value.trim();
+    searchTicket(ticketNumber);
+});
+
+document.getElementById('search-ticket-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        const ticketNumber = this.value.trim();
+        searchTicket(ticketNumber);
+    }
+});
 
     // Iniciar el contador con la fecha de fin del evento
     iniciarContador("<?= date('Y-m-d H:i:s', strtotime($evento['fecha_fin'])) ?>");

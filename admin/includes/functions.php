@@ -309,6 +309,88 @@ if (isset($_GET['action']) && $_GET['action'] === 'obtener_ganador') {
     }
     exit;
 }
+
+
+/**
+ * Buscar información de un boleto específico
+ */
+if (isset($_GET['action']) && $_GET['action'] === 'buscar_boleto') {
+    ob_clean();
+    
+    header('Content-Type: application/json');    
+    try {
+        require_once './admin/includes/config.php';
+
+        $evento_id = intval($_GET['evento_id']);
+        $numero_boleto = trim($_GET['numero']);
+        
+        $pdo = getDBConnection();
+        
+        $stmt = $pdo->prepare("SELECT 
+                b.numero_boleto,
+                b.estado,
+                e.titulo AS evento_titulo,
+                t.nombre,
+                t.estado AS estado_comprador,
+                t.telefono,
+                t.estado_compra,
+                t.fecha_compra
+            FROM boletos b
+            JOIN eventos e ON b.evento_id = e.id
+            LEFT JOIN transacciones t ON b.transaccion_id = t.id
+            WHERE b.evento_id = ? AND b.numero_boleto = ?");
+        $stmt->execute([$evento_id, $numero_boleto]);
+        $boleto = $stmt->fetch();
+        
+        if (!$boleto) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'No se encontró el boleto en este evento'
+            ]);
+            exit;
+        }
+        
+        $telefono_oculto = null;
+        if (!empty($boleto['telefono'])) {
+            $telefono = $boleto['telefono'];
+            $telefono_oculto = substr($telefono, 0, floor(strlen($telefono) / 2)) . str_repeat('*', ceil(strlen($telefono) / 2));
+        }
+
+        $nombre_oculto = null;
+        if (!empty($boleto['nombre'])) {
+            $nombre = $boleto['nombre'];
+            $nombre_oculto = substr($nombre, 0, max(0, strlen($nombre) - 7)) . str_repeat('*', min(5, strlen($nombre)));
+        }
+        
+        $response = [
+            'success' => true,
+            'boleto' => [
+                'numero' => $boleto['numero_boleto'],
+                'estado' => $boleto['estado'],
+                'evento' => $boleto['evento_titulo']
+            ]
+        ];
+        
+        if ($boleto['nombre']) {
+            $response['comprador'] = [
+                'nombre' => $nombre_oculto,
+                'estado' => $boleto['estado_comprador'],
+                'telefono' => $telefono_oculto,
+                'estado_pago' => $boleto['estado_compra']
+            ];
+        }
+        
+        echo json_encode($response);
+        
+    } catch (Exception $e) {
+        error_log("Error en buscar_boleto: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error al buscar información del boleto'
+        ]);
+    }
+    exit;
+}
 /**********************************************
  * FUNCIONES DE BOLETOS
  **********************************************/
