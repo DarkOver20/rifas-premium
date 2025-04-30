@@ -323,7 +323,7 @@ $total_paginas = ceil($total_boletos / 100);
     <?php else: ?>
         <!-- Contenido actual del proceso de compra -->
                     <!-- Pasos de compra -->
-                    <div class="mb-8">
+                    <div class="mb-1">
                         <div class="flex items-center justify-between text-sm text-gray-400">
                             <div class="flex items-center">
                                 <div class="step-indicator w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">1</div>
@@ -337,72 +337,85 @@ $total_paginas = ceil($total_boletos / 100);
                       
                         </div>
                     </div>
+                   <!-- Paso 1: Selección de boletos -->
+<div id="step-1" class="bg-secondary rounded-xl shadow-lg overflow-hidden border border-gray-800 mb-8">
+    <div class="p-6">
+        
+        <!-- Sección de selección aleatoria -->
+        <div class="mb-6 bg-gray-800/50 rounded-lg p-4">
+            <h3 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <i class="fas fa-random text-primary"></i>
+                <span>Selección aleatoria de boletos</span>
+            </h3>
+            
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+                <div class="flex items-center w-full sm:w-auto">
+                    <label class="block text-gray-300 mr-2 whitespace-nowrap">Cantidad de boletos:</label>
+                    <div class="flex items-center w-full sm:w-32">
+                        <button id="decrease-random" class="bg-gray-700 text-white px-3 py-1 rounded-l-lg hover:bg-gray-600">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" min="1" max="20" value="1"
+                            class="bg-gray-800 text-white text-center w-full py-1 border-t border-b border-gray-700"
+                            id="random-quantity">
+                        <button id="increase-random" class="bg-gray-700 text-white px-3 py-1 rounded-r-lg hover:bg-gray-600">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <button id="random-btn" class="bg-primary text-white px-4 py-2 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary-dark transition-all w-full sm:w-auto">
+                    <i class="fas fa-random"></i>
+                    <span>Seleccionar aleatoriamente</span>
+                </button>
+            </div>
+            <p class="text-gray-400 text-sm mt-2">Seleccionará automáticamente la cantidad especificada de boletos disponibles al azar</p>
+        </div>
+        
+        <!-- Sección de selección manual -->
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <i class="fas fa-mouse-pointer text-primary"></i>
+                <span>Selección manual de boletos </span>
+            </h3>
+            
+            <!-- Controles de paginación -->
+            <div class="flex justify-between items-center mb-3">
+                <div class="text-sm text-gray-400">
+                    Página <span id="current-page">1</span> de <span id="total-pages">1</span>
+                </div>
+                <div class="flex gap-2">
+                    <button id="prev-page" class="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-600 disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </button>
+                    <button id="next-page" class="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-600 disabled:opacity-50">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Grid de boletos compacto -->
+            <div class="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-8 lg:grid-cols-10 gap-1 mb-3" id="ticket-grid">
+                <!-- Los boletos se cargarán dinámicamente con JavaScript -->
+            </div>
+            
+            <p class="text-gray-400 text-sm">Haz clic en los boletos para seleccionarlos manualmente</p>
+        </div>
+        
+        <!-- Boletos seleccionados -->
+        <div class="mb-6 bg-gray-800/50 rounded-lg p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-gray-300">Boletos seleccionados: <span id="selected-count">0</span></span>
+                <div class="text-right">
+                    <span class="text-primary font-bold block" id="selected-total">$0.00 USD</span>
+                    <span class="text-xs text-gray-400" id="selected-total-equivalent"></span>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 min-h-10" id="selected-tickets-list">
+                <p class="text-gray-400 text-sm">No hay boletos seleccionados</p>
+            </div>
+        </div>
 
-                    <!-- Paso 1: Selección de boletos -->
-                    <div id="step-1" class="bg-secondary rounded-xl shadow-lg overflow-hidden border border-gray-800 mb-8">
-                        <div class="p-6">
-                            <h2 class="text-2xl font-bold text-white mb-6">Selecciona tus boletos</h2>
-                            
-                            <!-- Selector de método aleatorio -->
-                            <div class="mb-6 flex flex-col sm:flex-row items-center gap-4">
-                                <div class="flex items-center flex-1 w-full">
-                                    <label class="block text-gray-300 mr-2">Cantidad:</label>
-                                    <div class="flex items-center w-full max-w-xs">
-                                        <button id="decrease-random" class="bg-gray-700 text-white px-3 py-1 rounded-l-lg hover:bg-gray-600">
-                                            <i class="fas fa-minus"></i>
-                                        </button>
-                                        <input type="number" min="1" max="20" value="1"
-                                            class="bg-gray-800 text-white text-center w-full py-1 border-t border-b border-gray-700"
-                                            id="random-quantity" style="min-width: 3rem;">
-                                        <button id="increase-random" class="bg-gray-700 text-white px-3 py-1 rounded-r-lg hover:bg-gray-600">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <button id="random-btn" class="bg-primary text-white px-4 py-2 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary-dark transition-all w-full sm:w-auto">
-                                    <i class="fas fa-random"></i>
-                                    <span>Selección aleatoria</span>
-                                </button>
-                            </div>
-                            
-                            <!-- Grid de boletos con paginación -->
-                            <div class="mb-6">
-                                <label class="block text-gray-300 mb-2">Boletos disponibles:</label>
-                                
-                                <!-- Controles de paginación -->
-                                <div class="flex justify-between items-center mb-3">
-                                    <div class="text-sm text-gray-400">
-                                        Página <span id="current-page">1</span> de <span id="total-pages">1</span>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button id="prev-page" class="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-600 disabled:opacity-50" disabled>
-                                            <i class="fas fa-chevron-left"></i> Anterior
-                                        </button>
-                                        <button id="next-page" class="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-600 disabled:opacity-50">
-                                            Siguiente <i class="fas fa-chevron-right"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <!-- Grid de boletos compacto -->
-                                <div class="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-8 lg:grid-cols-10 gap-1 mb-3" id="ticket-grid">
-                                    <!-- Los boletos se cargarán dinámicamente con JavaScript -->
-                                </div>
-                            </div>                            
-                                <!-- Boletos seleccionados -->
-                                <div class="mb-6 bg-gray-800/50 rounded-lg p-4">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <span class="text-gray-300">Boletos seleccionados: <span id="selected-count">0</span></span>
-                                        <div class="text-right">
-                                            <span class="text-primary font-bold block" id="selected-total">$0.00 USD</span>
-                                            <span class="text-xs text-gray-400" id="selected-total-equivalent"></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex flex-wrap gap-2 min-h-10" id="selected-tickets-list">
-                                        <p class="text-gray-400 text-sm">No hay boletos seleccionados</p>
-                                    </div>
-                                </div>
                             <!-- Botón de continuar -->
                             <button id="continue-btn" onclick="showStep(2)" class="w-full bg-success text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-green-700 transition-all disabled:opacity-50" disabled>
                                 <span>Continuar</span>
