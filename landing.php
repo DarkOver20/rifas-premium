@@ -489,8 +489,11 @@ $metodos_de_pago = obtener_metodos_pago();
                   <div class="flex justify-between items-center mb-4">
                     <div>
                       <div class="text-xs text-gray-400">Tiempo restante:</div>
-                      <div class="text-lg font-bold text-white" id="countdown"><?= date_diff(new DateTime(), new DateTime($evento_destacado['fecha_fin']))->format('%d días %h horas') ?></div>
-                    </div>
+                      <div class="text-lg font-bold text-white" 
+     id="countdown-hero"
+     data-event-end="<?= htmlspecialchars($evento_destacado['fecha_fin']) ?>">
+  <!-- El JS actualizará este contenido -->
+</div>                    </div>
                     <a href="/rifas-premium/evento/<?= $evento_destacado['id'] ?>/<?= generarSlug($evento_destacado['titulo']) ?>" class="btn-glow bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white px-6 py-2 rounded-full text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300">
                       Participar <i class="fas fa-arrow-right ml-1"></i>
                     </a>
@@ -624,8 +627,10 @@ $metodos_de_pago = obtener_metodos_pago();
                 <div class="flex justify-between items-center mb-6">
                   <div>
                     <div class="text-xs text-gray-400">Tiempo restante</div>
-                    <div class="text-sm font-bold"><?= date_diff(new DateTime(), new DateTime($evento['fecha_fin']))->format('%d días') ?></div>
-                  </div>
+                    <div class="text-sm font-bold event-countdown"
+     data-event-end="<?= htmlspecialchars($evento['fecha_fin']) ?>">
+  <!-- El JS actualizará este contenido -->
+</div>                  </div>
                 </div>
                 
                 <a href="/rifas-premium/evento/<?= $evento['id'] ?>/<?= generarSlug($evento['titulo']) ?>" class="w-full btn-glow bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white py-3 rounded-lg font-bold shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2">
@@ -1010,86 +1015,85 @@ $metodos_de_pago = obtener_metodos_pago();
     }
     
     createParticles(); 
-document.addEventListener('DOMContentLoaded', function() {
-    // Función para actualizar todos los contadores
-    function updateAllCounters() {
-        document.querySelectorAll('[data-event-end]').forEach(eventCard => {
-            const eventId = eventCard.dataset.eventId;
-            const endDate = new Date(eventCard.dataset.eventEnd);
-            const now = new Date();
-            const diffMs = endDate - now;
-            
-            // Elementos del DOM que necesitamos actualizar
-            const timeElement = eventCard.querySelector('.text-sm.font-bold'); // Elemento del tiempo restante
-            const statusBadge = eventCard.querySelector('.absolute.top-4.right-4 span'); // Badge de estado
-            const buyButton = eventCard.querySelector('.btn-glow'); // Botón de compra
+    document.addEventListener('DOMContentLoaded', function() {
+    // Función para formatear el tiempo restante (días, horas, minutos)
+    function formatTimeRemaining(diffMs) {
+        if (diffMs <= 0) return "Evento finalizado";
+        
+        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        
+        return `${days}d ${hours}h ${minutes}m`;
+    }
 
+    // Función para actualizar un contador individual
+    function updateCounter(element) {
+        const endDateStr = element.dataset.eventEnd;
+        if (!endDateStr) return;
+        
+        const endDate = new Date(endDateStr.replace(' ', 'T'));
+        const now = new Date();
+        const diffMs = endDate - now;
+        
+        element.textContent = formatTimeRemaining(diffMs);
+        
+        // Si es un contador de tarjeta de evento, manejar elementos adicionales
+        if (element.classList.contains('event-countdown')) {
+            const card = element.closest('[data-event-id]');
+            if (!card) return;
+            
+            const eventId = card.dataset.eventId;
+            const statusBadge = card.querySelector('.absolute.top-4.right-4 span');
+            const buyButton = card.querySelector('.btn-glow');
+            
             if (diffMs <= 0) {
-                // El evento ha terminado
-                if (timeElement) timeElement.textContent = "Evento finalizado";
-                
-                // Cambiar el estado visual
                 if (statusBadge) {
                     statusBadge.innerHTML = '<i class="fas fa-flag-checkered mr-1"></i> Finalizado';
                     statusBadge.classList.remove('bg-primary');
                     statusBadge.classList.add('bg-gray-700');
                 }
                 
-                // Ocultar botón de compra
-                if (buyButton) {
-                    buyButton.style.display = 'none';
-                }
-                
-                // Llamar a la API para actualizar el estado en la base de datos
+                if (buyButton) buyButton.style.display = 'none';
                 updateEventStatus(eventId);
-            } else {
-                // Actualizar el contador
-                const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                if (timeElement) timeElement.textContent = `${days}d ${hours}h`;
             }
-        });
+        }
     }
-    
-    // Función para llamar al backend y actualizar el estado
+
+    // Función principal para actualizar todos los contadores
+    function updateAllCounters() {
+        document.querySelectorAll('.event-countdown, #countdown-hero').forEach(updateCounter);
+    }
+
+    // Función para actualizar el estado en el backend
     async function updateEventStatus(eventId) {
-    try {
-        console.log(`Intentando actualizar estado del evento ${eventId}`);
-        const response = await fetch('/rifas-premium/api/update_event_status.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ eventId: eventId })
-        });
-        
-        const data = await response.json();
-        console.log('Respuesta del servidor:', data);
-        
-        if (!data.success) {
-            console.error('Error al actualizar el evento:', data.message);
-            // Reintentar después de 30 segundos
-            setTimeout(() => updateEventStatus(eventId), 30000);
+        try {
+            const response = await fetch('/rifas-premium/api/update_event_status.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ eventId })
+            });
+            
+            const data = await response.json();
+            if (!data.success) {
+                console.error('Error al actualizar el evento:', data.message);
+                setTimeout(() => updateEventStatus(eventId), 30000);
+            }
+        } catch (error) {
+            console.error('Error en la solicitud:', error);
+            setTimeout(() => updateEventStatus(eventId), 60000);
         }
-    } catch (error) {
-        console.error('Error en la solicitud:', error);
-        // Reintentar después de 1 minuto
-        setTimeout(() => updateEventStatus(eventId), 60000);
     }
-}
-    
-    // Actualizar contadores cada minuto
+
+    // Inicializar y configurar intervalo de actualización
     updateAllCounters();
-    setInterval(updateAllCounters, 60000);
+    setInterval(updateAllCounters, 60000); // Actualizar cada minuto
     
-    // También actualizar cuando la pestaña gana visibilidad
+    // Actualizar cuando la pestaña vuelve a estar visible
     document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            updateAllCounters();
-        }
+        if (!document.hidden) updateAllCounters();
     });
 });
-</script>
-
+  </script>
 </body>
 </html>
