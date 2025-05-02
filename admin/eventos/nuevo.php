@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_fin = filter_input(INPUT_POST, 'fecha_fin', FILTER_UNSAFE_RAW);
     $premio_principal = trim(filter_input(INPUT_POST, 'premio_principal', FILTER_UNSAFE_RAW));
     $estado = filter_input(INPUT_POST, 'estado', FILTER_UNSAFE_RAW);
-    
+    $minimo_boletos = intval(filter_input(INPUT_POST, 'minimo_boletos', FILTER_SANITIZE_NUMBER_INT));
     // Validación de datos
     $errores = [];
     
@@ -37,6 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strtotime($fecha_fin) <= strtotime($fecha_inicio)) {
         $errores['fechas'] = 'La fecha de fin debe ser posterior a la de inicio';
     }
+    if ($minimo_boletos <= 0) {
+      $errores['minimo_boletos'] = 'El mínimo debe ser al menos 1';
+  }
     
     // Procesar imagen
     $imagen = '';
@@ -71,20 +74,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $errores['imagen'] = 'La imagen es requerida';
     }
     
-    if (empty($errores)) {
-      $pdo = getDBConnection();
-      
-      try {
+if (empty($errores)) {
+    $pdo = getDBConnection();
+    
+    try {
         $pdo->beginTransaction();
         
         $stmt = $pdo->prepare("INSERT INTO eventos 
-          (titulo, slogan, descripcion, imagen, precio_boleto, total_boletos, boletos_disponibles, 
-           fecha_inicio, fecha_fin, estado, premio_principal) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            (titulo, slogan, descripcion, imagen, precio_boleto, minimo_boletos, total_boletos, boletos_disponibles, 
+             fecha_inicio, fecha_fin, estado, premio_principal) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         $stmt->execute([
-          $titulo, $slogan, $descripcion, $imagen, $precio_boleto, $total_boletos, $total_boletos,
-          $fecha_inicio, $fecha_fin, $estado, $premio_principal
+            $titulo, $slogan, $descripcion, $imagen, $precio_boleto, $minimo_boletos, $total_boletos, $total_boletos,
+            $fecha_inicio, $fecha_fin, $estado, $premio_principal
         ]);
         
         $evento_id = $pdo->lastInsertId();
@@ -96,16 +99,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ../eventos/');
         exit;
         
-      } catch (PDOException $e) {
+    } catch (PDOException $e) {
         $pdo->rollBack();
         $errores['general'] = 'Error al crear el evento: ' . $e->getMessage();
         error_log("Error al crear evento: " . $e->getMessage());
         
         if (!empty($imagen)) {
-          @unlink(dirname(__DIR__) . '/uploads/eventos/' . $imagen);
+            @unlink(dirname(__DIR__) . '/uploads/eventos/' . $imagen);
         }
-      }
     }
+}
   }
   ?>
 
@@ -395,7 +398,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <?php if (isset($errores['precio_boleto'])): ?>
                     <p class="error-message"><?= $errores['precio_boleto'] ?></p>
                   <?php endif; ?>
+
+                  <div>
+                  <label for="minimo_boletos" class="block text-gray-300 mb-2 font-medium">
+                      Mínimo de boletos por compra <span class="text-danger">*</span>
+                  </label>
+                  <input type="number" id="minimo_boletos" name="minimo_boletos" min="1" max="20" required
+                        class="w-full form-input px-4 py-3 bg-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-gray-500"
+                        value="<?= isset($_POST['minimo_boletos']) ? htmlspecialchars($_POST['minimo_boletos']) : '1' ?>"
+                        placeholder="1">
+                  <?php if (isset($errores['minimo_boletos'])): ?>
+                      <p class="error-message"><?= $errores['minimo_boletos'] ?></p>
+                  <?php endif; ?>
+              </div>
                 </div>
+               
                 
                 <div>
                   <label for="total_boletos" class="block text-gray-300 mb-2 font-medium">

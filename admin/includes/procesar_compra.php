@@ -19,6 +19,7 @@ $metodo_pago_id = filter_input(INPUT_POST, 'metodo_pago', FILTER_VALIDATE_INT);
 $referencia_transaccion = trim(filter_input(INPUT_POST, 'referencia_transaccion', FILTER_SANITIZE_STRING));
 $boletos_seleccionados = json_decode($_POST['boletos_seleccionados'], true);
 
+
 // Validaciones básicas
 if (
     !$evento_id || !$nombre || !$telefono || !$cedula || !$estado ||

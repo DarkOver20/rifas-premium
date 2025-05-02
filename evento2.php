@@ -704,23 +704,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const ticketsPerPage = 100;
     let currentPage = <?= $pagina_actual ?>;
     const totalPages = <?= $total_paginas ?>;
+    let selectedPaymentMethod = null;
+
 
 // Función para mostrar/ocultar pasos
 window.showStep = function(stepNumber) {
-    // Ocultar todos los pasos
     document.querySelectorAll('[id^="step-"]').forEach(step => {
         step.classList.add('hidden');
     });
 
-    // Mostrar el paso seleccionado
     const selectedStep = document.getElementById(`step-${stepNumber}`);
     if (selectedStep) {
         selectedStep.classList.remove('hidden');
-        // Desplazamiento suave a la parte superior del paso
         selectedStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Si estamos volviendo al paso 2, restaurar la selección de método de pago si existe
+        if (stepNumber === 2 && selectedPaymentMethod) {
+            const paymentSelect = document.getElementById('payment-method');
+            paymentSelect.value = selectedPaymentMethod;
+            
+            // Disparar el evento change para recalcular
+            const event = new Event('change');
+            paymentSelect.dispatchEvent(event);
+        }
     }
 
-    // Actualizar indicadores de progreso (ahora solo 2 pasos)
     document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
         if (index + 1 <= stepNumber) {
             indicator.classList.remove('bg-gray-700');
@@ -731,7 +739,6 @@ window.showStep = function(stepNumber) {
         }
     });
 
-    // Actualizar campo oculto de boletos al mostrar el paso 2
     if (stepNumber === 2) {
         document.getElementById('boletos-seleccionados').value = JSON.stringify(selectedTickets);
     }
@@ -787,10 +794,6 @@ window.showStep = function(stepNumber) {
             selectedTickets = selectedTickets.filter(num => num !== ticketNumber);
         } else {
             // Seleccionar
-            if (selectedTickets.length >= 20) {
-                alert('Máximo 20 boletos por compra');
-                return;
-            }
             element.classList.remove('ticket-available');
             element.classList.add('ticket-selected');
             selectedTickets.push(ticketNumber);
@@ -889,14 +892,30 @@ function updateSelectedTickets() {
     const continueBtn = document.getElementById('continue-btn');
     const cartCount = document.getElementById('cart-count');
     const selectedDisplay = document.getElementById('selected-tickets-display');
+
+    const minimoBoletos = <?= $evento['minimo_boletos'] ?? 1 ?>;
+    const cumpleMinimo = selectedTickets.length >= minimoBoletos; // ← Definir aquí la variable
+
     
     // Actualizar contadores
     selectedCount.textContent = selectedTickets.length;
     if (cartCount) cartCount.textContent = selectedTickets.length;
     
     // Actualizar totales (llama a la nueva función)
-    updateTotalsWithConversion();
-    
+    if (selectedPaymentMethod) {
+        const totalUSD = selectedTickets.length * ticketPrice;
+        fetch(`/rifas-premium/api/calcular_precio.php?metodo_pago_id=${selectedPaymentMethod}&precio=${totalUSD}`)
+            .then(response => response.json())
+            .then(data => {
+                updateTotalsWithConversion(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                updateTotalsWithConversion(); // Mostrar solo en USD si hay error
+            });
+    } else {
+        updateTotalsWithConversion();
+    }    
     // Resto del código para actualizar la lista de boletos...
     if (selectedTickets.length > 0) {
         selectedList.innerHTML = `
@@ -909,9 +928,10 @@ function updateSelectedTickets() {
                     </button>
                 </div>
                 `).join('')}
-            </div>
+             </div>
+            ${!cumpleMinimo ? `<div class="text-danger text-xs mt-2">Mínimo ${minimoBoletos} boleto(s) por compra</div>` : ''}
         `;
-        continueBtn.disabled = false;
+        continueBtn.disabled = !cumpleMinimo;
         
         // Actualizar resumen en paso 3
         if (selectedDisplay) {
@@ -959,8 +979,8 @@ function updateSelectedTickets() {
     document.getElementById('random-btn').addEventListener('click', function() {
         const quantity = parseInt(document.getElementById('random-quantity').value);
         
-        if (isNaN(quantity) || quantity < 1 || quantity > 20) {
-            alert('Por favor ingresa una cantidad válida entre 1 y 20');
+        if (isNaN(quantity) || quantity < 1) {
+            alert('Por favor ingresa una cantidad válida mayor a uno');
             return;
         }
         
@@ -1009,13 +1029,12 @@ function updateSelectedTickets() {
 
     document.getElementById('increase-random').addEventListener('click', function() {
         const input = document.getElementById('random-quantity');
-        if (parseInt(input.value) < 20) {
-            input.value = parseInt(input.value) + 1;
-        }
+        input.value = parseInt(input.value) + 1;
     });
 
 // Modificar el event listener del método de pago
 document.getElementById('payment-method').addEventListener('change', function() {
+    selectedPaymentMethod = this.value; // Guardar el método seleccionado
     const detallesDiv = document.getElementById('detalles-metodo-pago-seleccionado');
     const selectedOption = this.options[this.selectedIndex];
     const detallesJson = selectedOption.getAttribute('data-detalles');
@@ -1046,11 +1065,11 @@ document.getElementById('payment-method').addEventListener('change', function() 
     }
 
     // Obtener y aplicar tasa de cambio si hay boletos seleccionados
-    if (selectedTickets.length > 0) {
+ if (selectedTickets.length > 0) {
         const totalUSD = selectedTickets.length * ticketPrice;
         
-        fetch(`/rifas-premium/api/calcular_precio.php?metodo_pago_id=${metodo_pago_id}&precio=${totalUSD}`)
-                    .then(response => response.json())
+        fetch(`/rifas-premium/api/calcular_precio.php?metodo_pago_id=${selectedPaymentMethod}&precio=${totalUSD}`)
+            .then(response => response.json())
             .then(data => {
                 updateTotalsWithConversion(data);
             })
