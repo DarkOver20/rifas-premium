@@ -176,6 +176,32 @@ $total_paginas = ceil($total_boletos / 100);
     .hidden {
     display: none !important;
 }
+
+/* Estilos para campos con error */
+.border-danger {
+    border-color: #ef4444 !important;
+    animation: errorBlink 0.5s 2;
+}
+
+/* Estilos para mensajes de error debajo de los campos */
+.error-message {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+/* Mostrar mensaje de error cuando el campo tiene error */
+.has-error .error-message {
+    display: block;
+}
+
+/* Animación para campos con error */
+@keyframes errorBlink {
+    0% { border-color: #ef4444; }
+    50% { border-color: #fca5a5; }
+    100% { border-color: #ef4444; }
+}
     </style>
 
 </head>
@@ -890,52 +916,55 @@ function updateSelectedTickets() {
     const selectedCount = document.getElementById('selected-count');
     const selectedList = document.getElementById('selected-tickets-list');
     const continueBtn = document.getElementById('continue-btn');
-    const cartCount = document.getElementById('cart-count');
     const selectedDisplay = document.getElementById('selected-tickets-display');
-
     const minimoBoletos = <?= $evento['minimo_boletos'] ?? 1 ?>;
-    const cumpleMinimo = selectedTickets.length >= minimoBoletos; // ← Definir aquí la variable
+    const cumpleMinimo = selectedTickets.length >= minimoBoletos;
 
-    
     // Actualizar contadores
     selectedCount.textContent = selectedTickets.length;
-    if (cartCount) cartCount.textContent = selectedTickets.length;
     
-    // Actualizar totales (llama a la nueva función)
-    if (selectedPaymentMethod) {
-        const totalUSD = selectedTickets.length * ticketPrice;
-        fetch(`/rifas-premium/api/calcular_precio.php?metodo_pago_id=${selectedPaymentMethod}&precio=${totalUSD}`)
-            .then(response => response.json())
-            .then(data => {
-                updateTotalsWithConversion(data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                updateTotalsWithConversion(); // Mostrar solo en USD si hay error
-            });
-    } else {
-        updateTotalsWithConversion();
-    }    
-    // Resto del código para actualizar la lista de boletos...
+    // Actualizar totales
+    const totalUSD = selectedTickets.length * ticketPrice;
+    document.getElementById('selected-total').textContent = `$${totalUSD.toFixed(2)} USD`;
+    
+    // Actualizar lista de boletos seleccionados
     if (selectedTickets.length > 0) {
+        // Formatear los números para mostrar (eliminar ceros adicionales)
+        const formattedTickets = selectedTickets.map(t => {
+            // Convertir a número para eliminar ceros a la izquierda, luego formatear a 4 dígitos
+            const num = parseInt(t);
+            return num.toString().padStart(4, '0');
+        });
+        
+        // Agrupar en bloques de 10 para mejor visualización
+        const groupedTickets = [];
+        for (let i = 0; i < formattedTickets.length; i += 10) {
+            groupedTickets.push(formattedTickets.slice(i, i + 10));
+        }
+        
         selectedList.innerHTML = `
             <div class="flex flex-wrap gap-2">
-                ${selectedTickets.sort((a, b) => a - b).map(ticket => `
-                <div class="bg-primary text-white px-2 py-1 rounded-full text-xs flex items-center">
-                    #${ticket.toString().padStart(5, '0')}
-                    <button class="ml-1 text-xs hover:text-accent" onclick="removeTicket('${ticket}')">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
+                ${groupedTickets.map(group => `
+                    <div class="flex flex-wrap gap-2 mb-2">
+                        ${group.map(ticket => `
+                            <div class="bg-primary text-white px-2 py-1 rounded-full text-xs flex items-center">
+                                #${ticket}
+                                <button class="ml-1 text-xs hover:text-accent" onclick="removeTicket('${ticket}')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
                 `).join('')}
-             </div>
+            </div>
             ${!cumpleMinimo ? `<div class="text-danger text-xs mt-2">Mínimo ${minimoBoletos} boleto(s) por compra</div>` : ''}
         `;
+        
         continueBtn.disabled = !cumpleMinimo;
         
         // Actualizar resumen en paso 3
         if (selectedDisplay) {
-            selectedDisplay.innerHTML = selectedTickets.map(ticket => `
+            selectedDisplay.innerHTML = formattedTickets.map(ticket => `
                 <div class="bg-gray-700 text-white px-3 py-1 rounded-full text-sm">
                     #${ticket}
                 </div>
@@ -945,20 +974,43 @@ function updateSelectedTickets() {
         selectedList.innerHTML = '<p class="text-gray-400 text-sm">No hay boletos seleccionados</p>';
         continueBtn.disabled = true;
     }
+    
+    // Actualizar total con conversión si hay método de pago seleccionado
+    if (selectedPaymentMethod && selectedTickets.length > 0) {
+        const totalUSD = selectedTickets.length * ticketPrice;
+        fetch(`/rifas-premium/api/calcular_precio.php?metodo_pago_id=${selectedPaymentMethod}&precio=${totalUSD}`)
+            .then(response => response.json())
+            .then(data => {
+                updateTotalsWithConversion(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                updateTotalsWithConversion();
+            });
+    }
 }
 
-    // Función para remover un boleto de la selección
     window.removeTicket = function(ticketNumber) {
-        selectedTickets = selectedTickets.filter(num => num !== ticketNumber);
-        
-        // Actualizar estado en el grid si está visible
-        document.querySelectorAll(`.ticket-selected[data-numero="${ticketNumber}"]`).forEach(el => {
-            el.classList.remove('ticket-selected');
-            el.classList.add('ticket-available');
-        });
-        
-        updateSelectedTickets();
-    };
+    // Convertir el número formateado (ej: "0018") a su valor numérico (18) para comparar
+    const numericTicket = parseInt(ticketNumber);
+    
+    // Filtrar el boleto a eliminar (comparando como números)
+    selectedTickets = selectedTickets.filter(num => parseInt(num) !== numericTicket);
+    
+    // Actualizar estado en el grid si está visible
+    document.querySelectorAll(`.ticket-selected[data-numero="${numericTicket}"]`).forEach(el => {
+        el.classList.remove('ticket-selected');
+        el.classList.add('ticket-available');
+    });
+    
+    // También buscar por el número formateado (por si acaso)
+    document.querySelectorAll(`.ticket-selected[data-numero="${ticketNumber}"]`).forEach(el => {
+        el.classList.remove('ticket-selected');
+        el.classList.add('ticket-available');
+    });
+    
+    updateSelectedTickets();
+};
 
     // Eventos de paginación
     document.getElementById('prev-page').addEventListener('click', () => {
@@ -976,12 +1028,40 @@ function updateSelectedTickets() {
     });
 
     // Selección aleatoria
-    document.getElementById('random-btn').addEventListener('click', function() {
-        const quantity = parseInt(document.getElementById('random-quantity').value);
+document.getElementById('random-btn').addEventListener('click', async function() {
+    const quantity = parseInt(document.getElementById('random-quantity').value);
+    
+    if (isNaN(quantity) || quantity < 1) {
+        mostrarMensaje('Error', 'Por favor ingresa una cantidad válida mayor a cero', true);
+        return;
+    }
+    
+    // Mostrar loading
+    const randomBtn = this;
+    const originalText = randomBtn.innerHTML;
+    randomBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando boletos...';
+    randomBtn.disabled = true;
+    
+    try {
+        // Obtener todos los boletos disponibles del servidor
+        const response = await fetch(`/rifas-premium/api/todos_boletos.php?evento_id=<?= $evento_id ?>`);
+        const data = await response.json();
         
-        if (isNaN(quantity) || quantity < 1) {
-            alert('Por favor ingresa una cantidad válida mayor a uno');
-            return;
+        if (!data.success) {
+            throw new Error(data.message || 'Error al obtener boletos disponibles');
+        }
+        
+        // Filtrar solo los boletos disponibles
+        const availableTickets = data.boletos
+            .filter(boleto => boleto.estado === 'disponible')
+            .map(boleto => boleto.numero_boleto);
+        
+        if (availableTickets.length === 0) {
+            throw new Error('No hay boletos disponibles para este evento');
+        }
+        
+        if (availableTickets.length < quantity) {
+            throw new Error(`Solo quedan ${availableTickets.length} boletos disponibles (intentaste seleccionar ${quantity})`);
         }
         
         // Limpiar selección actual
@@ -991,33 +1071,59 @@ function updateSelectedTickets() {
             el.classList.add('ticket-available');
         });
         
-        // Obtener boletos disponibles de la página actual
-        const availableTickets = Array.from(document.querySelectorAll('.ticket-available'))
-            .map(el => el.dataset.numero)
-            .filter(num => num !== undefined);
+        // Seleccionar aleatoriamente sin repetición
+        const shuffled = [...availableTickets].sort(() => 0.5 - Math.random());
+        selectedTickets = shuffled.slice(0, quantity).sort((a, b) => parseInt(a) - parseInt(b));
         
-        if (availableTickets.length < quantity) {
-            alert(`Solo quedan ${availableTickets.length} boletos disponibles en esta página`);
-            return;
-        }
-        
-        // Seleccionar aleatoriamente
-        for (let i = 0; i < quantity; i++) {
-            const randomIndex = Math.floor(Math.random() * availableTickets.length);
-            const randomTicket = availableTickets[randomIndex];
-            selectedTickets.push(randomTicket);
-            availableTickets.splice(randomIndex, 1);
-            
-            // Actualizar visualmente
-            const ticketElement = document.querySelector(`.ticket-available[data-numero="${randomTicket}"]`);
-            if (ticketElement) {
-                ticketElement.classList.remove('ticket-available');
-                ticketElement.classList.add('ticket-selected');
-            }
-        }
-        
+        // Actualizar la interfaz
         updateSelectedTickets();
+        
+        // Mostrar los boletos seleccionados en el grid (cargando las páginas necesarias)
+        await highlightSelectedTicketsInGrid();
+        
+        // Mostrar mensaje de éxito con los números seleccionados
+        const ticketsFormatted = selectedTickets.map(t => `#${t}`).join(', ');
+        mostrarMensaje('Boletos seleccionados', `Se han seleccionado ${quantity} boletos aleatoriamente: ${ticketsFormatted}`);
+        
+    } catch (error) {
+        mostrarMensaje('Error', error.message, true);
+    } finally {
+        // Restaurar botón
+        randomBtn.innerHTML = originalText;
+        randomBtn.disabled = false;
+    }
+});
+
+// Función para resaltar los boletos seleccionados en el grid
+async function highlightSelectedTicketsInGrid() {
+    // Primero, determinar en qué páginas están los boletos seleccionados
+    const ticketsPerPage = 100;
+    const pagesToLoad = new Set();
+
+    selectedTickets.forEach(ticket => {
+        const ticketNum = parseInt(ticket);
+        const page = Math.ceil(ticketNum / ticketsPerPage);
+        pagesToLoad.add(page);
     });
+
+    // Si hay páginas a cargar y la página actual no contiene ningún boleto seleccionado,
+    // cambiar a la primera página que contenga un boleto seleccionado
+    if (pagesToLoad.size > 0 && !pagesToLoad.has(currentPage)) {
+        // Elegimos la página más baja (primer boleto seleccionado)
+        const firstPage = Math.min(...pagesToLoad);
+        currentPage = firstPage;
+        await loadTickets(currentPage);
+    }
+
+    // Resaltar los boletos seleccionados en la página actual
+    selectedTickets.forEach(ticket => {
+        const ticketElement = document.querySelector(`[data-numero="${ticket}"]`);
+        if (ticketElement) {
+            ticketElement.classList.remove('ticket-available');
+            ticketElement.classList.add('ticket-selected');
+        }
+    });
+}
 
     // Controles de cantidad
     document.getElementById('decrease-random').addEventListener('click', function() {
@@ -1197,8 +1303,86 @@ window.cerrarModal = function(redirectToStep1 = false) {
 };
 
 // Reemplaza el evento submit del formulario
+// Función para validar campos del formulario
+function validarFormulario() {
+    let valido = true;
+    const form = document.getElementById('formulario-pago');
+    
+    // Validar nombre completo
+    const nombreInput = form.querySelector('input[name="nombre"]');
+    if (!nombreInput.value.trim() || !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(nombreInput.value)) {
+        nombreInput.classList.add('border-danger');
+        valido = false;
+    } else {
+        nombreInput.classList.remove('border-danger');
+    }
+    
+    // Validar cédula
+    const cedulaInput = form.querySelector('input[name="cedula"]');
+    if (!cedulaInput.value.trim() || !/^[0-9]{8,}$/.test(cedulaInput.value)) {
+        cedulaInput.classList.add('border-danger');
+        valido = false;
+    } else {
+        cedulaInput.classList.remove('border-danger');
+    }
+    
+    // Validar teléfono
+    const telefonoInput = form.querySelector('input[name="telefono"]');
+    if (!telefonoInput.value.trim() || !/^[0-9\-\+]+$/.test(telefonoInput.value)) {
+        telefonoInput.classList.add('border-danger');
+        valido = false;
+    } else {
+        telefonoInput.classList.remove('border-danger');
+    }
+    
+    // Validar estado
+    const estadoSelect = form.querySelector('select[name="estado"]');
+    if (!estadoSelect.value) {
+        estadoSelect.classList.add('border-danger');
+        valido = false;
+    } else {
+        estadoSelect.classList.remove('border-danger');
+    }
+    
+    // Validar método de pago
+    const metodoPagoSelect = form.querySelector('select[name="metodo_pago"]');
+    if (!metodoPagoSelect.value) {
+        metodoPagoSelect.classList.add('border-danger');
+        valido = false;
+    } else {
+        metodoPagoSelect.classList.remove('border-danger');
+    }
+    
+    // Validar referencia de pago
+    const referenciaInput = form.querySelector('input[name="referencia_transaccion"]');
+    if (!referenciaInput.value.trim() || !/^[A-Za-z0-9]{6,}$/.test(referenciaInput.value)) {
+        referenciaInput.classList.add('border-danger');
+        valido = false;
+    } else {
+        referenciaInput.classList.remove('border-danger');
+    }
+    
+    // Validar comprobante de pago
+    const comprobanteInput = form.querySelector('input[name="comprobante_pago"]');
+    if (!comprobanteInput.files || comprobanteInput.files.length === 0) {
+        comprobanteInput.classList.add('border-danger');
+        valido = false;
+    } else {
+        comprobanteInput.classList.remove('border-danger');
+    }
+    
+    return valido;
+}
+
+// Modificar el evento submit del formulario para incluir validación
 document.getElementById('formulario-pago').addEventListener('submit', async function(e) {
     e.preventDefault();
+    
+    // Validar campos antes de enviar
+    if (!validarFormulario()) {
+        mostrarMensaje('Error', 'Por favor completa todos los campos correctamente', true);
+        return;
+    }
     
     const formData = new FormData(this);
     
@@ -1218,7 +1402,6 @@ document.getElementById('formulario-pago').addEventListener('submit', async func
             updateSelectedTickets();
             showStep(1);
             window.location.hash = '#buscar-boleto';
-
         } else {
             // Verificar si hay boletos no disponibles en la respuesta
             if (data.unavailable_tickets && data.unavailable_tickets.length > 0) {
@@ -1250,6 +1433,14 @@ document.getElementById('formulario-pago').addEventListener('submit', async func
         console.error('Error:', error);
     }
 });
+
+// Agregar eventos de validación en tiempo real a los campos
+document.querySelectorAll('#formulario-pago input, #formulario-pago select').forEach(input => {
+    input.addEventListener('blur', function() {
+        validarFormulario();
+    });
+});
+
 
     function iniciarContador(fechaFin) {
         const tiempoObjetivo = new Date(fechaFin).getTime();
