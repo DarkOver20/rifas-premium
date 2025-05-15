@@ -113,6 +113,20 @@ try {
     if ($stmt->rowCount() !== count($boletos_seleccionados)) {
         throw new Exception("No se pudieron reservar todos los boletos seleccionados");
     }
+    function notificarWebSocket($evento_id, $boletos) {
+    $context = new ZMQContext();
+    $socket = $context->getSocket(ZMQ::SOCKET_PUSH, 'notificador');
+    $socket->connect("tcp://localhost:5555");
+    
+    foreach ($boletos as $boleto) {
+        $socket->send(json_encode([
+            'evento_id' => $evento_id,
+            'boleto_numero' => $boleto,
+            'estado' => 'vendido'
+        ]));
+    }
+}
+
 
     $pdo->commit();
 
@@ -123,6 +137,7 @@ try {
             'transaccion_id' => $transaccion_id,
             'boletos_reservados' => $boletos_seleccionados
         ]);
+        notificarWebSocket($evento_id, $boletos_comprados);
 
 } catch (Exception $e) {
     $pdo->rollBack();

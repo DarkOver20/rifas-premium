@@ -10,11 +10,10 @@ if (!$evento) {
     exit;
 }
 
-// Paginación
-$pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
-$boletos = obtenerBoletosDisponiblesPaginados($evento_id, $pagina_actual);
+// Solo necesitamos contar los boletos para la paginación
 $total_boletos = contarBoletosDisponibles($evento_id);
 $total_paginas = ceil($total_boletos / 100);
+$pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
 ?>
 
 <!DOCTYPE html>
@@ -79,6 +78,14 @@ $total_paginas = ceil($total_boletos / 100);
         color: #ef4444;
         cursor: not-allowed;
     }
+    .ticket-loading {
+        background-color: #1f2937;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
     .nav-link {
         position: relative;
     }
@@ -89,33 +96,32 @@ $total_paginas = ceil($total_boletos / 100);
         width: 100%;
     }
     /* Estilos para los boletos */
-    .ticket-available, .ticket-selected, .ticket-sold {
-    height: 2.5rem !important;
-    width: 2.5rem !important;
-    border-radius: 50% !important;
-    font-size: 0.85rem;
-    margin: 0.15rem;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-        
+    .ticket-available, .ticket-selected, .ticket-sold, .ticket-loading {
+        height: 2.5rem !important;
+        width: 2.5rem !important;
+        border-radius: 50% !important;
+        font-size: 0.85rem;
+        margin: 0.15rem;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
     }
     @media (min-width: 640px) {
-        .ticket-available, .ticket-selected, .ticket-sold {
+        .ticket-available, .ticket-selected, .ticket-sold, .ticket-loading {
             height: 1.75rem;
             width: 1.75rem;
             font-size: 0.75rem;
         }
     }
     @media (min-width: 768px) {
-        .ticket-available, .ticket-selected, .ticket-sold {
+        .ticket-available, .ticket-selected, .ticket-sold, .ticket-loading {
             height: 2rem;
             width: 2rem;
         }
     }
-       /* Estilos para modales y errores */
-       .ticket-error {
+    /* Estilos para modales y errores */
+    .ticket-error {
         animation: errorBlink 0.5s 3;
     }
     @keyframes errorBlink {
@@ -172,47 +178,40 @@ $total_paginas = ceil($total_boletos / 100);
     .modal-exito button:hover {
         background-color: #004999;
     }
-
     .hidden {
-    display: none !important;
-}
-
-/* Estilos para campos con error */
-.border-danger {
-    border-color: #ef4444 !important;
-    animation: errorBlink 0.5s 2;
-}
-
-/* Estilos para mensajes de error debajo de los campos */
-.error-message {
-    color: #ef4444;
-    font-size: 0.75rem;
-    margin-top: 0.25rem;
-    display: none;
-}
-
-/* Mostrar mensaje de error cuando el campo tiene error */
-.has-error .error-message {
-    display: block;
-}
-
-/* Animación para campos con error */
-@keyframes errorBlink {
-    0% { border-color: #ef4444; }
-    50% { border-color: #fca5a5; }
-    100% { border-color: #ef4444; }
-}
+        display: none !important;
+    }
+    /* Estilos para campos con error */
+    .border-danger {
+        border-color: #ef4444 !important;
+        animation: errorBlink 0.5s 2;
+    }
+    /* Estilos para mensajes de error debajo de los campos */
+    .error-message {
+        color: #ef4444;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+    /* Mostrar mensaje de error cuando el campo tiene error */
+    .has-error .error-message {
+        display: block;
+    }
+    /* Animación para campos con error */
+    @keyframes errorBlink {
+        0% { border-color: #ef4444; }
+        50% { border-color: #fca5a5; }
+        100% { border-color: #ef4444; }
+    }
     </style>
-
 </head>
-<?php
+
+<body class="antialiased bg-background text-white"><?php
     // Display memory usage
     echo "<div style='position: fixed; bottom: 0; left: 0; background-color: #f0f0f0; color: #333; padding: 10px; font-size: 12px;'>";
     echo "Pico de uso de RAM: " . round(memory_get_peak_usage() / 1024 / 1024, 2) . " MB";
     echo "</div>";
     ?>
-
-<body class="antialiased bg-background text-white">
     <!-- Header -->
     <header class="fixed w-full top-0 left-0 z-50 transition-all duration-300" id="navbar">
         <div class="container mx-auto px-4 py-3">
@@ -722,97 +721,303 @@ $total_paginas = ceil($total_boletos / 100);
     </a>
 
     <!-- Scripts -->
-    <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Variables globales
-    let selectedTickets = [];
-    const ticketPrice = <?= $evento['precio_boleto'] ?>;
-    const ticketsPerPage = 100;
-    let currentPage = <?= $pagina_actual ?>;
-    const totalPages = <?= $total_paginas ?>;
-    let selectedPaymentMethod = null;
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Variables globales
+        let selectedTickets = [];
+        const ticketPrice = <?= $evento['precio_boleto'] ?>;
+        const ticketsPerPage = 100;
+        let currentPage = <?= $pagina_actual ?>;
+        const totalPages = <?= $total_paginas ?>;
+        let selectedPaymentMethod = null;
+        let ticketAvailabilityCache = {}; // Cache para disponibilidad de boletos
+        let debounceTimer = null;
 
+        // Función para mostrar/ocultar pasos
+        window.showStep = function(stepNumber) {
+            document.querySelectorAll('[id^="step-"]').forEach(step => {
+                step.classList.add('hidden');
+            });
 
-// Función para mostrar/ocultar pasos
-window.showStep = function(stepNumber) {
-    document.querySelectorAll('[id^="step-"]').forEach(step => {
-        step.classList.add('hidden');
-    });
+            const selectedStep = document.getElementById(`step-${stepNumber}`);
+            if (selectedStep) {
+                selectedStep.classList.remove('hidden');
+                selectedStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                if (stepNumber === 2 && selectedPaymentMethod) {
+                    const paymentSelect = document.getElementById('payment-method');
+                    paymentSelect.value = selectedPaymentMethod;
+                    const event = new Event('change');
+                    paymentSelect.dispatchEvent(event);
+                }
+            }
 
-    const selectedStep = document.getElementById(`step-${stepNumber}`);
-    if (selectedStep) {
-        selectedStep.classList.remove('hidden');
-        selectedStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        
-        // Si estamos volviendo al paso 2, restaurar la selección de método de pago si existe
-        if (stepNumber === 2 && selectedPaymentMethod) {
-            const paymentSelect = document.getElementById('payment-method');
-            paymentSelect.value = selectedPaymentMethod;
-            
-            // Disparar el evento change para recalcular
-            const event = new Event('change');
-            paymentSelect.dispatchEvent(event);
-        }
-    }
-
-    document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
-        if (index + 1 <= stepNumber) {
-            indicator.classList.remove('bg-gray-700');
-            indicator.classList.add('bg-primary');
-        } else {
-            indicator.classList.remove('bg-primary');
-            indicator.classList.add('bg-gray-700');
-        }
-    });
-
-    if (stepNumber === 2) {
-        document.getElementById('boletos-seleccionados').value = JSON.stringify(selectedTickets);
-    }
-};
-
-    // Función para cargar boletos por página
-    function loadTickets(page) {
-        fetch(`/rifas-premium/api/boletos.php?evento_id=<?= $evento_id ?>&pagina=${page}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    renderTickets(data.boletos);
-                    updatePaginationControls(page, data.total_paginas);
+            document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+                if (index + 1 <= stepNumber) {
+                    indicator.classList.remove('bg-gray-700');
+                    indicator.classList.add('bg-primary');
                 } else {
-                    console.error('Error al cargar boletos:', data.message);
+                    indicator.classList.remove('bg-primary');
+                    indicator.classList.add('bg-gray-700');
                 }
             });
-    }
 
-    // Renderizar boletos en el grid
-    function renderTickets(boletos) {
-        const ticketGrid = document.getElementById('ticket-grid');
-        ticketGrid.innerHTML = '';
+            if (stepNumber === 2) {
+                document.getElementById('boletos-seleccionados').value = JSON.stringify(selectedTickets);
+            }
+        };
+
+        // Función optimizada para cargar boletos por página con WebSocket
+        function loadTickets(page) {
+            const ticketGrid = document.getElementById('ticket-grid');
+            
+            // Mostrar estado de carga
+            ticketGrid.innerHTML = '';
+            for (let i = 0; i < ticketsPerPage; i++) {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'ticket-loading';
+                ticketGrid.appendChild(loadingDiv);
+            }
+
+            // Usar fetch con cache para evitar peticiones redundantes
+            if (ticketAvailabilityCache[page]) {
+                renderTickets(ticketAvailabilityCache[page]);
+                return;
+            }
+
+            fetch(`/rifas-premium/api/boletos.php?evento_id=<?= $evento_id ?>&pagina=${page}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Almacenar en cache
+                        ticketAvailabilityCache[page] = data.boletos;
+                        renderTickets(data.boletos);
+                        updatePaginationControls(page, data.total_paginas);
+                        
+                        // Iniciar WebSocket para actualizaciones en tiempo real
+                        if (page === 1 && !window.ticketSocket) {
+                            initWebSocket();
+                        }
+                    } else {
+                        console.error('Error al cargar boletos:', data.message);
+                        mostrarMensaje('Error', 'No se pudieron cargar los boletos', true);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la petición:', error);
+                    mostrarMensaje('Error', 'Error de conexión al cargar boletos', true);
+                });
+        }
+
+        // Inicializar WebSocket para actualizaciones en tiempo real
+       // Reemplaza la función initWebSocket() con esta versión mejorada:
+// Reemplaza la función initWebSocket() con esta versión mejorada
+function initWebSocket() {
+    // Usar el mismo protocolo (http/https) para el websocket
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const host = window.location.hostname;
+    const port = window.location.port ? `:${window.location.port}` : '';
+    
+    // Asegúrate de que el puerto del WebSocket coincida con el del servidor (8080)
+    const wsPort = ':8080'; // Puerto donde corre el servidor WebSocket
+    const path = '/'; // Ruta base o puedes usar '/ticket_updates'
+    const params = `?evento_id=<?= $evento_id ?>`;
+    
+    // Construir la URL correcta
+    const wsUrl = `${protocol}${host}${wsPort}${path}${params}`;
+    
+    console.log('Intentando conectar a:', wsUrl);
+    
+    if (window.ticketSocket) {
+        window.ticketSocket.close();
+    }
+    
+    window.ticketSocket = new WebSocket(wsUrl);
+    
+    ticketSocket.onopen = function(e) {
+        console.log('Conexión WebSocket establecida');
+    };
+    
+    ticketSocket.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'ticket_update') {
+                updateTicketStatus(data.ticket_number, data.status);
+                
+                if (data.status !== 'disponible') {
+                    updateAvailableTicketsCount(-1);
+                }
+            }
+        } catch (e) {
+            console.error('Error procesando mensaje WebSocket:', e);
+        }
+    };
+    
+    ticketSocket.onclose = function(e) {
+        if (e.wasClean) {
+            console.log(`Conexión cerrada limpiamente, código=${e.code} motivo=${e.reason}`);
+        } else {
+            console.log('Conexión interrumpida, reconectando...');
+        }
         
-        boletos.forEach(boleto => {
-            const ticketElement = document.createElement('div');
-            ticketElement.className = `flex items-center justify-center ${
-                boleto.estado !== 'disponible' ? 'ticket-sold' : 'ticket-available'
-            }`;
-            ticketElement.textContent = boleto.numero_boleto;
-            ticketElement.dataset.numero = boleto.numero_boleto;
-
-            if (boleto.estado === 'disponible') {
-                ticketElement.addEventListener('click', () => toggleTicketSelection(ticketElement, boleto.numero_boleto));
+        // Reconexión exponencial
+        let reconnectDelay = 1000;
+        const maxReconnectDelay = 30000;
+        
+        const tryReconnect = () => {
+            if (reconnectDelay < maxReconnectDelay) {
+                reconnectDelay *= 2;
             }
+            
+            console.log(`Intentando reconectar en ${reconnectDelay}ms...`);
+            setTimeout(initWebSocket, reconnectDelay);
+        };
+        
+        tryReconnect();
+    };
+    
+    ticketSocket.onerror = function(error) {
+        console.error('Error en WebSocket:', error);
+    };
+}
 
-            // Resaltar si está seleccionado
-            if (selectedTickets.includes(boleto.numero_boleto)) {
-                ticketElement.classList.remove('ticket-available');
-                ticketElement.classList.add('ticket-selected');
-            }
-
-            ticketGrid.appendChild(ticketElement);
-        });
+function updateAvailableTicketsCount(change) {
+    const soldElement = document.getElementById('sold-tickets');
+    if (soldElement) {
+        const current = parseInt(soldElement.textContent);
+        if (!isNaN(current)) {
+            soldElement.textContent = current + change;
+        }
     }
+}
 
-    // Función para alternar selección de boleto
-    function toggleTicketSelection(element, ticketNumber) {
+function updateTicketStatus(ticketNumber, status) {
+    // Actualizar en el grid si está visible
+    const ticketElements = document.querySelectorAll(`[data-numero="${ticketNumber}"]`);
+    
+    ticketElements.forEach(ticketElement => {
+        if (status === 'disponible') {
+            ticketElement.className = 'ticket-available';
+            ticketElement.onclick = () => toggleTicketSelection(ticketElement, ticketNumber);
+        } else {
+            ticketElement.className = 'ticket-sold';
+            ticketElement.onclick = null;
+            
+            // Si estaba seleccionado, quitarlo
+            if (selectedTickets.includes(ticketNumber)) {
+                selectedTickets = selectedTickets.filter(num => num !== ticketNumber);
+                updateSelectedTickets();
+            }
+        }
+    });
+}
+
+function updateTicketStatus(ticketNumber, status) {
+    const ticketElement = document.querySelector(`[data-numero="${ticketNumber}"]`);
+    if (ticketElement) {
+        ticketElement.className = `flex items-center justify-center ${
+            status === 'disponible' ? 'ticket-available' : 'ticket-sold'
+        }`;
+        
+        if (status === 'disponible') {
+            ticketElement.onclick = () => toggleTicketSelection(ticketElement, ticketNumber);
+        } else {
+            ticketElement.onclick = null;
+        }
+    }
+}
+
+        // Actualizar estado de un boleto específico
+        function updateTicketStatus(ticketNumber, status) {
+            // Actualizar en el grid si está visible
+            const ticketElement = document.querySelector(`[data-numero="${ticketNumber}"]`);
+            if (ticketElement) {
+                ticketElement.className = `flex items-center justify-center ${
+                    status !== 'disponible' ? 'ticket-sold' : 'ticket-available'
+                }`;
+                
+                if (status === 'disponible') {
+                    ticketElement.addEventListener('click', () => toggleTicketSelection(ticketElement, ticketNumber));
+                } else {
+                    ticketElement.onclick = null;
+                    
+                    // Si estaba seleccionado, quitarlo
+                    if (selectedTickets.includes(ticketNumber)) {
+                        selectedTickets = selectedTickets.filter(num => num !== ticketNumber);
+                        updateSelectedTickets();
+                    }
+                }
+            }
+            
+            // Actualizar en el cache si existe
+            for (const page in ticketAvailabilityCache) {
+                const ticketIndex = ticketAvailabilityCache[page].findIndex(t => t.numero_boleto === ticketNumber);
+                if (ticketIndex !== -1) {
+                    ticketAvailabilityCache[page][ticketIndex].estado = status;
+                    break;
+                }
+            }
+        }
+
+        // Renderizar boletos en el grid
+        function renderTickets(boletos) {
+            const ticketGrid = document.getElementById('ticket-grid');
+            ticketGrid.innerHTML = '';
+            
+            boletos.forEach(boleto => {
+                const ticketElement = document.createElement('div');
+                ticketElement.className = `flex items-center justify-center ${
+                    boleto.estado !== 'disponible' ? 'ticket-sold' : 'ticket-available'
+                }`;
+                ticketElement.textContent = boleto.numero_boleto;
+                ticketElement.dataset.numero = boleto.numero_boleto;
+
+                if (boleto.estado === 'disponible') {
+                    ticketElement.addEventListener('click', () => toggleTicketSelection(ticketElement, boleto.numero_boleto));
+                }
+
+                // Resaltar si está seleccionado
+                if (selectedTickets.includes(boleto.numero_boleto)) {
+                    ticketElement.classList.remove('ticket-available');
+                    ticketElement.classList.add('ticket-selected');
+                }
+
+                ticketGrid.appendChild(ticketElement);
+            });
+        }
+
+        // Función para alternar selección de boleto con verificación en tiempo real
+       async function toggleTicketSelection(element, ticketNumber) {
+    // Verificar disponibilidad en tiempo real antes de seleccionar
+    try {
+        const response = await fetch(`/rifas-premium/api/todos_boletos.php?numero=${ticketNumber}&evento_id=<?= $evento_id ?>`);        
+        // Verificar si la respuesta es JSON válido
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('Respuesta no JSON:', text);
+            throw new Error('Respuesta inválida del servidor');
+        }
+        
+        if (!data.success) {
+            throw new Error(data.message || 'Error al verificar boleto');
+        }
+        
+        if (!data.disponible) {
+            // Actualizar estado en la interfaz
+            element.classList.remove('ticket-available');
+            element.classList.add('ticket-sold');
+            element.onclick = null;
+            
+            // Mostrar mensaje al usuario
+            mostrarMensaje('Boleto no disponible', `El boleto #${ticketNumber} ya no está disponible (Estado: ${data.estado})`, true);
+            return;
+        }
+        
+        // Proceder con la selección/deselección
         if (element.classList.contains('ticket-selected')) {
             // Deseleccionar
             element.classList.remove('ticket-selected');
@@ -826,90 +1031,11 @@ window.showStep = function(stepNumber) {
         }
         
         updateSelectedTickets();
-    }
-
-    // Actualizar controles de paginación
-    function updatePaginationControls(page, total) {
-        document.getElementById('current-page').textContent = page;
-        document.getElementById('total-pages').textContent = total;
-        document.getElementById('prev-page').disabled = page === 1;
-        document.getElementById('next-page').disabled = page === total;
-    }
-
-    // Función para actualizar los totales con conversión
-function updateTotalsWithConversion(conversionData = null) {
-    const totalUSD = selectedTickets.length * ticketPrice;
-    
-    // Actualizar en paso 1
-    document.getElementById('selected-total').textContent = `$${totalUSD.toFixed(2)} USD`;
-    
-    // Actualizar en paso 3
-    document.getElementById('cart-total').textContent = `$${totalUSD.toFixed(2)} USD`;
-    
-    // Limpiar equivalentes
-    document.getElementById('selected-total-equivalent').textContent = '';
-    document.getElementById('cart-total-equivalent').textContent = '';
-    
-    // Si hay datos de conversión, mostrar también el equivalente
-    if (conversionData && conversionData.success && conversionData.conversion) {
-        const convertedTotal = `${conversionData.precio_convertido.toFixed(2)} ${conversionData.moneda}`;
-        
-        // Actualizar en paso 1
-        document.getElementById('selected-total').textContent = convertedTotal;
-        document.getElementById('selected-total-equivalent').textContent = `Equivalente: $${totalUSD.toFixed(2)} USD`;
-        
-        // Actualizar en paso 3
-        document.getElementById('cart-total').textContent = convertedTotal;
-        document.getElementById('cart-total-equivalent').textContent = `Equivalente: $${totalUSD.toFixed(2)} USD`;
+    } catch (error) {
+        console.error('Error al verificar boleto:', error);
+        mostrarMensaje('Error', 'No se pudo verificar la disponibilidad del boleto: ' + error.message, true);
     }
 }
-
-// Modificar el event listener del método de pago
-document.getElementById('payment-method').addEventListener('change', function() {
-    const detallesDiv = document.getElementById('detalles-metodo-pago-seleccionado');
-    const selectedOption = this.options[this.selectedIndex];
-    const detallesJson = selectedOption.getAttribute('data-detalles');
-    const metodo_pago_id = this.value;
-
-    // Limpiar detalles previos
-    detallesDiv.innerHTML = '';
-
-    // Mostrar detalles del método de pago
-    if (detallesJson) {
-        try {
-            const detalles = JSON.parse(detallesJson);
-            let detallesHTML = '<ul class="space-y-1">';
-
-            if (detalles.detalles) {
-                const detallesMetodo = JSON.parse(detalles.detalles);
-                for (const [key, value] of Object.entries(detallesMetodo)) {
-                    detallesHTML += `<li><strong>${key}:</strong> ${value}</li>`;
-                }
-            }
-
-            detallesHTML += '</ul>';
-            detallesDiv.innerHTML = detallesHTML;
-        } catch (error) {
-            console.error('Error al parsear JSON:', error);
-            detallesDiv.innerHTML = '<p class="text-danger">Error al mostrar detalles</p>';
-        }
-    }
-
-    // Obtener y aplicar tasa de cambio si hay boletos seleccionados
-    if (selectedTickets.length > 0) {
-        const totalUSD = selectedTickets.length * ticketPrice;
-        
-        fetch(`/rifas-premium/api/calcular_precio.php?metodo_pago_id=${metodo_pago_id}&precio=${totalUSD}`)
-            .then(response => response.json())
-            .then(data => {
-                updateTotalsWithConversion(data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                updateTotalsWithConversion(); // Mostrar solo en USD si hay error
-            });
-    }
-});
 
 // Modificar la función updateSelectedTickets para usar la nueva función
 function updateSelectedTickets() {
@@ -1013,86 +1139,79 @@ function updateSelectedTickets() {
 };
 
     // Eventos de paginación
-    document.getElementById('prev-page').addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            loadTickets(currentPage);
-        }
-    });
+        document.getElementById('prev-page').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadTickets(currentPage);
+            }
+        });
 
-    document.getElementById('next-page').addEventListener('click', () => {
-        if (currentPage < totalPages) {
-            currentPage++;
-            loadTickets(currentPage);
-        }
-    });
+        document.getElementById('next-page').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadTickets(currentPage);
+            }
+        });
 
     // Selección aleatoria
-document.getElementById('random-btn').addEventListener('click', async function() {
-    const quantity = parseInt(document.getElementById('random-quantity').value);
-    
-    if (isNaN(quantity) || quantity < 1) {
-        mostrarMensaje('Error', 'Por favor ingresa una cantidad válida mayor a cero', true);
-        return;
-    }
-    
-    // Mostrar loading
-    const randomBtn = this;
-    const originalText = randomBtn.innerHTML;
-    randomBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando boletos...';
-    randomBtn.disabled = true;
-    
-    try {
-        // Obtener todos los boletos disponibles del servidor
-        const response = await fetch(`/rifas-premium/api/todos_boletos.php?evento_id=<?= $evento_id ?>`);
-        const data = await response.json();
-        
-        if (!data.success) {
-            throw new Error(data.message || 'Error al obtener boletos disponibles');
-        }
-        
-        // Filtrar solo los boletos disponibles
-        const availableTickets = data.boletos
-            .filter(boleto => boleto.estado === 'disponible')
-            .map(boleto => boleto.numero_boleto);
-        
-        if (availableTickets.length === 0) {
-            throw new Error('No hay boletos disponibles para este evento');
-        }
-        
-        if (availableTickets.length < quantity) {
-            throw new Error(`Solo quedan ${availableTickets.length} boletos disponibles (intentaste seleccionar ${quantity})`);
-        }
-        
-        // Limpiar selección actual
-        selectedTickets = [];
-        document.querySelectorAll('.ticket-selected').forEach(el => {
-            el.classList.remove('ticket-selected');
-            el.classList.add('ticket-available');
+// Selección aleatoria con verificación en tiempo real
+        document.getElementById('random-btn').addEventListener('click', async function() {
+            const quantity = parseInt(document.getElementById('random-quantity').value);
+            
+            if (isNaN(quantity) || quantity < 1) {
+                mostrarMensaje('Error', 'Por favor ingresa una cantidad válida mayor a cero', true);
+                return;
+            }
+            
+            // Mostrar loading
+            const randomBtn = this;
+            const originalText = randomBtn.innerHTML;
+            randomBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando boletos...';
+            randomBtn.disabled = true;
+            
+            try {
+                // Obtener boletos disponibles del servidor con verificación en tiempo real
+                const response = await fetch(`/rifas-premium/api/boletos_aleatorios.php?evento_id=<?= $evento_id ?>&cantidad=${quantity}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'Error al obtener boletos disponibles');
+                }
+                
+                if (data.boletos.length === 0) {
+                    throw new Error('No hay boletos disponibles para este evento');
+                }
+                
+                if (data.boletos.length < quantity) {
+                    throw new Error(`Solo quedan ${data.boletos.length} boletos disponibles (intentaste seleccionar ${quantity})`);
+                }
+                
+                // Limpiar selección actual
+                selectedTickets = [];
+                document.querySelectorAll('.ticket-selected').forEach(el => {
+                    el.classList.remove('ticket-selected');
+                    el.classList.add('ticket-available');
+                });
+                
+                // Asignar los boletos disponibles
+                selectedTickets = data.boletos.map(b => b.numero_boleto).sort((a, b) => parseInt(a) - parseInt(b));
+                
+                // Actualizar la interfaz
+                updateSelectedTickets();
+                await highlightSelectedTicketsInGrid();
+                
+                // Mostrar mensaje de éxito
+                const ticketsFormatted = selectedTickets.map(t => `#${t}`).join(', ');
+                mostrarMensaje('Boletos seleccionados', `Se han seleccionado ${quantity} boletos aleatoriamente: ${ticketsFormatted}`);
+                
+            } catch (error) {
+                mostrarMensaje('Error', error.message, true);
+            } finally {
+                // Restaurar botón
+                randomBtn.innerHTML = originalText;
+                randomBtn.disabled = false;
+            }
         });
-        
-        // Seleccionar aleatoriamente sin repetición
-        const shuffled = [...availableTickets].sort(() => 0.5 - Math.random());
-        selectedTickets = shuffled.slice(0, quantity).sort((a, b) => parseInt(a) - parseInt(b));
-        
-        // Actualizar la interfaz
-        updateSelectedTickets();
-        
-        // Mostrar los boletos seleccionados en el grid (cargando las páginas necesarias)
-        await highlightSelectedTicketsInGrid();
-        
-        // Mostrar mensaje de éxito con los números seleccionados
-        const ticketsFormatted = selectedTickets.map(t => `#${t}`).join(', ');
-        mostrarMensaje('Boletos seleccionados', `Se han seleccionado ${quantity} boletos aleatoriamente: ${ticketsFormatted}`);
-        
-    } catch (error) {
-        mostrarMensaje('Error', error.message, true);
-    } finally {
-        // Restaurar botón
-        randomBtn.innerHTML = originalText;
-        randomBtn.disabled = false;
-    }
-});
 
 // Función para resaltar los boletos seleccionados en el grid
 async function highlightSelectedTicketsInGrid() {
@@ -1372,6 +1491,13 @@ function validarFormulario() {
     }
     
     return valido;
+}
+// Añade esta función en tu código JavaScript
+function updatePaginationControls(page, total) {
+    document.getElementById('current-page').textContent = page;
+    document.getElementById('total-pages').textContent = total;
+    document.getElementById('prev-page').disabled = page === 1;
+    document.getElementById('next-page').disabled = page === total || total <= 1;
 }
 
 // Modificar el evento submit del formulario para incluir validación

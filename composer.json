@@ -1,0 +1,21 @@
+{
+    "name": "rifas-premium/websockets",
+    "description": "WebSocket server for rifas-premium",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "RifasPremium\\Websockets\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "DarkOver20",
+            "email": "anibalmorillo1@gmail.com"
+        }
+    ],
+    "require": {
+        "cboden/ratchet": "^0.4.4",
+        "react/event-loop": "^1.5"
+    }
+}
