@@ -252,7 +252,7 @@ $usuario = obtenerUsuario($_SESSION['usuario_id']);
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
                     <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-                        A&M Recreciones
+                        Rifas Premium
                     </span>
                 </a>
             </div>

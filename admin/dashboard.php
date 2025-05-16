@@ -18,7 +18,7 @@ $total_paginas = ceil($total_solicitudes / $por_pagina);$total_ventas = calcular
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - A&M Recreciones</title>
+    <title>Panel de Administración - Rifas Premium</title>
     
     <!-- Preconexión y precarga estratégica -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -277,13 +277,13 @@ $total_paginas = ceil($total_solicitudes / $por_pagina);$total_ventas = calcular
                 <button id="sidebar-toggle" class="lg:hidden text-white mr-4">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <a href="/rifas-premium/dashboard " class="flex items-center gap-2 group" aria-label="A&M Recreaciones">
-                <img src="../uploads/logo.jpg" 
-                         alt="Logo A&M Recreciones" 
+                <a href="/rifas-premium/dashboard " class="flex items-center gap-2 group" aria-label="Rifas Premium">
+                <img src="../uploads/prueba" 
+                         alt="Logo Rifas Premium" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
                     <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-                        A&M Recreciones
+                        Rifas Premium
                     </span>
                 </a>
             </div>
@@ -353,7 +353,7 @@ $total_paginas = ceil($total_solicitudes / $por_pagina);$total_ventas = calcular
                 <h1 class="text-3xl font-bold mb-2">
                     <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Panel de Control</span>
                 </h1>
-                <p class="text-gray-400">Bienvenido al centro de administración de A&M Recreciones</p>
+                <p class="text-gray-400">Bienvenido al centro de administración de Rifas Premium</p>
             </div>
             
             <!-- Stats Cards -->

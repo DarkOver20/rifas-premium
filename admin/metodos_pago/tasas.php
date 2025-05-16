@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administrar Tasas de Cambio - A&M Recreciones</title>
+    <title>Administrar Tasas de Cambio - Rifas Premium</title>
     
     <!-- Preconexión y precarga estratégica -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -267,13 +267,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button id="sidebar-toggle" class="lg:hidden text-white mr-4">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <a href="/rifas-premium/dashboard " class="flex items-center gap-2 group" aria-label="A&M Recreaciones">
-                <img src="../uploads/logo.jpg" 
-                         alt="Logo A&M Recreciones" 
+                <a href="/rifas-premium/dashboard " class="flex items-center gap-2 group" aria-label="Rifas Premium">
+                <img src="../uploads/prueba" 
+                         alt="Logo Rifas Premium" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
                     <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-                    A&M Recreciones
+                    Rifas Premium
                     </span>
                 </a>
             </div>

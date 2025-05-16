@@ -49,7 +49,7 @@ $metodos_de_pago = obtener_metodos_pago();
     "@type": "Organization",
     "name": "Rifas Premium",
     "url": "https://www.tudominio.com",
-    "logo": "https://www.tudominio.com/logo.png",
+    "logo": "https://www.tudominio.com/prueba",
     "description": "Rifas exclusivas con transparencia garantizada",
     "sameAs": [
       "https://facebook.com/tupagina",
@@ -346,9 +346,9 @@ $metodos_de_pago = obtener_metodos_pago();
     <div class="container mx-auto px-4 py-3">
       <div class="flex justify-between items-center bg-secondary/90 backdrop-blur-md rounded-full px-6 py-3 shadow-lg border border-gray-800">
         <a href="#inicio" class="flex items-center gap-2 group" aria-label="RIFAS PREMIUM">
-          <img src="./admin/uploads/logo.png" alt="Logo de RIFAS PREMIUM" class="h-12 w-12 logo-animate transition-all duration-300 group-hover:rotate-12" loading="eager">
+          <img src="./admin/uploads/prueba" alt="Logo de RIFAS PREMIUM" class="h-12 w-12 logo-animate transition-all duration-300 group-hover:rotate-12" loading="eager">
           <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-          A&M Recreaciones
+          Rifas Premium
           </span>
         </a>     
         <nav class="hidden lg:flex items-center gap-8">
@@ -529,7 +529,7 @@ $metodos_de_pago = obtener_metodos_pago();
           <?php if ($metodo['activo'] == 1): ?>
               <div class="flex flex-col items-center opacity-80 hover:opacity-100 transition-all">
             <?php if (!empty($metodo['icono'])): ?>
-                <img src="<?php echo htmlspecialchars($metodo['icono']); ?>" 
+                <img src="/rifas-premium/admin/uploads/metodos/<?php echo htmlspecialchars($metodo['icono']); ?>" 
                alt="<?php echo htmlspecialchars($metodo['nombre']); ?>" 
                class="h-12 grayscale hover:grayscale-0 transition-all" 
                loading="lazy">
@@ -557,8 +557,8 @@ $metodos_de_pago = obtener_metodos_pago();
     <br>
     <br>
     <div class="text-center fade-in">        
-      <span class="inline-block bg-accent/10 text-three/20 px-4 py-1 rounded-full text-sm font-semibold mb-6">
-        <i class="fa fa-certificate mr-1"></i> Toda la informacion necesaria la podra encontrar dentro de las rifas a la hora de participar
+      <span class="inline-block bg-accent/10 text-three/20 px-4 py-1 rounded-full text-sm mb-6 text-white">
+        <i class="fa fa-certificate mr-1 "></i> Toda la informacion necesaria la podra encontrar dentro de las rifas a la hora de participar
       </span>
     </div>
 </section>  
@@ -825,7 +825,7 @@ $metodos_de_pago = obtener_metodos_pago();
                  class="h-10 w-10 rounded-lg"
                  loading="lazy">
             <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-              A&M Recreaciones
+              Rifas Premium
             </span>
           </a>
           <p class="text-gray-400 mb-6">
@@ -869,7 +869,7 @@ $metodos_de_pago = obtener_metodos_pago();
       <div class="border-t border-gray-800 pt-8">
         <div class="flex flex-col md:flex-row justify-between items-center">
           <p class="text-gray-400 text-sm mb-4 md:mb-0">
-            © 2025 A&M Recreaciones. Todos los derechos reservados.
+            © 2025 Rifas Premium. Todos los derechos reservados.
           </p>
           
           <div class="flex space-x-3">

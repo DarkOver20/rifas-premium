@@ -164,7 +164,7 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Métodos de Pago - A&M Recreciones</title>
+    <title>Métodos de Pago - Rifas Premium</title>
     
     <!-- Preconexión y precarga estratégica -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -369,13 +369,13 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
                 <button id="sidebar-toggle" class="lg:hidden text-white mr-4">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <a href="/rifas-premium/admin/" class="flex items-center gap-2 group" aria-label="A&M Recreciones">
+                <a href="/rifas-premium/admin/" class="flex items-center gap-2 group" aria-label="Rifas Premium">
                     <img src="../uploads/logocolor.webp" 
-                         alt="Logo A&M Recreciones" 
+                         alt="Logo Rifas Premium" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
                     <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-                        A&M Recreciones
+                        Rifas Premium
                     </span>
                 </a>
             </div>

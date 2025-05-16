@@ -226,7 +226,7 @@ $boletos_disponibles = obtenerBoletosDisponiblesOptimizado($evento_id);
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <a href="index.php" class="flex items-center gap-2 group" aria-label="Rifas Premium">
-                    <img src="./assets/img/logo.png" alt="Logo Rifas Premium" class="h-10 w-10 transition-all duration-300 group-hover:rotate-12" loading="eager">
+                    <img src="./assets/img/prueba" alt="Logo Rifas Premium" class="h-10 w-10 transition-all duration-300 group-hover:rotate-12" loading="eager">
                     <span class="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-heading">
                         Rifas Premium
                     </span>
@@ -625,7 +625,7 @@ $boletos_disponibles = obtenerBoletosDisponiblesOptimizado($evento_id);
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
                 <div>
                     <a href="index.php" class="flex items-center gap-2 mb-6">
-                        <img src="./assets/img/logo.png" alt="Rifas Premium" class="h-10 w-10 rounded-lg" loading="lazy">
+                        <img src="./assets/img/prueba" alt="Rifas Premium" class="h-10 w-10 rounded-lg" loading="lazy">
                         <span class="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-heading">
                             Rifas Premium
                         </span>

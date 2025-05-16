@@ -181,9 +181,9 @@ $total_paginas = ceil($total_boletos / 100);
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center bg-secondary/90 backdrop-blur-md rounded-full px-6 py-3 shadow-lg border border-gray-800">
                 <a href="/rifas-premium/" class="flex items-center gap-2 group" aria-label="RifasA&M">
-                    <img src="./assets/img/logo.png" alt="Logo RifasA&M" class="h-10 w-10 transition-all duration-300 group-hover:rotate-12" loading="eager">
+                    <img src="./assets/img/prueba" alt="Logo RifasA&M" class="h-10 w-10 transition-all duration-300 group-hover:rotate-12" loading="eager">
                     <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-                        A&M Recreaciones
+                        Rifas Premium
                     </span>
                 </a>
                 <nav class="hidden lg:flex items-center gap-8">
@@ -517,7 +517,7 @@ $total_paginas = ceil($total_boletos / 100);
                  class="h-10 w-10 rounded-lg"
                  loading="lazy">
             <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-              A&M Recreaciones
+              Rifas Premium
             </span>
           </a>
           <p class="text-gray-400 mb-6">
@@ -561,7 +561,7 @@ $total_paginas = ceil($total_boletos / 100);
       <div class="border-t border-gray-800 pt-8">
         <div class="flex flex-col md:flex-row justify-between items-center">
           <p class="text-gray-400 text-sm mb-4 md:mb-0">
-            © 2024 A&M Recreaciones. Todos los derechos reservados.
+            © 2024 Rifas Premium. Todos los derechos reservados.
           </p>
           
         </div>

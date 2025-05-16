@@ -259,13 +259,13 @@ if (empty($errores)) {
   <header class="fixed w-full top-0 left-0 z-50 bg-secondary/90 backdrop-blur-md shadow-lg border-b border-gray-800">
     <div class="container mx-auto px-4 py-3">
       <div class="flex justify-between items-center">
-        <a href="/rifas-premium/dashboard " class="flex items-center gap-2 group" aria-label="A&M Recreaciones">
+        <a href="/rifas-premium/dashboard " class="flex items-center gap-2 group" aria-label="Rifas Premium">
           <img src="" 
-               alt="Logo A&M Recreaciones" 
+               alt="Logo Rifas Premium" 
                class="h-10 w-10 rounded-lg"
                loading="eager">
           <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-            A&M Recreaciones
+            Rifas Premium
           </span>
         </a>
         
@@ -317,7 +317,7 @@ if (empty($errores)) {
                 <input type="text" id="titulo" name="titulo" required
                        class="w-full form-input px-4 py-3 bg-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-gray-500"
                        value="<?= isset($_POST['titulo']) ? htmlspecialchars($_POST['titulo']) : '' ?>"
-                       placeholder="Ej: Ferrari F8 Tributo 2023">
+                       placeholder="Ej: Toyota Corrolla 2024">
                 <?php if (isset($errores['titulo'])): ?>
                   <p class="error-message"><?= $errores['titulo'] ?></p>
                 <?php endif; ?>
@@ -331,7 +331,7 @@ if (empty($errores)) {
                 <input type="text" id="slogan" name="slogan"
                        class="w-full form-input px-4 py-3 bg-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-gray-500"
                        value="<?= isset($_POST['slogan']) ? htmlspecialchars($_POST['slogan']) : '' ?>"
-                       placeholder="Ej: El superdeportivo italiano">
+                       placeholder="Ej: La rifa del toyota mas esperado">
               </div>
               
               <!-- Descripción -->
@@ -341,7 +341,7 @@ if (empty($errores)) {
                 </label>
                 <textarea id="descripcion" name="descripcion" rows="4"
                           class="w-full form-input px-4 py-3 bg-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-gray-500"
-                          placeholder="Describe el evento y el auto en detalle"><?= isset($_POST['descripcion']) ? htmlspecialchars($_POST['descripcion']) : '' ?></textarea>
+                          placeholder="Describe el evento y el premio en detalle"><?= isset($_POST['descripcion']) ? htmlspecialchars($_POST['descripcion']) : '' ?></textarea>
               </div>
               
               <!-- Premio Principal -->
@@ -351,7 +351,7 @@ if (empty($errores)) {
                 </label>
                 <textarea id="premio_principal" name="premio_principal" rows="3" required
                           class="w-full form-input px-4 py-3 bg-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-gray-500"
-                          placeholder="Detalles del auto que se rifa"><?= isset($_POST['premio_principal']) ? htmlspecialchars($_POST['premio_principal']) : '' ?></textarea>
+                          placeholder="Detalles del premio que se rifa"><?= isset($_POST['premio_principal']) ? htmlspecialchars($_POST['premio_principal']) : '' ?></textarea>
               </div>
             </div>
             

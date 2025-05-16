@@ -309,12 +309,12 @@ $eventos_finalizados = obtenerEventos('finalizado');
                     <i class="fas fa-bars text-xl"></i>
                 </button>
                 <a href="../" class="flex items-center gap-2 group" aria-label="Bólidos Rifas">
-                    <img src="/admin/uploads/logo.png" 
-                         alt="A&M Recreciones" 
+                    <img src="/admin/uploads/prueba" 
+                         alt="Rifas Premium" 
                          class="h-10 w-10 rounded-lg"
                          loading="eager">
                     <span class="text-xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
-                    A&M Recreciones
+                    Rifas Premium
                     </span>
                 </a>
             </div>
@@ -384,7 +384,7 @@ $eventos_finalizados = obtenerEventos('finalizado');
                 <h1 class="text-3xl font-bold mb-2">
                     <span class="bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">Panel de Control</span>
                 </h1>
-                <p class="text-gray-400">Bienvenido al centro de administración de A&M Recreaciones</p>
+                <p class="text-gray-400">Bienvenido al centro de administración de Rifas Premium</p>
             </div>
             
             <!-- Solicitudes Recientes -->
