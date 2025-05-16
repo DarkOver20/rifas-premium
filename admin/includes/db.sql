@@ -124,23 +124,3 @@ BEGIN
     END IF;
 END//
 DELIMITER ;
-
--- Trigger para actualizar el boleto ganador
-DELIMITER //
-CREATE TRIGGER after_boleto_ganador_update
-AFTER UPDATE ON eventos
-FOR EACH ROW
-BEGIN
-    IF NEW.boleto_ganador IS NOT NULL AND (OLD.boleto_ganador IS NULL OR NEW.boleto_ganador != OLD.boleto_ganador) THEN
-        -- Primero, quitar el estado 'ganador' de cualquier boleto que lo tuviera
-        UPDATE boletos 
-        SET estado = 'pagado'
-        WHERE evento_id = NEW.id AND estado = 'ganador';
-        
-        -- Luego, asignar el estado 'ganador' al nuevo boleto ganador
-        UPDATE boletos 
-        SET estado = 'ganador'
-        WHERE evento_id = NEW.id AND numero_boleto = NEW.boleto_ganador;
-    END IF;
-END//
-DELIMITER ;
