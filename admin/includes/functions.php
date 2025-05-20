@@ -661,7 +661,7 @@ function optimizarImagen($ruta, $max_width = 1200, $max_height = 800) {
     return $result;
 }
 
-function obtenerBoletosDisponiblesPaginados($evento_id, $pagina = 1, $por_pagina = 100) {
+function obtenerBoletosDisponiblesPaginados($evento_id, $pagina = 1, $por_pagina = 156) {
     $pdo = getDBConnection();
     $offset = ($pagina - 1) * $por_pagina;
     $stmt = $pdo->prepare("
