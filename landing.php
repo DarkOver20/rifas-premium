@@ -821,7 +821,7 @@ $metodos_de_pago = obtener_metodos_pago();
         <div>
           <a href="#" class="flex items-center gap-2 mb-6">
             <img src=./uploads/logocolor.webp  
-                 alt="Bólidos Rifas" 
+                 alt=" Rifas Premium" 
                  class="h-10 w-10 rounded-lg"
                  loading="lazy">
             <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">

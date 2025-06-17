@@ -176,15 +176,11 @@ $total_paginas = ceil($total_boletos / 156);
     .hidden {
     display: none !important;
 }
+
     </style>
 
 </head>
-<?php
-    // Display memory usage
-    echo "<div style='position: fixed; bottom: 0; left: 0; background-color: #f0f0f0; color: #333; padding: 10px; font-size: 12px;'>";
-    echo "Pico de uso de RAM: " . round(memory_get_peak_usage() / 1024 / 1024, 2) . " MB";
-    echo "</div>";
-    ?>
+
 
 <body class="antialiased bg-background text-white">
     <!-- Header -->
@@ -742,7 +738,7 @@ $total_paginas = ceil($total_boletos / 156);
         <div>
           <a href="#" class="flex items-center gap-2 mb-6">
             <img src=/rifasym.jpg  
-                 alt="Bólidos Rifas" 
+                 alt="Rifas Premium" 
                  class="h-10 w-10 rounded-lg"
                  loading="lazy">
             <span class="text-2xl font-bold bg-gradient-to-r from-primary to-three bg-clip-text text-transparent">
@@ -900,7 +896,29 @@ function loadTickets(page) {
             ticketGrid.appendChild(ticketElement);
         });
     }
+    
+// Implementar caché simple
+const ticketCache = new Map();
 
+async function loadTickets(page) {
+    if (ticketCache.has(page)) {
+        renderTickets(ticketCache.get(page));
+        return;
+    }
+
+    try {
+        const response = await fetch(`/rifas-premium/api/boletos.php?evento_id=<?= $evento_id ?>&pagina=${page}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            ticketCache.set(page, data.boletos);
+            renderTickets(data.boletos);
+            updatePaginationControls(page, Math.min(<?= $total_paginas ?>, data.total_paginas));
+        }
+    } catch (error) {
+        console.error('Error al cargar boletos:', error);
+    }
+}
     /**
      * Crea un elemento DOM para un boleto
      * @param {Object} boleto - Datos del boleto
@@ -1073,27 +1091,54 @@ function loadTickets(page) {
     /**
      * Actualiza la interfaz con los boletos seleccionados
      */
-    function updateSelectedTickets() {
-        const minimoBoletos = <?= $evento['minimo_boletos'] ?? 1 ?>;
-        const cumpleMinimo = selectedTickets.length >= minimoBoletos;
-        
-        // Actualizar contadores
-        updateCounters();
-        
-        // Actualizar totales
-        updateTotals();
-        
-        // Actualizar lista de boletos seleccionados
-        updateSelectedTicketsList(cumpleMinimo, minimoBoletos);
-        
-        // Actualizar resumen en paso 3
-        updateCartSummary();
-        
-        // Actualizar total con conversión si hay método de pago seleccionado
-        if (selectedPaymentMethod && selectedTickets.length > 0) {
-            updateTotalWithConversion(selectedPaymentMethod);
-        }
+
+// Modificar la función updateSelectedTickets para usar la nueva función
+function updateSelectedTickets() {
+    const selectedCount = document.getElementById('selected-count');
+    const selectedList = document.getElementById('selected-tickets-list');
+    const continueBtn = document.getElementById('continue-btn');
+    const cartCount = document.getElementById('cart-count');
+    const selectedDisplay = document.getElementById('selected-tickets-display');
+    
+    // Actualizar contadores
+    selectedCount.textContent = selectedTickets.length;
+    if (cartCount) cartCount.textContent = selectedTickets.length;
+    
+    // Actualizar totales - ahora verifica si hay método de pago seleccionado
+    if (selectedPaymentMethod) {
+        updateTotalWithConversion(selectedPaymentMethod);
+    } else {
+        updateTotalsWithConversion();
     }
+    
+    // Resto del código para actualizar la lista de boletos...
+    if (selectedTickets.length > 0) {
+        selectedList.innerHTML = `
+            <div class="flex flex-wrap gap-2">
+                ${selectedTickets.sort((a, b) => a - b).map(ticket => `
+                <div class="bg-primary text-white px-2 py-1 rounded-full text-xs flex items-center">
+                    #${ticket.toString().padStart(5, '0')}
+                    <button class="ml-1 text-xs hover:text-accent" onclick="removeTicket('${ticket}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                `).join('')}
+            </div>
+        `;
+        continueBtn.disabled = false;
+        
+        if (selectedDisplay) {
+            selectedDisplay.innerHTML = selectedTickets.map(ticket => `
+                <div class="bg-gray-700 text-white px-3 py-1 rounded-full text-sm">
+                    #${ticket}
+                </div>
+            `).join('');
+        }
+    } else {
+        selectedList.innerHTML = '';
+        continueBtn.disabled = true;
+    }
+}
 
     /**
      * Actualiza los contadores de boletos seleccionados
@@ -1141,6 +1186,7 @@ function loadTickets(page) {
         } else {
             continueBtn.disabled = true;
         }
+            updateTotalsWithConversion();
     }
 
     /**
@@ -1210,7 +1256,7 @@ function loadTickets(page) {
             el.classList.remove('ticket-selected');
             el.classList.add('ticket-available');
         });
-        
+            updateTotalsWithConversion();
         updateSelectedTickets();
     };
 
@@ -1264,6 +1310,7 @@ function loadTickets(page) {
             randomBtn.innerHTML = originalText;
             randomBtn.disabled = false;
         }
+        
     }
 
     /**
